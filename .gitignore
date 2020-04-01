@@ -1,0 +1,14 @@
+bin
+include
+lib
+lib64
+share
+pyvenv.cfg
+
+__pycache__
+.idea
+
+event_app/migrations
+.bashrc
+
+.pre-commit-config.yaml
