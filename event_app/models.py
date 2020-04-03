@@ -27,6 +27,7 @@ class College(AutoCreatedUpdatedMixin):
     name = models.TextField(unique=True)
     address = models.TextField()
     state = models.TextField()
+    has_college_email = models.BooleanField(default=False)
 
     objects = BaseManager()
 

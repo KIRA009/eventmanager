@@ -20,3 +20,8 @@ class AutoCreatedUpdatedMixin(models.Model):
             if not auto_updated_at_is_disabled:
                 self.updated_at = tz.now()
         super(AutoCreatedUpdatedMixin, self).save(*args, **kwargs)
+
+    def detail(self):
+        ret = self.__dict__
+        del ret["_state"]
+        return ret

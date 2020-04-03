@@ -6,11 +6,12 @@ import json
 class CustomMiddleware(common.CommonMiddleware):
     def process_request(self, request):
         super(CustomMiddleware, self).process_request(request)
-        if request.method == "OPTIONS":
+        if request.method == "OPTIONS" or request.path.startswith("/admin/"):
             return
-        if request.method != "POST":
-            return jsonify(f"Method {request.method} not allowed", 501)
-        request.json = json.loads(request.body)
+        if request.body.decode():
+            request.json = json.loads(request.body)
 
     def process_response(self, request, response):
+        if request.path.startswith("/admin/"):
+            return super().process_response(request, response)
         return super().process_response(request, jsonify(response))

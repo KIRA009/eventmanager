@@ -14,8 +14,9 @@ class UserManager(BaseUserManager):
         """
         from .models import College
 
-        details["college"] = College.objects.get(name=details["college"])
+        details["college"] = College.objects.get(id=details["college"])
         details["email"] = uuid4()
+        details["is_staff"] = details["is_superuser"] = False
         user = self.model(**details)
         user.set_password(uuid4())
         user.save(using=self._db)
