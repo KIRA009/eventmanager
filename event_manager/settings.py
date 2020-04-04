@@ -8,3 +8,5 @@ AUTH_USER_MODEL = "event_app.User"
 AUTHENTICATION_BACKENDS = settings.AUTHENTICATION_BACKENDS + [
     "event_app.backend.AuthBackend"
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
