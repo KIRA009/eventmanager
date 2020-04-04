@@ -1,4 +1,7 @@
 from django.http import JsonResponse
+import jwt
+
+from event_manager.settings import SECRET_KEY
 
 
 def jsonify(data):
@@ -8,10 +11,12 @@ def jsonify(data):
     return JsonResponse(data, status=status_code)
 
 
-def is_admin(func):
-    def inner(*args, **kwargs):
-        request = args[0]
-        print(request.user.is_superuser)
-        return func(*args, **kwargs)
+def retrieve_token(token):
+    try:
+        return True, jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+    except Exception as e:
+        return False, str(e)
 
-    return inner
+
+def create_token(**kwargs):
+    return jwt.encode(kwargs, SECRET_KEY, algorithm="HS256").decode()

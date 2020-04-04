@@ -1,6 +1,7 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.db.models import Manager
 from uuid import uuid4
+from django.contrib.auth import get_user_model
 
 
 class BaseManager(Manager):
@@ -12,6 +13,12 @@ class UserManager(BaseUserManager):
         """
         Creates and saves a User with the given contact, password
         """
+        model = get_user_model()
+        try:
+            model.objects.get(phone=details["phone"])
+            return False, "Phone number already registered"
+        except model.DoesNotExist:
+            pass
         from .models import College
 
         details["college"] = College.objects.get(id=details["college"])
@@ -19,8 +26,11 @@ class UserManager(BaseUserManager):
         details["is_staff"] = details["is_superuser"] = False
         user = self.model(**details)
         user.set_password(uuid4())
-        user.save(using=self._db)
-        return user
+        try:
+            user.save(using=self._db)
+            return True, user
+        except Exception as e:
+            return False, str(e)
 
     def create_superuser(self, email, password):
         """

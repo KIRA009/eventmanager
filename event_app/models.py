@@ -9,7 +9,7 @@ from .managers import UserManager, BaseManager
 class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
     email = models.EmailField(max_length=256, unique=True)
     is_staff = models.BooleanField(default=False)
-    phone = models.CharField(max_length=10)
+    phone = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=256)
     college = models.ForeignKey(
         "College",
