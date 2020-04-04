@@ -12,7 +12,11 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
     phone = models.CharField(max_length=10)
     name = models.CharField(max_length=256)
     college = models.ForeignKey(
-        "College", related_name="students", on_delete=models.CASCADE, to_field="name"
+        "College",
+        related_name="students",
+        on_delete=models.CASCADE,
+        to_field="name",
+        null=True,
     )
     secret = models.UUIDField(default=uuid4)
     USERNAME_FIELD = "email"

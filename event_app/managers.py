@@ -22,6 +22,15 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+    def create_superuser(self, email, password):
+        """
+        Creates and saves a User with the given contact, password
+        """
+        user = self.model(email=email, is_superuser=True, is_staff=True)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
     def update_user(self, details):
         try:
             user = self.get(secret=details["secret"])
