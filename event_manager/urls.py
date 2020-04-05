@@ -14,8 +14,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 
 import event_app.urls
+from event_app.views import index, manifest
 
-urlpatterns = [path("admin/", admin.site.urls), path("", include(event_app.urls))]
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("event_manager/api/", include(event_app.urls)),
+    path("manifest.json", manifest),
+    re_path(r"^event_manager/.*", index),
+]

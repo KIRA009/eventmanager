@@ -4,16 +4,16 @@ import json
 from django.contrib.auth import get_user_model
 from django.utils import timezone as tz
 
-from .urls import unauth_urls
+from .urls import unauth_urls, auth_urls
 from utils import retrieve_token
 
 
 class CustomMiddleware(common.CommonMiddleware):
     def process_request(self, request):
-        is_auth_request = True
-        for url in unauth_urls:
+        is_auth_request = False
+        for url in auth_urls:
             if url.pattern.regex.search(request.path_info[1:]):
-                is_auth_request = False
+                is_auth_request = True
                 break
         super(CustomMiddleware, self).process_request(request)
         if request.method == "OPTIONS" or request.path.startswith("/admin/"):
@@ -50,4 +50,6 @@ class CustomMiddleware(common.CommonMiddleware):
     def process_response(self, request, response):
         if request.path.startswith("/admin/"):
             return super().process_response(request, response)
-        return super().process_response(request, jsonify(response))
+        if isinstance(response, dict):
+            response = jsonify(response)
+        return super().process_response(request, response)

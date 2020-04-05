@@ -9,6 +9,6 @@ __pycache__
 .idea
 
 event_app/migrations
-.bashrc
+*.bashrc
 
 .pre-commit-config.yaml
