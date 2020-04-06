@@ -15,3 +15,4 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 STATIC_URL = "/event_manager/static/"
 
 CORS_ORIGIN_ALLOW_ALL = True
+STATIC_ROOT = os.path.join(BASE_DIR, "static_root")

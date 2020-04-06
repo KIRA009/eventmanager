@@ -20,7 +20,7 @@ import event_app.urls
 from event_app.views import index, manifest
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("event_manager/admin/", admin.site.urls),
     path("event_manager/api/", include(event_app.urls)),
     path("manifest.json", manifest),
     re_path(r"^event_manager/.*", index),

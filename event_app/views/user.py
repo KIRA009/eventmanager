@@ -21,7 +21,7 @@ class UpdateView(View):
         updated, user = User.objects.update_user(data)
         if updated:
             return dict(secret=user.secret)
-        return dict(message="No such user", status_code=404)
+        return dict(message=user, status_code=404)
 
 
 class CollegeView(View):

@@ -2,6 +2,7 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.db.models import Manager
 from uuid import uuid4
 from django.contrib.auth import get_user_model
+from django.db.utils import IntegrityError
 
 
 class BaseManager(Manager):
@@ -46,7 +47,10 @@ class UserManager(BaseUserManager):
             user = self.get(secret=details["secret"])
             user.email = details["email"]
             user.set_password(details["password"])
-            user.save(using=self._db)
-            return True, user
+            try:
+                user.save(using=self._db)
+                return True, user
+            except IntegrityError:
+                return False, "Email already registered"
         except self.model.DoesNotExist:
-            return False, None
+            return False, "No such user"

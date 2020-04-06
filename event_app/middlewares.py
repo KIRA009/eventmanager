@@ -16,7 +16,7 @@ class CustomMiddleware(common.CommonMiddleware):
                 is_auth_request = True
                 break
         super(CustomMiddleware, self).process_request(request)
-        if request.method == "OPTIONS" or request.path.startswith("/admin/"):
+        if request.method == "OPTIONS" or "/admin/" in request.path:
             return
         request.is_auth_request = is_auth_request
         if is_auth_request:
@@ -48,7 +48,7 @@ class CustomMiddleware(common.CommonMiddleware):
             request.json = json.loads(request.body)
 
     def process_response(self, request, response):
-        if request.path.startswith("/admin/"):
+        if "/admin/" in request.path:
             return super().process_response(request, response)
         if isinstance(response, dict):
             response = jsonify(response)
