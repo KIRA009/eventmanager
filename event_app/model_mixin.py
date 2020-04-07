@@ -22,6 +22,6 @@ class AutoCreatedUpdatedMixin(models.Model):
         super(AutoCreatedUpdatedMixin, self).save(*args, **kwargs)
 
     def detail(self):
-        ret = self.__dict__
+        ret = self.__dict__.copy()
         del ret["_state"]
         return ret

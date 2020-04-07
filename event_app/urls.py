@@ -10,10 +10,18 @@ unauth_urls = list(
             ("update/", UpdateView),
             ("colleges/", CollegeView),
             ("login/", LoginView),
+            ("validate-email/", SendValidateEmailView),
+            ("validate/<int:user_id>/<uuid:secret>/", CompleteValidateEmailView),
+            ("user/", GetUserView),
         ],
     )
 )
 
-auth_urls = list(map(lambda x: path(x[0], x[1].as_view()), []))
+auth_urls = list(
+    map(
+        lambda x: path(x[0], x[1].as_view()),
+        [("upload/profile/", UploadProfilePicView)],
+    )
+)
 
 urlpatterns = unauth_urls + auth_urls

@@ -16,9 +16,11 @@ pathspec==0.7.0
 pre-commit==2.2.0
 psycopg2==2.8.4
 PyJWT==1.7.1
+python-http-client==3.2.7
 pytz==2019.3
 PyYAML==5.3.1
 regex==2020.2.20
+sendgrid==6.2.1
 six==1.14.0
 sqlparse==0.3.1
 toml==0.10.0

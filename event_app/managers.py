@@ -3,6 +3,7 @@ from django.db.models import Manager
 from uuid import uuid4
 from django.contrib.auth import get_user_model
 from django.db.utils import IntegrityError
+import re
 
 
 class BaseManager(Manager):
@@ -37,16 +38,22 @@ class UserManager(BaseUserManager):
         """
         Creates and saves a User with the given contact, password
         """
-        user = self.model(email=email, is_superuser=True, is_staff=True)
+        user = self.model(email=email.lower(), is_superuser=True, is_staff=True)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
     def update_user(self, details):
+        pat = re.compile(r"(.*)@(.*)\..*")
         try:
             user = self.get(secret=details["secret"])
-            user.email = details["email"]
+            user.email = details["email"].lower()
             user.set_password(details["password"])
+            local, domain = pat.findall(user.email)
+            if domain == "yahoo":
+                user.username = f"{local}_"
+            else:
+                user.username = f"{local}."
             try:
                 user.save(using=self._db)
                 return True, user

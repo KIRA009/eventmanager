@@ -12,7 +12,7 @@ class CustomMiddleware(common.CommonMiddleware):
     def process_request(self, request):
         is_auth_request = False
         for url in auth_urls:
-            if url.pattern.regex.search(request.path_info[1:]):
+            if url.pattern.regex.search(request.path_info[19:]):
                 is_auth_request = True
                 break
         super(CustomMiddleware, self).process_request(request)
@@ -33,6 +33,8 @@ class CustomMiddleware(common.CommonMiddleware):
                 model = get_user_model()
                 try:
                     user = model.objects.get(email=username, password=password)
+                    if not user.is_validated:
+                        return dict(error="Email not verified", status_code=401)
                     if user.last_login.isoformat() == token["login_time"]:
                         request.user = user
                     else:
@@ -44,6 +46,8 @@ class CustomMiddleware(common.CommonMiddleware):
                     return dict(error="Invalid token", status_code=401)
             else:
                 return dict(error=token, status_code=401)
+        if request.FILES.dict():
+            return
         if request.body.decode():
             request.json = json.loads(request.body)
 

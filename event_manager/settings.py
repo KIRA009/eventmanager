@@ -1,5 +1,5 @@
 import django.conf.global_settings as settings
-import os
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
 from .default_settings import *
 
@@ -16,3 +16,14 @@ STATIC_URL = "/event_manager/static/"
 
 CORS_ORIGIN_ALLOW_ALL = True
 STATIC_ROOT = os.path.join(BASE_DIR, "static_root")
+
+SENDGRIDAPIKEY = os.getenv("SENDGRIDAPIKEY")
+EMAIL_FROM = os.getenv("EMAIL_FROM")
+
+if DEBUG:
+    PROFILECONTAINER = "eventmanagerprofiledebug"
+else:
+    PROFILECONTAINER = "eventmanagerprofile"
+STORAGE_CLIENT = BlobServiceClient.from_connection_string(
+    os.getenv("CONNECTION_STRING")
+)

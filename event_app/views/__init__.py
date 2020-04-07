@@ -1,7 +1,8 @@
 from django.views import View
 from django.shortcuts import render
 
-from .user import *
+from .unauth import *
+from .auth import *
 
 
 def index(request):

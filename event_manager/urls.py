@@ -23,5 +23,5 @@ urlpatterns = [
     path("event_manager/admin/", admin.site.urls),
     path("event_manager/api/", include(event_app.urls)),
     path("manifest.json", manifest),
-    re_path(r"^event_manager/.*", index),
+    re_path(r"^event_manager/.*", index, name="index"),
 ]

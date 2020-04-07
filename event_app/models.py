@@ -11,6 +11,10 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
     is_staff = models.BooleanField(default=False)
     phone = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=256)
+    secret = models.UUIDField(default=uuid4)
+    is_validated = models.BooleanField(default=False)
+    username = models.TextField(unique=True)
+    profile_pic = models.URLField(default="")
     college = models.ForeignKey(
         "College",
         related_name="students",
@@ -18,13 +22,25 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
         to_field="name",
         null=True,
     )
-    secret = models.UUIDField(default=uuid4)
     USERNAME_FIELD = "email"
 
     objects = UserManager()
 
     def __str__(self):
         return self.email
+
+    def detail(self):
+        ret = super(User, self).detail()
+        for i in [
+            "password",
+            "last_login",
+            "is_superuser",
+            "is_staff",
+            "secret",
+            "is_validated",
+        ]:
+            del ret[i]
+        return ret
 
 
 class College(AutoCreatedUpdatedMixin):
