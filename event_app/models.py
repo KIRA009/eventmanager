@@ -14,7 +14,7 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
     secret = models.UUIDField(default=uuid4)
     is_validated = models.BooleanField(default=False)
     username = models.TextField(unique=True)
-    profile_pic = models.URLField(default="")
+    profile_pic = models.URLField(default="", null=True, blank=True)
     college = models.ForeignKey(
         "College",
         related_name="students",

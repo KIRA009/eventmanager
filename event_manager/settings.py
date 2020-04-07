@@ -1,5 +1,6 @@
 import django.conf.global_settings as settings
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+from azure.storage.blob import BlobServiceClient
+from corsheaders.defaults import default_headers
 
 from .default_settings import *
 
@@ -13,9 +14,10 @@ AUTHENTICATION_BACKENDS = settings.AUTHENTICATION_BACKENDS + [
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 STATIC_URL = "/event_manager/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static_root")
 
 CORS_ORIGIN_ALLOW_ALL = True
-STATIC_ROOT = os.path.join(BASE_DIR, "static_root")
+CORS_ALLOW_HEADERS = list(default_headers) + ["Token"]
 
 SENDGRIDAPIKEY = os.getenv("SENDGRIDAPIKEY")
 EMAIL_FROM = os.getenv("EMAIL_FROM")
