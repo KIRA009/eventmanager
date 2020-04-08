@@ -36,7 +36,7 @@ class CustomMiddleware(common.CommonMiddleware):
                     if not user.is_validated:
                         return dict(error="Email not verified", status_code=401)
                     if user.last_login.isoformat() == token["login_time"]:
-                        request.user = user
+                        request.User = user
                     else:
                         return dict(
                             error="Token corrupted, please log in again",

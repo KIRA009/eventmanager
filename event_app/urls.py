@@ -20,7 +20,7 @@ unauth_urls = list(
 auth_urls = list(
     map(
         lambda x: path(x[0], x[1].as_view()),
-        [("upload/profile/", UploadProfilePicView)],
+        [("upload/profile/", UploadProfilePicView), ("links/", UserLinkView)],
     )
 )
 

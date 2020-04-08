@@ -53,3 +53,14 @@ class College(AutoCreatedUpdatedMixin):
 
     def __str__(self):
         return self.name
+
+
+class Link(AutoCreatedUpdatedMixin):
+    title = models.TextField(default="")
+    url = models.URLField(default="")
+    visible = models.BooleanField(default=False)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="links", to_field="username"
+    )
+
+    objects = BaseManager()
