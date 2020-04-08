@@ -40,6 +40,7 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
             "is_validated",
         ]:
             del ret[i]
+        ret["links"] = [link.detail() for link in self.links.all()]
         return ret
 
 

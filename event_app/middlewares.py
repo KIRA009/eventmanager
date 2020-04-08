@@ -46,7 +46,7 @@ class CustomMiddleware(common.CommonMiddleware):
                     return dict(error="Invalid token", status_code=401)
             else:
                 return dict(error=token, status_code=401)
-        if request.FILES.dict():
+        if request.META["CONTENT_TYPE"].startswith("multipart/form-data;"):
             return
         if request.body.decode():
             request.json = json.loads(request.body)
