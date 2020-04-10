@@ -33,8 +33,8 @@ class CustomMiddleware(common.CommonMiddleware):
                 model = get_user_model()
                 try:
                     user = model.objects.get(email=username, password=password)
-                    if not user.is_validated:
-                        return dict(error="Email not verified", status_code=401)
+                    # if not user.is_validated:
+                    # return dict(error="Email not verified", status_code=401)
                     if user.last_login.isoformat() == token["login_time"]:
                         request.User = user
                     else:
