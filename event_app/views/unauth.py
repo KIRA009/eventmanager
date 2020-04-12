@@ -21,7 +21,7 @@ class UpdateView(View):
         data = request.json
         updated, user = User.objects.update_user(data)
         if updated:
-            return dict(secret=user.secret)
+            return dict(message="Updated user")
         return dict(message=user, status_code=404)
 
 

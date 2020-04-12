@@ -17,11 +17,21 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 
 import event_app.urls
-from event_app.views import index, manifest
+from event_app.views import *
 
 urlpatterns = [
     path("event_manager/admin/", admin.site.urls),
     path("event_manager/api/", include(event_app.urls)),
+    re_path(
+        r"^event_manager/forgot-password/?$",
+        ForgotPwdView.as_view(),
+        name="forgot-password",
+    ),
+    path(
+        "event_manager/reset-password/<str:username>/<str:secret>/",
+        ResetPwdView.as_view(),
+        name="reset-password",
+    ),
     path("manifest.json", manifest),
     re_path(r"^event_manager/.*", index, name="index"),
 ]

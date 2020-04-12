@@ -43,6 +43,14 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
         ret["links"] = [link.detail() for link in self.links.all()]
         return ret
 
+    def change_secret(self):
+        self.secret = uuid4()
+        self.save()
+
+    def change_password(self, password):
+        self.set_password(password)
+        self.change_secret()
+
 
 class College(AutoCreatedUpdatedMixin):
     name = models.TextField(unique=True)

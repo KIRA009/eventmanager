@@ -10,5 +10,6 @@ __pycache__
 
 event_app/migrations
 *.bashrc
+temp
 
 .pre-commit-config.yaml

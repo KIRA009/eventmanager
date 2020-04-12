@@ -51,9 +51,9 @@ class UserManager(BaseUserManager):
             user.set_password(details["password"])
             local, domain = pat.findall(user.email)[0]
             if domain == "yahoo":
-                user.username = f"{local}_"
+                user.username = f"{local}!"
             else:
-                user.username = f"{local}."
+                user.username = f"{local}&"
             try:
                 user.save(using=self._db)
                 return True, user
