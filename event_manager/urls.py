@@ -20,7 +20,7 @@ import event_app.urls
 from event_app.views import *
 
 urlpatterns = [
-    path("event_manager/admin/", admin.site.urls),
+    re_path(r"^event_manager/admin-dashboard/?", admin.site.urls),
     path("event_manager/api/", include(event_app.urls)),
     re_path(
         r"^event_manager/forgot-password/?$",

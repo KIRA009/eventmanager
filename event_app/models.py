@@ -31,14 +31,7 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
 
     def detail(self):
         ret = super(User, self).detail()
-        for i in [
-            "password",
-            "last_login",
-            "is_superuser",
-            "is_staff",
-            "secret",
-            "is_validated",
-        ]:
+        for i in ["password", "last_login", "is_superuser", "is_staff", "secret"]:
             del ret[i]
         ret["links"] = [link.detail() for link in self.links.all()]
         return ret
