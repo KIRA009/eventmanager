@@ -52,6 +52,8 @@ class UserManager(BaseUserManager):
             local, domain = pat.findall(user.email)[0]
             if domain == "yahoo":
                 user.username = f"{local}!"
+            elif domain == "gmail":
+                user.username = local
             else:
                 user.username = f"{local}&"
             try:

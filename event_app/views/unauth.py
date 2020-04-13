@@ -81,8 +81,8 @@ class LoginView(View):
             request, username=data["username"], password=data["password"]
         )
         if user:
-            if not user.is_validated:
-                return dict(error="Email not verified", status_code=401)
+            # if not user.is_validated:
+            #     return dict(error="Email not verified", status_code=401)
             user.last_login = tz.now()
             user.save()
             return dict(
