@@ -32,8 +32,9 @@ class UserLinkView(View):
         if "id" in data:
             link_id = data["id"]
             del data["id"]
-            link = Link.objects.get(id=link_id)
-            if link.user != request.User:
+            try:
+                link = Link.objects.get(id=link_id, user=request.User)
+            except Link.DoesNotExist:
                 return dict(error="User not authorized", status_code=401)
             Link.objects.filter(id=link_id).update(**data)
         else:
@@ -54,6 +55,8 @@ class UploadIconView(View):
         if link:
             if link.icon:
                 delete_file(link.icon)
+            if file is None:
+                link.icon = None
             file_name = request.User.username + str(uuid.uuid4()) + file.name
             upload_file(file, file_name, ICONCONTAINER)
             link.icon = f"https://storageeventmanager.blob.core.windows.net/{ICONCONTAINER}/{file_name}"

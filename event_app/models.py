@@ -58,10 +58,10 @@ class College(AutoCreatedUpdatedMixin):
 
 class Link(AutoCreatedUpdatedMixin):
     title = models.TextField(default="")
-    url = models.URLField(default="")
+    url = models.URLField(default="", null=True)
     visible = models.BooleanField(default=False)
     index = models.IntegerField(default=0)
-    icon = models.URLField(default="")
+    icon = models.URLField(default="", null=True)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="links", to_field="username"
     )
