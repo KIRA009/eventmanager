@@ -24,8 +24,10 @@ EMAIL_FROM = os.getenv("EMAIL_FROM")
 
 if DEBUG:
     PROFILECONTAINER = "eventmanagerprofiledebug"
+    ICONCONTAINER = "eventmanagericondebug"
 else:
     PROFILECONTAINER = "eventmanagerprofile"
+    ICONCONTAINER = "eventmanagericon"
 STORAGE_CLIENT = BlobServiceClient.from_connection_string(
     os.getenv("CONNECTION_STRING")
 )

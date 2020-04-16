@@ -3,7 +3,7 @@ import uuid
 from django.db import transaction
 from django.db.utils import IntegrityError
 
-from event_manager.settings import PROFILECONTAINER
+from event_manager.settings import PROFILECONTAINER, ICONCONTAINER
 from utils import upload_file, delete_file
 from event_app.models import Link
 
@@ -44,6 +44,22 @@ class UserLinkView(View):
         data = request.json
         Link.objects.get(id=data["id"]).delete()
         return dict(message="The links are deleted")
+
+
+class UploadIconView(View):
+    def post(self, request):
+        data = request.POST.dict()
+        file = request.FILES.dict().get("photo")
+        link = Link.objects.filter(id=data["link_id"], user=request.User).first()
+        if link:
+            if link.icon:
+                delete_file(link.icon)
+            file_name = request.User.username + str(uuid.uuid4()) + file.name
+            upload_file(file, file_name, ICONCONTAINER)
+            link.icon = f"https://storageeventmanager.blob.core.windows.net/{ICONCONTAINER}/{file_name}"
+            link.save()
+            return dict(link=link.detail())
+        return dict(error="Link not found", status_code=404)
 
 
 class UpdateLinkSequenceView(View):

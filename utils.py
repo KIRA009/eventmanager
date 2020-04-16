@@ -43,8 +43,17 @@ def send_email(emails, subject, message):
 
 
 def upload_file(file, file_name, container):
-    blob_client = STORAGE_CLIENT.get_blob_client(container=container, blob=file_name)
-    blob_client.upload_blob(file.read())
+    try:
+        blob_client = STORAGE_CLIENT.get_blob_client(
+            container=container, blob=file_name
+        )
+        blob_client.upload_blob(file.read())
+    except azure_exc.ResourceNotFoundError:
+        STORAGE_CLIENT.create_container(container)
+        blob_client = STORAGE_CLIENT.get_blob_client(
+            container=container, blob=file_name
+        )
+        blob_client.upload_blob(file.read())
 
 
 def delete_file(url):

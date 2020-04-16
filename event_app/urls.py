@@ -24,6 +24,7 @@ auth_urls = list(
             ("upload/profile/", UploadProfilePicView),
             ("links/", UserLinkView),
             ("update-link-sequence/", UpdateLinkSequenceView),
+            ("upload-icon/", UploadIconView),
         ],
     )
 )

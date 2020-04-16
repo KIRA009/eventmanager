@@ -15,6 +15,7 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
     is_validated = models.BooleanField(default=False)
     username = models.TextField(unique=True)
     profile_pic = models.URLField(default="", null=True, blank=True)
+    user_type = models.CharField(default="normal", max_length=256)
     college = models.ForeignKey(
         "College",
         related_name="students",
