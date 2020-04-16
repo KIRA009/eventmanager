@@ -1,5 +1,7 @@
 from django.views import View
 import uuid
+from django.db import transaction
+from django.db.utils import IntegrityError
 
 from event_manager.settings import PROFILECONTAINER
 from utils import upload_file, delete_file
@@ -42,3 +44,17 @@ class UserLinkView(View):
         data = request.json
         Link.objects.get(id=data["id"]).delete()
         return dict(message="The links are deleted")
+
+
+class UpdateLinkSequenceView(View):
+    def post(self, request):
+        try:
+            with transaction.atomic():
+                links = request.json["links"]
+                for i in range(len(links)):
+                    link = Link.objects.get(id=links[i])
+                    link.index = i
+                    link.save()
+                return dict(links=[link.detail() for link in request.User.links.all()])
+        except IntegrityError:
+            return dict(error="Some error happened", status_code=501)

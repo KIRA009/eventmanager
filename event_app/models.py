@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from uuid import uuid4
 
 from .model_mixin import AutoCreatedUpdatedMixin
-from .managers import UserManager, BaseManager
+from .managers import UserManager, LinkManager
 
 
 class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
@@ -51,8 +51,6 @@ class College(AutoCreatedUpdatedMixin):
     state = models.TextField()
     has_college_email = models.BooleanField(default=False)
 
-    objects = BaseManager()
-
     def __str__(self):
         return self.name
 
@@ -61,8 +59,10 @@ class Link(AutoCreatedUpdatedMixin):
     title = models.TextField(default="")
     url = models.URLField(default="")
     visible = models.BooleanField(default=False)
+    index = models.IntegerField(default=0)
+    icon = models.URLField(default="")
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="links", to_field="username"
     )
 
-    objects = BaseManager()
+    objects = LinkManager()

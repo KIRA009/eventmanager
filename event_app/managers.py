@@ -63,3 +63,8 @@ class UserManager(BaseUserManager):
                 return False, "Email already registered"
         except self.model.DoesNotExist:
             return False, "No such user"
+
+
+class LinkManager(BaseManager):
+    def all(self):
+        return super(LinkManager, self).order_by("index").all()
