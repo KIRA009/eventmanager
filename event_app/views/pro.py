@@ -30,5 +30,10 @@ class ProModeBgView(View):
 
 
 class ProModeView(View):
-    def get(self, request):
-        return dict(feature=request.User.feature.get().detail())
+    def post(self, request):
+        feature = ProModeFeature.objects.filter(
+            user__username=request.json["username"]
+        ).first()
+        if feature:
+            return dict(feature=feature.detail())
+        return dict(feature=None)

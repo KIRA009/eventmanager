@@ -88,7 +88,7 @@ def login_required(function=None):
 
 
 def pro_required(function=None):
-    actual_decorator = test(lambda u: u.user_type == "normal")
+    actual_decorator = test(lambda u: u.user_type == "pro")
     if function:
         return actual_decorator(function)
     return actual_decorator

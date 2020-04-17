@@ -14,6 +14,7 @@ unauth_urls = list(
             ("validate-email/", SendValidateEmailView),
             ("validate/<int:user_id>/<uuid:secret>/", CompleteValidateEmailView),
             ("user/", GetUserView),
+            ("feature/", ProModeView),
         ],
     )
 )
@@ -36,7 +37,6 @@ pro_urls = list(
         [
             ("feature/header/", ProModeHeaderView),
             ("feature/background/", ProModeBgView),
-            ("feature/", ProModeView),
         ],
     )
 )
