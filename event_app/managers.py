@@ -26,6 +26,7 @@ class UserManager(BaseUserManager):
         details["college"] = College.objects.get(id=details["college"])
         details["username"] = details["email"] = uuid4()
         details["is_staff"] = details["is_superuser"] = False
+        details["user_type"] = "normal"
         user = self.model(**details)
         user.set_password(uuid4())
         try:

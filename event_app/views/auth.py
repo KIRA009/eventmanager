@@ -1,5 +1,4 @@
 from django.views import View
-import uuid
 from django.db import transaction
 from django.db.utils import IntegrityError
 
@@ -16,9 +15,7 @@ class UploadProfilePicView(View):
         if file is None:
             request.User.profile_pic = None
         else:
-            file_name = request.User.username + str(uuid.uuid4()) + file.name
-            upload_file(file, file_name, PROFILECONTAINER)
-            request.User.profile_pic = f"https://storageeventmanager.blob.core.windows.net/{PROFILECONTAINER}/{file_name}"
+            request.User.profile_pic = upload_file(request, file, PROFILECONTAINER)
         request.User.save()
         return dict(message="Profile pic set successfully", data=request.User.detail())
 
@@ -57,9 +54,8 @@ class UploadIconView(View):
                 delete_file(link.icon)
             if file is None:
                 link.icon = None
-            file_name = request.User.username + str(uuid.uuid4()) + file.name
-            upload_file(file, file_name, ICONCONTAINER)
-            link.icon = f"https://storageeventmanager.blob.core.windows.net/{ICONCONTAINER}/{file_name}"
+            else:
+                link.icon = upload_file(request, file, ICONCONTAINER)
             link.save()
             return dict(link=link.detail())
         return dict(error="Link not found", status_code=404)

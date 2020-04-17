@@ -4,6 +4,8 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 import re
 import azure.core.exceptions as azure_exc
+from functools import wraps
+import uuid
 
 from event_manager.settings import (
     SECRET_KEY,
@@ -42,18 +44,11 @@ def send_email(emails, subject, message):
         pass
 
 
-def upload_file(file, file_name, container):
-    try:
-        blob_client = STORAGE_CLIENT.get_blob_client(
-            container=container, blob=file_name
-        )
-        blob_client.upload_blob(file.read())
-    except azure_exc.ResourceNotFoundError:
-        STORAGE_CLIENT.create_container(container)
-        blob_client = STORAGE_CLIENT.get_blob_client(
-            container=container, blob=file_name
-        )
-        blob_client.upload_blob(file.read())
+def upload_file(request, file, container):
+    file_name = request.User.username + str(uuid.uuid4()) + file.name
+    blob_client = STORAGE_CLIENT.get_blob_client(container=container, blob=file_name)
+    blob_client.upload_blob(file.read())
+    return f"https://storageeventmanager.blob.core.windows.net/{container}/{file_name}"
 
 
 def delete_file(url):
@@ -68,3 +63,32 @@ def delete_file(url):
 def get_container_and_name(url):
     pat = re.compile(r"https://storageeventmanager\.blob\.core\.windows\.net/(.*)/(.*)")
     return pat.findall(url)[0]
+
+
+def test(test_func, login_url=None):
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if "User" not in request.__dict__:
+                return jsonify(dict(error="Access denied", status_code=401))
+            if test_func(request.User):
+                return view_func(request, *args, **kwargs)
+            return jsonify(dict(error="Access denied", status_code=401))
+
+        return _wrapped_view
+
+    return decorator
+
+
+def login_required(function=None):
+    actual_decorator = test(lambda u: u.is_authenticated)
+    if function:
+        return actual_decorator(function)
+    return actual_decorator
+
+
+def pro_required(function=None):
+    actual_decorator = test(lambda u: u.user_type == "normal")
+    if function:
+        return actual_decorator(function)
+    return actual_decorator

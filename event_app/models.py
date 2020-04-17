@@ -67,3 +67,10 @@ class Link(AutoCreatedUpdatedMixin):
     )
 
     objects = LinkManager()
+
+
+class ProModeFeature(AutoCreatedUpdatedMixin):
+    header_icon = models.URLField(default="", null=True)
+    header_text = models.TextField(default="", null=True)
+    background_color = models.TextField(default="", null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="feature")

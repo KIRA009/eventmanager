@@ -10,19 +10,11 @@ from utils import retrieve_token
 
 class CustomMiddleware(common.CommonMiddleware):
     def process_request(self, request):
-        is_auth_request = False
-        for url in auth_urls:
-            if url.pattern.regex.search(request.path_info[19:]):
-                is_auth_request = True
-                break
         super(CustomMiddleware, self).process_request(request)
         if request.method == "OPTIONS" or "/admin/" in request.path:
             return
-        request.is_auth_request = is_auth_request
-        if is_auth_request:
-            token = request.headers.get("Token")
-            if token is None:
-                return dict(error="No token found", status_code=401)
+        token = request.headers.get("Token")
+        if token is not None:
             decoded, token = retrieve_token(token)
             if decoded:
                 for i in ["login_time", "username", "len_email"]:
@@ -37,15 +29,8 @@ class CustomMiddleware(common.CommonMiddleware):
                     # return dict(error="Email not verified", status_code=401)
                     if user.last_login.isoformat() == token["login_time"]:
                         request.User = user
-                    else:
-                        return dict(
-                            error="Token corrupted, please log in again",
-                            status_code=401,
-                        )
                 except model.DoesNotExist:
-                    return dict(error="Invalid token", status_code=401)
-            else:
-                return dict(error=token, status_code=401)
+                    pass
         if request.content_type == "application/json":
             request.json = json.loads(request.body)
 
