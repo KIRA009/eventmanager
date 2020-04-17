@@ -1,23 +1,23 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "e774770c1a486305d5b27d98da61fb17",
+    "revision": "4dee782d77cb809de91cef700161765c",
     "url": "/index.html"
   },
   {
-    "revision": "485f2d88b52edbafac79",
+    "revision": "33c0b2f64198f80d4ead",
     "url": "/static/css/2.632827f6.chunk.css"
   },
   {
-    "revision": "e137b1dbea1288e91b3b",
-    "url": "/static/css/main.982a1db5.chunk.css"
+    "revision": "7102ad8db3f3aa32ed21",
+    "url": "/static/css/main.44d0b4b5.chunk.css"
   },
   {
-    "revision": "485f2d88b52edbafac79",
-    "url": "/static/js/2.56eb8ebf.chunk.js"
+    "revision": "33c0b2f64198f80d4ead",
+    "url": "/static/js/2.1e646f63.chunk.js"
   },
   {
-    "revision": "e137b1dbea1288e91b3b",
-    "url": "/static/js/main.c9b4d81f.chunk.js"
+    "revision": "7102ad8db3f3aa32ed21",
+    "url": "/static/js/main.94665163.chunk.js"
   },
   {
     "revision": "42ac5946195a7306e2a5",
@@ -36,20 +36,12 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/static/media/3dda7d3babda55b112341c12f25d46ec.178a0528.png"
   },
   {
-    "revision": "29ab7bd834221adaab22bdd4e65be1ac",
-    "url": "/static/media/Facebook-Download-PNG.29ab7bd8.png"
-  },
-  {
     "revision": "80d645c4e8ab33cfd7b779e96379e0a2",
     "url": "/static/media/Facebook-Icon-PNG.80d645c4.png"
   },
   {
     "revision": "37d7a4dc3701b8eacb3e5110e778df8f",
     "url": "/static/media/Instagram-icon-PNG.37d7a4dc.png"
-  },
-  {
-    "revision": "113edd03f10d21134113b474599d38a7",
-    "url": "/static/media/Linkedin-Free-PNG-Image (1).113edd03.png"
   },
   {
     "revision": "0e6435a99ad038b97439213560c66110",
@@ -64,16 +56,16 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/static/media/Splash-Instagraam-Icon-Png-1024x1024.2a6d07cf.png"
   },
   {
-    "revision": "971bea568b82c7591f873a56c7f102df",
-    "url": "/static/media/Youtube-Free-Download-PNG.971bea56.png"
-  },
-  {
-    "revision": "0119ece51e5ba042467f0da32cee6bb5",
-    "url": "/static/media/Youtube-PNG-Image.0119ece5.png"
-  },
-  {
     "revision": "2f52a4f82797eb0bab9da5cf30681f9c",
     "url": "/static/media/Youtube-PNG-Pic.2f52a4f8.png"
+  },
+  {
+    "revision": "1e9698d5028c7d952751fadd5416f3b0",
+    "url": "/static/media/bg-circles-1.1e9698d5.svg"
+  },
+  {
+    "revision": "6bfb5ac9ef5116e9cd1a052d187e5e91",
+    "url": "/static/media/bg.6bfb5ac9.svg"
   },
   {
     "revision": "1f04957a406504d8a4a8f8155d086ba0",
