@@ -17,11 +17,13 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 
 import event_app.urls
+import analytics.urls
 from event_app.views import *
 
 urlpatterns = [
     re_path(r"^event_manager/admin-dashboard/?", admin.site.urls),
     path("event_manager/api/", include(event_app.urls)),
+    path("event_manager/analytics/", include(analytics.urls)),
     re_path(
         r"^event_manager/forgot-password/?$",
         ForgotPwdView.as_view(),

@@ -4,8 +4,12 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 import re
 import azure.core.exceptions as azure_exc
-from functools import wraps
+from django.db import models
+from django.utils import timezone as tz
 import uuid
+import django.middleware.common as common
+import json
+from django.contrib.auth import get_user_model
 
 from event_manager.settings import (
     SECRET_KEY,
@@ -65,30 +69,78 @@ def get_container_and_name(url):
     return pat.findall(url)[0]
 
 
-def test(test_func, login_url=None):
-    def decorator(view_func):
-        @wraps(view_func)
-        def _wrapped_view(request, *args, **kwargs):
-            if "User" not in request.__dict__:
-                return jsonify(dict(error="Access denied", status_code=401))
-            if test_func(request.User):
-                return view_func(request, *args, **kwargs)
-            return jsonify(dict(error="Access denied", status_code=401))
+class CustomMiddleware(common.CommonMiddleware):
+    def process_request(self, request):
+        super(CustomMiddleware, self).process_request(request)
+        if request.method == "OPTIONS" or "/admin/" in request.path:
+            return
+        token = request.headers.get("Token")
+        if token is not None:
+            decoded, token = retrieve_token(token)
+            if decoded:
+                for i in ["login_time", "username", "len_email"]:
+                    if token.get(i) is None:
+                        return dict(error="Invalid token", status_code=401)
+                username = token["username"][: token["len_email"]]
+                password = token["username"][3 + token["len_email"] :]
+                model = get_user_model()
+                try:
+                    user = model.objects.get(email=username, password=password)
+                    # if not user.is_validated:
+                    # return dict(error="Email not verified", status_code=401)
+                    if user.last_login.isoformat() == token["login_time"]:
+                        request.User = user
+                except model.DoesNotExist:
+                    pass
+        if request.content_type == "application/json":
+            request.json = json.loads(request.body)
 
-        return _wrapped_view
-
-    return decorator
-
-
-def login_required(function=None):
-    actual_decorator = test(lambda u: u.is_authenticated)
-    if function:
-        return actual_decorator(function)
-    return actual_decorator
+    def process_response(self, request, response):
+        if "/admin/" in request.path:
+            return super().process_response(request, response)
+        if isinstance(response, dict):
+            response = jsonify(response)
+        return super().process_response(request, response)
 
 
-def pro_required(function=None):
-    actual_decorator = test(lambda u: u.user_type == "pro")
-    if function:
-        return actual_decorator(function)
-    return actual_decorator
+class AutoCreatedUpdatedMixin(models.Model):
+    created_at = models.DateTimeField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
+
+    objects = models.Manager()
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if not self.created_at:
+            self.created_at = tz.now()
+            self.updated_at = self.created_at
+        else:
+            auto_updated_at_is_disabled = kwargs.pop("disable_auto_updated_at", False)
+            if not auto_updated_at_is_disabled:
+                self.updated_at = tz.now()
+        super(AutoCreatedUpdatedMixin, self).save(*args, **kwargs)
+
+    def detail(self):
+        ret = self.__dict__.copy()
+        del ret["_state"]
+        return ret
+
+
+def decorator(func, test_func):
+    def inner(*args, **kwargs):
+        request = args[0]
+        if test_func(request.User):
+            return func(*args, **kwargs)
+        return jsonify(dict(error="Access denied", status_code=401))
+
+    return inner
+
+
+def login_required(func):
+    return decorator(func, lambda u: u.is_authenticated)
+
+
+def pro_required(func):
+    return decorator(func, lambda u: u.user_type == "pro")

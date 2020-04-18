@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from uuid import uuid4
 
-from .model_mixin import AutoCreatedUpdatedMixin
+from utils import AutoCreatedUpdatedMixin
 from .managers import UserManager, LinkManager
 
 
