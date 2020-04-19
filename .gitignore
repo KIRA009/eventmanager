@@ -9,6 +9,7 @@ __pycache__
 .idea
 
 event_app/migrations
+analytics/migrations
 *.bashrc
 temp
 
