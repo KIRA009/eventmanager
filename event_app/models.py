@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from uuid import uuid4
+from django.contrib.contenttypes.fields import GenericRelation
 
 from utils import AutoCreatedUpdatedMixin
 from .managers import UserManager, LinkManager
@@ -74,3 +75,8 @@ class ProModeFeature(AutoCreatedUpdatedMixin):
     header_text = models.TextField(default="", null=True)
     background_color = models.TextField(default="", null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="feature")
+
+
+class ProPack(AutoCreatedUpdatedMixin):
+    price = models.IntegerField(default=0)
+    order = GenericRelation("payments.OrderItem")

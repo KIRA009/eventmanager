@@ -10,6 +10,7 @@ __pycache__
 
 event_app/migrations
 analytics/migrations
+payments/migrations
 *.bashrc
 temp
 

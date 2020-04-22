@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "event_app",
     "analytics",
+    "payments",
 ]
 
 MIDDLEWARE = [
