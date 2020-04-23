@@ -1,9 +1,8 @@
-from django.views import View
 from django.contrib.auth import authenticate
 from django.utils import timezone as tz
-from django.shortcuts import redirect
+from django.views import View
 
-from event_app.models import User, College
+from event_app.models import User, College, ProModeFeature
 from utils import create_token, send_email
 
 
@@ -101,3 +100,10 @@ class GetUserView(View):
     def post(self, request):
         user = User.objects.get(username=request.json["username"])
         return dict(user=user.detail())
+
+
+class ProModeGetBgView(View):
+    def post(self, request):
+        user = User.objects.get(username=request.json['username'])
+        feature, _ = ProModeFeature.objects.get_or_create(user=user)
+        return dict(background_color=feature.background_color)

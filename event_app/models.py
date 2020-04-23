@@ -1,7 +1,8 @@
-from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from uuid import uuid4
+
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.contenttypes.fields import GenericRelation
+from django.db import models
 
 from utils import AutoCreatedUpdatedMixin
 from .managers import UserManager, LinkManager
@@ -73,7 +74,7 @@ class Link(AutoCreatedUpdatedMixin):
 class ProModeFeature(AutoCreatedUpdatedMixin):
     header_icon = models.URLField(default="", null=True)
     header_text = models.TextField(default="", null=True)
-    background_color = models.TextField(default="", null=True)
+    background_color = models.TextField(default=None, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="feature")
 
 

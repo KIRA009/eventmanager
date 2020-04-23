@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views import *
 from utils import login_required, pro_required
+from .views import *
 
 unauth_urls = list(
     map(
@@ -15,6 +15,7 @@ unauth_urls = list(
             ("validate/<int:user_id>/<uuid:secret>/", CompleteValidateEmailView),
             ("user/", GetUserView),
             ("feature/", ProModeView),
+            ("feature/background/get/", ProModeGetBgView),
         ],
     )
 )
