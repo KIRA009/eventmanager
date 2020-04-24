@@ -77,8 +77,14 @@ class UpdateLinkSequenceView(View):
 
 class SetBgView(View):
     def post(self, request):
-        data = request.json
+        data = request.POST.dict()
         user = request.User
-        user.background_color = data["background_color"]
+        user.background_color = data.get("background_color", None)
+        img = request.FILES.dict().get('photo')
+        delete_file(user.background_image)
+        user.background_image = upload_file(request, img, PROFILECONTAINER)
         user.save()
-        return dict(background_color=user.background_color)
+        return dict(
+            background_color=user.background_color,
+            background_image=user.background_image
+        )

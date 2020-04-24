@@ -10,6 +10,8 @@ import uuid
 import django.middleware.common as common
 import json
 from django.contrib.auth import get_user_model
+from django.core import serializers
+from django.forms.models import model_to_dict
 
 from event_manager.settings import (
     SECRET_KEY,
@@ -49,6 +51,8 @@ def send_email(emails, subject, message):
 
 
 def upload_file(request, file, container):
+    if file is None:
+        return None
     file_name = request.User.username + str(uuid.uuid4()) + file.name
     blob_client = STORAGE_CLIENT.get_blob_client(container=container, blob=file_name)
     blob_client.upload_blob(file.read())
@@ -56,6 +60,8 @@ def upload_file(request, file, container):
 
 
 def delete_file(url):
+    if url is None:
+        return
     container, file_name = get_container_and_name(url)
     blob_client = STORAGE_CLIENT.get_blob_client(container=container, blob=file_name)
     try:
@@ -78,7 +84,7 @@ class CustomMiddleware(common.CommonMiddleware):
         if token is not None:
             decoded, token = retrieve_token(token)
             if decoded:
-                for i in ["login_time", "username", "len_email"]:
+                for i in ["username", "len_email"]:
                     if token.get(i) is None:
                         return dict(error="Invalid token", status_code=401)
                 username = token["username"][: token["len_email"]]
@@ -88,8 +94,8 @@ class CustomMiddleware(common.CommonMiddleware):
                     user = model.objects.get(email=username, password=password)
                     # if not user.is_validated:
                     # return dict(error="Email not verified", status_code=401)
-                    if user.last_login.isoformat() == token["login_time"]:
-                        request.User = user
+                    # if user.last_login.isoformat() == token["login_time"]:
+                    request.User = user
                 except model.DoesNotExist:
                     pass
         if request.content_type == "application/json":
@@ -123,15 +129,17 @@ class AutoCreatedUpdatedMixin(models.Model):
         super(AutoCreatedUpdatedMixin, self).save(*args, **kwargs)
 
     def detail(self):
-        ret = self.__dict__.copy()
-        del ret["_state"]
-        return ret
+        ret = json.loads(serializers.serialize('json', [self]))[0]
+        ret['fields']['id'] = ret['pk']
+        del ret['fields']['created_at']
+        del ret['fields']['updated_at']
+        return ret['fields']
 
 
 def decorator(func, test_func):
     def inner(*args, **kwargs):
         request = args[0]
-        if test_func(request.User):
+        if 'User' in request.__dict__ and test_func(request.User):
             return func(*args, **kwargs)
         return jsonify(dict(error="Access denied", status_code=401))
 

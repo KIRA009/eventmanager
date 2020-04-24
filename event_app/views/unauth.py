@@ -21,7 +21,7 @@ class UpdateView(View):
         updated, user = User.objects.update_user(data)
         if updated:
             return dict(message="Updated user")
-        return dict(message=user, status_code=404)
+        return dict(error=user, status_code=404)
 
 
 class CollegeView(View):
@@ -89,7 +89,6 @@ class LoginView(View):
                 user=user.detail(),
                 token=create_token(
                     username=f"{user.email}$$${user.password}",
-                    login_time=user.last_login.isoformat(),
                     len_email=len(user.email),
                 ),
             )
@@ -105,4 +104,7 @@ class GetUserView(View):
 class GetBgView(View):
     def post(self, request):
         user = User.objects.get(username=request.json['username'])
-        return dict(background_color=user.background_color)
+        return dict(
+            background_color=user.background_color,
+            background_image=user.background_image
+        )

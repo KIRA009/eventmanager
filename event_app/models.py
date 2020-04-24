@@ -19,6 +19,7 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
     profile_pic = models.URLField(default="", null=True, blank=True)
     user_type = models.CharField(default="normal", max_length=256)
     background_color = models.TextField(default=None, null=True)
+    background_image = models.URLField(default=None, null=True)
     college = models.ForeignKey(
         "College",
         related_name="students",

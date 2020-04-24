@@ -50,7 +50,10 @@ class UserManager(BaseUserManager):
             user = self.get(secret=details["secret"])
             user.email = details["email"].lower()
             user.set_password(details["password"])
-            local, domain = pat.findall(user.email)[0]
+            try:
+                local, domain = pat.findall(user.email)[0]
+            except IndexError:
+                return False, 'Invalid email'
             if domain == "yahoo":
                 user.username = f"{local}!"
             elif domain == "gmail":
