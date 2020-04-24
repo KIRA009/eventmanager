@@ -15,7 +15,7 @@ unauth_urls = list(
             ("validate/<int:user_id>/<uuid:secret>/", CompleteValidateEmailView),
             ("user/", GetUserView),
             ("feature/", ProModeView),
-            ("feature/background/get/", ProModeGetBgView),
+            ("background/get/", GetBgView),
         ],
     )
 )
@@ -28,6 +28,7 @@ auth_urls = list(
             ("links/", UserLinkView),
             ("update-link-sequence/", UpdateLinkSequenceView),
             ("upload-icon/", UploadIconView),
+            ('background/set/', SetBgView)
         ],
     )
 )
@@ -37,7 +38,6 @@ pro_urls = list(
         lambda x: path(x[0], pro_required(login_required(x[1].as_view()))),
         [
             ("feature/header/", ProModeHeaderView),
-            ("feature/background/", ProModeBgView),
         ],
     )
 )

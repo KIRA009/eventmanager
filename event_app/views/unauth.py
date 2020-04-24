@@ -102,8 +102,7 @@ class GetUserView(View):
         return dict(user=user.detail())
 
 
-class ProModeGetBgView(View):
+class GetBgView(View):
     def post(self, request):
         user = User.objects.get(username=request.json['username'])
-        feature, _ = ProModeFeature.objects.get_or_create(user=user)
-        return dict(background_color=feature.background_color)
+        return dict(background_color=user.background_color)

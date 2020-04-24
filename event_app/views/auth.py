@@ -4,7 +4,7 @@ from django.db.utils import IntegrityError
 
 from event_manager.settings import PROFILECONTAINER, ICONCONTAINER
 from utils import upload_file, delete_file
-from event_app.models import Link
+from event_app.models import Link, ProModeFeature
 
 
 class UploadProfilePicView(View):
@@ -73,3 +73,12 @@ class UpdateLinkSequenceView(View):
                 return dict(links=[link.detail() for link in request.User.links.all()])
         except IntegrityError:
             return dict(error="Some error happened", status_code=501)
+
+
+class SetBgView(View):
+    def post(self, request):
+        data = request.json
+        user = request.User
+        user.background_color = data["background_color"]
+        user.save()
+        return dict(background_color=user.background_color)

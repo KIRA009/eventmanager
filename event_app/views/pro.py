@@ -20,15 +20,6 @@ class ProModeHeaderView(View):
         return dict(feature=feature.detail())
 
 
-class ProModeBgView(View):
-    def post(self, request):
-        data = request.json
-        feature, _ = ProModeFeature.objects.get_or_create(user=request.User)
-        feature.background_color = data["background_color"]
-        feature.save()
-        return dict(feature=feature.detail())
-
-
 class ProModeView(View):
     def post(self, request):
         feature = ProModeFeature.objects.filter(
