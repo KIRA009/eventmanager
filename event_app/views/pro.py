@@ -1,7 +1,7 @@
 from django.views import View
 
 from event_app.models import ProModeFeature
-from utils import upload_file, delete_file
+from event_app.utils import upload_file, delete_file
 from event_manager.settings import ICONCONTAINER
 
 

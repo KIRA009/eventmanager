@@ -10,24 +10,12 @@ from utils import AutoCreatedUpdatedMixin
 User = get_user_model()
 
 
-# class Cart(AutoCreatedUpdatedMixin):
-#     order = GenericForeignKey()
-#     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-#     object_id = models.PositiveIntegerField()
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='in_cart')
-#     meta_data = models.TextField()
-#
-#     def detail(self):
-#         det = super(Cart, self).detail()
-#         det['meta_data'] = json.loads(det['meta_data'])
-#         return det
-
-
 class OrderItem(AutoCreatedUpdatedMixin):
     order = GenericForeignKey()
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     meta_data = models.TextField(default="")
+    index = models.IntegerField(default=0)
     order_id = models.ForeignKey(
         "Order", on_delete=models.CASCADE, related_name="items"
     )

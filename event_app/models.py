@@ -80,5 +80,12 @@ class ProModeFeature(AutoCreatedUpdatedMixin):
 
 
 class ProPack(AutoCreatedUpdatedMixin):
-    price = models.IntegerField(default=0)
+    monthly_price = models.IntegerField(default=300)
+    yearly_price = models.IntegerField(default=1000)
     order = GenericRelation("payments.OrderItem")
+
+
+class ProPackHolder(AutoCreatedUpdatedMixin):
+    start_date = models.DateField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pro_packs')
+    end_date = models.DateField()

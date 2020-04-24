@@ -3,7 +3,8 @@ from django.utils import timezone as tz
 from django.views import View
 
 from event_app.models import User, College, ProModeFeature
-from utils import create_token, send_email
+from utils import create_token
+from event_app.utils import send_email
 
 
 class RegisterView(View):

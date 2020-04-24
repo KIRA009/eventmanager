@@ -1,6 +1,7 @@
 from django.urls import path
 
-from utils import login_required, pro_required
+from utils import login_required
+from event_app.utils import pro_required
 from .views import *
 
 unauth_urls = list(

@@ -25,7 +25,7 @@ urlpatterns = [
     re_path(r"^event_manager/admin-dashboard/?", admin.site.urls),
     path("event_manager/api/", include(event_app.urls)),
     path("event_manager/api/", include(analytics.urls)),
-    path("event_manager/api/", include(payments.urls)),
+    path("event_manager/payment/", include(payments.urls)),
     re_path(
         r"^event_manager/forgot-password/?$",
         ForgotPwdView.as_view(),

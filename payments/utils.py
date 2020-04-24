@@ -2,7 +2,11 @@ import requests
 import sys
 import hmac
 import hashlib
+import django.utils.timezone as tz
+from datetime import timedelta
+
 from event_manager.settings import RAZORPAY_KEY, RAZORPAY_MID, RAZORPAY_SECRET
+from event_app.models import ProPackHolder
 
 base_url = "https://api.razorpay.com/v1"
 auth = (RAZORPAY_KEY, RAZORPAY_SECRET)
@@ -60,3 +64,15 @@ def is_signature_safe(parameters):
 def get_order(order_id):
     res = requests.get(f"{base_url}/orders/{order_id}/payments", auth=auth).json()
     return res["items"]
+
+
+def handle_order(order, query):
+    model = order.order._meta.model_name
+    if model == 'propack':
+        today = tz.now().date()
+        pack = ProPackHolder(user=order.order_id.user, start_date=today)
+        if query['meta_data']['pack_type'] == 'monthly':
+            pack.end_date = today + timedelta(days=30)
+        else:
+            pack.end_date = today + timedelta(days=365)
+        pack.save()
