@@ -1,5 +1,5 @@
 from django.views import View
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from .unauth import *
 from .auth import *
@@ -22,7 +22,7 @@ class ForgotPwdView(View):
     def post(self, request):
         email = request.POST.dict().get("email")
         if not email:
-            return redirect("/event_manager/forgot-password/")
+            return redirect("/forgot-password/")
         try:
             user = User.objects.get(email=email)
             email = f"""
@@ -47,7 +47,7 @@ class ForgotPwdView(View):
         <table style="border-spacing:0;border-collapse:collapse;vertical-align:top;text-align:left;padding:0;width:100%;display:table">
         <tbody><tr style="padding:0;vertical-align:top;text-align:left">
         <th style="color:#0a0a0a;font-family:'Cereal',Helvetica,Arial,sans-serif;font-weight:normal;padding:0;text-align:left;font-size:16px;line-height:19px;margin:0 auto;padding-bottom:16px;width:564px;padding-left:16px;padding-right:16px">
-        <a href="http://{request.META['HTTP_HOST']}/event_manager/">
+        <a href="http://{request.META['HTTP_HOST']}/">
         <img align="center" alt="event_manager" src="https://i.postimg.cc/Gh3gjht5/main-logo.png" style="outline:none;text-decoration:none;width:50px;max-width:100%;clear:both;display:block;border:none;padding-bottom:16px;padding-top:48px;height:auto"> </a>
         </th>
         </tr>
@@ -90,7 +90,7 @@ class ForgotPwdView(View):
         <table style="border-spacing:0;border-collapse:collapse;vertical-align:top;text-align:left;padding:0;width:100%;display:table">
         <tbody><tr style="padding:0;vertical-align:top;text-align:left">
         <th style="color:#0a0a0a;font-family:'Cereal',Helvetica,Arial,sans-serif;font-weight:normal;padding:0;margin:0;text-align:left;font-size:16px;line-height:19px;padding-left:16px;padding-right:16px">
-        <a href="http://{request.META['HTTP_HOST']}/event_manager/reset-password/{user.username}/{user.secret}/" style="font-family:'Cereal',Helvetica,Arial,sans-serif;font-weight:normal;margin:0;text-align:left;line-height:1.3;color:#2199e8;text-decoration:none;background-color:#ff5a5f;border-radius:4px;display:inline-block;padding:12px 24px 12px 24px" target="_blank">
+        <a href="http://{request.META['HTTP_HOST']}/reset-password/{user.username}/{user.secret}/" style="font-family:'Cereal',Helvetica,Arial,sans-serif;font-weight:normal;margin:0;text-align:left;line-height:1.3;color:#2199e8;text-decoration:none;background-color:#ff5a5f;border-radius:4px;display:inline-block;padding:12px 24px 12px 24px" target="_blank">
         <p style="font-weight:normal;padding:0;margin:0;text-align:center;font-family:&quot;Cereal&quot;,&quot;Helvetica&quot;,Helvetica,Arial,sans-serif;color:white;font-size:18px;line-height:26px;margin-bottom:0px!important">
         Reset your password
         </p>
@@ -126,9 +126,9 @@ class ForgotPwdView(View):
 </html>
             """
             send_email([user.email], "Reset password", email)
-            return redirect("/event_manager/forgot-password/")
+            return redirect("/forgot-password/")
         except User.DoesNotExist:
-            return redirect("/event_manager/forgot-password/")
+            return redirect("/forgot-password/")
 
 
 class ResetPwdView(View):
@@ -136,9 +136,9 @@ class ResetPwdView(View):
         try:
             user = User.objects.get(username=username)
             if str(user.secret) != secret:
-                return redirect("/event_manager/forgot-password/")
+                return redirect("/forgot-password/")
         except User.DoesNotExist:
-            return redirect("/event_manager/forgot-password/")
+            return redirect("/forgot-password/")
         return render(
             request,
             "reset-password.html",
@@ -150,8 +150,8 @@ class ResetPwdView(View):
         try:
             user = User.objects.get(username=username)
             if str(user.secret) != secret:
-                return redirect("/event_manager/forgot-password/")
+                return redirect("/forgot-password/")
         except User.DoesNotExist:
-            return redirect("/event_manager/forgot-password/")
+            return redirect("/forgot-password/")
         user.change_password(password)
-        return redirect("/event_manager/")
+        return redirect("/")

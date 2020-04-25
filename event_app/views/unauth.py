@@ -50,7 +50,7 @@ class SendValidateEmailView(View):
                             </div>
                             <a style="font-size:20px; background-color:#007bff; text-decoration:none; padding-top:5px;
                             padding-bottom:10px; padding-left:10px; padding-right:10px; color:#fff; margin:auto auto;"
-                            href="{scheme}://{server}/event_manager/api/validate/{user.id}/{user.secret}/" type="button">
+                            href="{scheme}://{server}/api/validate/{user.id}/{user.secret}/" type="button">
                             Click here to validate </a><br><br>
                             <p style="font-size:20px;">
                                 Thank you,<br>

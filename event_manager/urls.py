@@ -22,20 +22,20 @@ import payments.urls
 from event_app.views import *
 
 urlpatterns = [
-    re_path(r"^event_manager/admin-dashboard/?", admin.site.urls),
-    path("event_manager/api/", include(event_app.urls)),
-    path("event_manager/api/", include(analytics.urls)),
-    path("event_manager/payment/", include(payments.urls)),
+    re_path(r"^admin-dashboard/?", admin.site.urls),
+    path("api/", include(event_app.urls)),
+    # path("api/", include(analytics.urls)),
+    path("payment/", include(payments.urls)),
     re_path(
-        r"^event_manager/forgot-password/?$",
+        r"^forgot-password/?$",
         ForgotPwdView.as_view(),
         name="forgot-password",
     ),
     path(
-        "event_manager/reset-password/<str:username>/<str:secret>/",
+        "reset-password/<str:username>/<str:secret>/",
         ResetPwdView.as_view(),
         name="reset-password",
     ),
     path("manifest.json", manifest),
-    re_path(r"^event_manager/.*", index, name="index"),
+    re_path(r"^/.*", index, name="index"),
 ]
