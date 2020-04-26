@@ -67,7 +67,7 @@ class Link(AutoCreatedUpdatedMixin):
     index = models.IntegerField(default=0)
     icon = models.URLField(default="", null=True)
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="links", to_field="username"
+        User, on_delete=models.CASCADE, related_name="links"
     )
 
     objects = LinkManager()

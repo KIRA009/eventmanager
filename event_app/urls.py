@@ -29,7 +29,8 @@ auth_urls = list(
             ("links/", UserLinkView),
             ("update-link-sequence/", UpdateLinkSequenceView),
             ("upload-icon/", UploadIconView),
-            ('background/set/', SetBgView)
+            ('background/set/', SetBgView),
+            ("update/user/", UpdateUserDetailsView),
         ],
     )
 )

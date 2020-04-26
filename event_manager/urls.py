@@ -37,5 +37,5 @@ urlpatterns = [
         name="reset-password",
     ),
     path("manifest.json", manifest),
-    re_path(r"^/.*", index, name="index"),
+    re_path(r"^.*", index, name="index"),
 ]

@@ -4,7 +4,7 @@ from django.db.utils import IntegrityError
 
 from event_manager.settings import PROFILECONTAINER, ICONCONTAINER
 from event_app.utils import upload_file, delete_file
-from event_app.models import Link, ProModeFeature
+from event_app.models import Link, ProModeFeature, User
 
 
 class UploadProfilePicView(View):
@@ -88,3 +88,18 @@ class SetBgView(View):
             background_color=user.background_color,
             background_image=user.background_image
         )
+
+
+class UpdateUserDetailsView(View):
+    def post(self, request):
+        user = request.User
+        data = request.json
+        for i in ['user_type', 'is_validated', 'secret', 'is_staff', 'is_superuser', 'password', 'id']:
+            if i in data:
+                del data[i]
+        try:
+            User.objects.filter(id=user.id).update(**data)
+        except IntegrityError as e:
+            return dict(error=str(e), status_code=401)
+        user = User.objects.get(id=user.id)
+        return dict(user=user.detail())
