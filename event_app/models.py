@@ -18,8 +18,8 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
     username = models.TextField(unique=True)
     profile_pic = models.URLField(default="", null=True, blank=True)
     user_type = models.CharField(default="normal", max_length=256)
-    background_color = models.TextField(default=None, null=True)
-    background_image = models.URLField(default=None, null=True)
+    background_color = models.TextField(default=None, null=True, blank=True)
+    background_image = models.URLField(default=None, null=True, blank=True)
     college = models.ForeignKey(
         "College",
         related_name="students",
@@ -62,10 +62,10 @@ class College(AutoCreatedUpdatedMixin):
 
 class Link(AutoCreatedUpdatedMixin):
     title = models.TextField(default="")
-    url = models.URLField(default="", null=True)
+    url = models.URLField(default="", null=True, blank=True)
     visible = models.BooleanField(default=False)
     index = models.IntegerField(default=0)
-    icon = models.URLField(default="", null=True)
+    icon = models.URLField(default="", null=True, blank=True)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="links"
     )
@@ -74,8 +74,8 @@ class Link(AutoCreatedUpdatedMixin):
 
 
 class ProModeFeature(AutoCreatedUpdatedMixin):
-    header_icon = models.URLField(default="", null=True)
-    header_text = models.TextField(default="", null=True)
+    header_icon = models.URLField(default="", null=True, blank=True)
+    header_text = models.TextField(default="", null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="feature")
 
 

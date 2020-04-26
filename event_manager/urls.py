@@ -24,7 +24,7 @@ from event_app.views import *
 urlpatterns = [
     re_path(r"^admin-dashboard/?", admin.site.urls),
     path("api/", include(event_app.urls)),
-    # path("api/", include(analytics.urls)),
+    path("analytics/", include(analytics.urls)),
     path("payment/", include(payments.urls)),
     re_path(
         r"^forgot-password/?$",
