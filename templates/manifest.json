@@ -1,9 +1,9 @@
 {
-  "short_name": "Hubolt Fitness",
-  "name": "Hubolt Fitness",
+  "short_name": "myweblink.store",
+  "name": "myweblink.store",
   "icons": [
     {
-      "src": "main_logo.jpg",
+      "src": "instalink_logo.png",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     } 

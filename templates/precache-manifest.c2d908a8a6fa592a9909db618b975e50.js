@@ -1,23 +1,23 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "3760b6d92b5ae2cd95af7da7d8c446ae",
+    "revision": "0c05c72308345f7d5fb274ff6301351e",
     "url": "/index.html"
   },
   {
-    "revision": "4bd19d74ac1dc88a25a1",
+    "revision": "f1c16d44f4d9a94d2966",
     "url": "/static/css/2.632827f6.chunk.css"
   },
   {
-    "revision": "9824f4a307e904ebabff",
-    "url": "/static/css/main.6278d0f0.chunk.css"
+    "revision": "12b856f5e10e4fa95687",
+    "url": "/static/css/main.aa35895a.chunk.css"
   },
   {
-    "revision": "4bd19d74ac1dc88a25a1",
-    "url": "/static/js/2.c178591e.chunk.js"
+    "revision": "f1c16d44f4d9a94d2966",
+    "url": "/static/js/2.32a5e344.chunk.js"
   },
   {
-    "revision": "9824f4a307e904ebabff",
-    "url": "/static/js/main.4b054d26.chunk.js"
+    "revision": "12b856f5e10e4fa95687",
+    "url": "/static/js/main.4052c5da.chunk.js"
   },
   {
     "revision": "42ac5946195a7306e2a5",
@@ -88,8 +88,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/static/media/instagram-logo-png-paint-brush-colour-1.90c76fd8.png"
   },
   {
-    "revision": "7c84dc3c1d1bcefa9b2016ba74817813",
-    "url": "/static/media/instalink_logo.7c84dc3c.png"
+    "revision": "28c5a759dd26fa2132ad33fd66b2fc05",
+    "url": "/static/media/instalink_logo.28c5a759.png"
   },
   {
     "revision": "b03d83b396726107cce5e805e13ed388",
