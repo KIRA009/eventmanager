@@ -63,16 +63,16 @@ class SubscriptionView(View):
 class PaymentWebhookView(View):
     def post(self, request):
         data = request.json
-        payload = data['payload']['subscription']['entity']
-        if payload['paid_count'] > 1:
-            renew_subscription(payload['id'], payload['notes']['sub_type'], payload['current_start'],
-                               payload['current_end'])
+        sub = data['payload']['subscription']['entity']
+        order = data['payload']['payment']['entity']
+        if sub['paid_count'] > 1:
+            renew_subscription(sub['id'], sub['notes']['sub_type'], sub['current_start'], sub['current_end'], order)
         else:
-            subscription = Subscription.objects.get(sub_type=payload['notes']['sub_type'], sub_id=payload['id'],
+            subscription = Subscription.objects.get(sub_type=sub['notes']['sub_type'], sub_id=sub['id'],
                                                     start_date=None, end_date=None)
-            update_subscription(subscription, payload['current_start'], payload['current_end'])
+            update_subscription(subscription, order, sub['current_start'], sub['current_end'])
 
-        return redirect(PAYMENT_REDIRECT_URL)
+        return dict()
 
 
 class OrderCallBackView(View):

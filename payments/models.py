@@ -21,6 +21,7 @@ class Subscription(AutoCreatedUpdatedMixin):
     end_date = models.DateField(null=True)
     payment_url = models.URLField(blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
+    test = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.user.username} -> {self.sub_type} : {self.start_date} - {self.end_date}'

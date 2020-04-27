@@ -5,9 +5,10 @@ import hashlib
 from django.utils.timezone import now, localdate, datetime
 from datetime import timedelta
 import pytz
+import json
 
 from event_manager.settings import RAZORPAY_KEY, RAZORPAY_MID, RAZORPAY_SECRET, TIME_ZONE
-from .models import Subscription
+from .models import Subscription, Order
 
 BASE_URL = "https://api.razorpay.com/v1"
 auth = (RAZORPAY_KEY, RAZORPAY_SECRET)
@@ -96,14 +97,23 @@ def create_subscription(plan_id, total_count, user, meta_data):
     return True, sub
 
 
-def update_subscription(sub, start_date, end_date):
-    sub.start_date = datetime.fromtimestamp(start_date, tz).date()
-    sub.end_date = datetime.fromtimestamp(end_date, tz).date()
+def update_subscription(sub, order=None, start_date=None, end_date=None):
+    if isinstance(start_date, int):
+        sub.start_date = datetime.fromtimestamp(start_date, tz).date()
+        sub.end_date = datetime.fromtimestamp(end_date, tz).date()
+    else:
+        sub.start_date = localdate(now())
+        sub.end_date = sub.start_date + timedelta(days=30)
+    if order:
+        order = Order(order_id=order['order_id'], amount=int(order['amount']) / 100, payment_id=order['id'], paid=True,
+                      user=sub.user)
+        order.meta_data = json.dumps(get_order(order.order_id)[0])
+        order.save()
     sub.save()
 
 
-def renew_subscription(sub_id, sub_type, start_date, end_date):
-    sub = Subscription.objects.filter(sub_id=sub_id, sub_type=sub_type).latest('end_date')
+def renew_subscription(sub_id, sub_type, start_date, end_date, order):
+    sub = Subscription.objects.get(sub_id=sub_id, sub_type="PROPACK")
     sub.pk = None
-    update_subscription(sub, start_date, end_date)
+    update_subscription(sub, order, start_date, end_date)
 
