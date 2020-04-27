@@ -1,23 +1,23 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "0c05c72308345f7d5fb274ff6301351e",
+    "revision": "c22d3bf46a996bcebae8986fba7a927d",
     "url": "/index.html"
   },
   {
-    "revision": "f1c16d44f4d9a94d2966",
-    "url": "/static/css/2.632827f6.chunk.css"
+    "revision": "01613ce972b182ca380d",
+    "url": "/static/css/2.30543508.chunk.css"
   },
   {
-    "revision": "12b856f5e10e4fa95687",
-    "url": "/static/css/main.aa35895a.chunk.css"
+    "revision": "75dcfcc0a042cbbba8bc",
+    "url": "/static/css/main.130bf44c.chunk.css"
   },
   {
-    "revision": "f1c16d44f4d9a94d2966",
-    "url": "/static/js/2.32a5e344.chunk.js"
+    "revision": "01613ce972b182ca380d",
+    "url": "/static/js/2.3f0d9ab6.chunk.js"
   },
   {
-    "revision": "12b856f5e10e4fa95687",
-    "url": "/static/js/main.4052c5da.chunk.js"
+    "revision": "75dcfcc0a042cbbba8bc",
+    "url": "/static/js/main.000a9053.chunk.js"
   },
   {
     "revision": "42ac5946195a7306e2a5",
@@ -48,6 +48,22 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/static/media/Patreon-logo-16x9-300x169.0e6435a9.png"
   },
   {
+    "revision": "db4a294ff09fbf18be76a7b288b45fa9",
+    "url": "/static/media/Screenshot (189).db4a294f.png"
+  },
+  {
+    "revision": "df98b79bb37d8f4f3687af1f65994b43",
+    "url": "/static/media/Screenshot (190).df98b79b.png"
+  },
+  {
+    "revision": "cccd8c7e0614d174a628f61d43438d23",
+    "url": "/static/media/Screenshot (191).cccd8c7e.png"
+  },
+  {
+    "revision": "9b65b3199cacf3ab3208a2717c51b60a",
+    "url": "/static/media/Screenshot (192).9b65b319.png"
+  },
+  {
     "revision": "e3fa72d94ed5d37a12504af2df59abfb",
     "url": "/static/media/Social-Media-Icons-Blue-Transparent-21.e3fa72d9.png"
   },
@@ -58,6 +74,10 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
     "revision": "2f52a4f82797eb0bab9da5cf30681f9c",
     "url": "/static/media/Youtube-PNG-Pic.2f52a4f8.png"
+  },
+  {
+    "revision": "5c31f900e83b4b9f07419f750ba35b27",
+    "url": "/static/media/arrow.5c31f900.png"
   },
   {
     "revision": "1e9698d5028c7d952751fadd5416f3b0",
@@ -94,6 +114,10 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
     "revision": "b03d83b396726107cce5e805e13ed388",
     "url": "/static/media/linkedIn_PNG36.b03d83b3.png"
+  },
+  {
+    "revision": "f5ae123ab1e24e72615bea84fc7b4845",
+    "url": "/static/media/mobile.f5ae123a.jpg"
   },
   {
     "revision": "0dfef75fa817cb22462b6e722aecfee2",

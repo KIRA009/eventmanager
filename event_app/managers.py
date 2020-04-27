@@ -28,7 +28,7 @@ class UserManager(BaseUserManager):
             return False, username
         details["is_staff"] = details["is_superuser"] = False
         user = self.model(**details)
-        user.set_password(uuid4())
+        user.set_password(details['password'])
         try:
             user.save(using=self._db)
             return True, user
