@@ -11,7 +11,7 @@ from .managers import UserManager, LinkManager
 class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
     email = models.EmailField(max_length=256, unique=True)
     is_staff = models.BooleanField(default=False)
-    phone = models.CharField(max_length=10, unique=True)
+    phone = models.CharField(max_length=10)
     name = models.CharField(max_length=256)
     secret = models.UUIDField(default=uuid4)
     is_validated = models.BooleanField(default=False)
@@ -38,7 +38,7 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
         from payments.models import Subscription
         today = localdate(now())
         return 'pro' if self.subscriptions.filter(sub_type=Subscription.PROPACK, start_date__lte=today,
-                                                  end_date__gte=today) else 'normal'
+                                                  end_date__gte=today).exists() else 'normal'
 
     def detail(self):
         ret = super(User, self).detail()

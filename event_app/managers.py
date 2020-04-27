@@ -12,21 +12,21 @@ class BaseManager(Manager):
 
 class UserManager(BaseUserManager):
     def create_user(self, details):
-        """
-        Creates and saves a User with the given contact, password
-        """
         model = get_user_model()
-        try:
-            model.objects.get(phone=details["phone"])
-            return False, "Phone number already registered"
-        except model.DoesNotExist:
-            pass
-        from .models import College
+        if details.get('phone'):
+            if model.objects.filter(phone=details['phone']).exists():
+                return False, "Phone number already registered"
 
+        if model.objects.filter(email=details['email']).exists():
+            return False, "Email already registered"
+        from .models import College
         details["college"] = College.objects.get(id=details["college"])
-        details["username"] = details["email"] = uuid4()
+        is_present, username = self.get_username(details['email'])
+        if is_present:
+            details['username'] = username
+        else:
+            return False, username
         details["is_staff"] = details["is_superuser"] = False
-        details["user_type"] = "normal"
         user = self.model(**details)
         user.set_password(uuid4())
         try:
@@ -36,37 +36,23 @@ class UserManager(BaseUserManager):
             return False, str(e)
 
     def create_superuser(self, email, password):
-        """
-        Creates and saves a User with the given contact, password
-        """
         user = self.model(email=email.lower(), is_superuser=True, is_staff=True)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def update_user(self, details):
+    def get_username(self, email):
         pat = re.compile(r"(.*)@(.*)\..*")
         try:
-            user = self.get(secret=details["secret"])
-            user.email = details["email"].lower()
-            user.set_password(details["password"])
-            try:
-                local, domain = pat.findall(user.email)[0]
-            except IndexError:
-                return False, 'Invalid email'
-            if domain == "yahoo":
-                user.username = f"{local}!"
-            elif domain == "gmail":
-                user.username = local
-            else:
-                user.username = f"{local}&"
-            try:
-                user.save(using=self._db)
-                return True, user
-            except IntegrityError:
-                return False, "Email already registered"
-        except self.model.DoesNotExist:
-            return False, "No such user"
+            local, domain = pat.findall(email)[0]
+        except IndexError:
+            return False, 'Invalid email'
+        if domain == "yahoo":
+            return True, f"{local}!"
+        elif domain == "gmail":
+            return True, local
+        else:
+            return True, f"{local}&"
 
 
 class LinkManager(BaseManager):

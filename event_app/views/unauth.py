@@ -12,17 +12,8 @@ class RegisterView(View):
         data = request.json
         created, user = User.objects.create_user(data)
         if created:
-            return dict(secret=user.secret)
+            return dict(message="User successfully created")
         return dict(error=user, status_code=401)
-
-
-class UpdateView(View):
-    def post(self, request):
-        data = request.json
-        updated, user = User.objects.update_user(data)
-        if updated:
-            return dict(message="Updated user")
-        return dict(error=user, status_code=404)
 
 
 class CollegeView(View):

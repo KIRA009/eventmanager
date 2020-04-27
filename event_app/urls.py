@@ -9,7 +9,6 @@ unauth_urls = list(
         lambda x: path(x[0], x[1].as_view()),
         [
             ("register/", RegisterView),
-            ("update/", UpdateView),
             ("colleges/", CollegeView),
             ("login/", LoginView),
             ("validate-email/", SendValidateEmailView),
