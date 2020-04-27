@@ -19,13 +19,15 @@ from django.urls import path, include, re_path
 import event_app.urls
 import analytics.urls
 import payments.urls
+import logger.urls
 from event_app.views import *
 
 urlpatterns = [
-    re_path(r"^admin-dashboard/?", admin.site.urls),
+    path("admin-dashboard/", admin.site.urls),
     path("api/", include(event_app.urls)),
     path("analytics/", include(analytics.urls)),
     path("payment/", include(payments.urls)),
+    path("logger/", include(logger.urls)),
     re_path(
         r"^forgot-password/?$",
         ForgotPwdView.as_view(),

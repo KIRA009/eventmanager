@@ -41,12 +41,14 @@ INSTALLED_APPS = [
     "event_app",
     "analytics",
     "payments",
+    'logger'
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    'logger.middleware.ExceptionHandlerMiddleware',
     "utils.CustomMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",

@@ -8,6 +8,8 @@ from event_app.utils import send_email
 
 
 def index(request):
+    if request.path_info == 'admin-dashboard':
+        return redirect(request.path_info + '/')
     return render(request, "index.html")
 
 

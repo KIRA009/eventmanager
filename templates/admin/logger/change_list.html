@@ -1,0 +1,16 @@
+{% extends "admin/change_list.html" %}
+{% load admin_list %}
+{% block object-tools %}
+    <ul class="object-tools">
+      {% block object-tools-items %}
+          <li>
+            <a href="{% url 'delete_logs' %}" class="addlink">
+              Delete month-old logs
+            </a>
+          </li>
+          <li>
+          {% change_list_object_tools %}
+          </li>
+      {% endblock %}
+    </ul>
+{% endblock %}
