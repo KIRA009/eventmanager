@@ -1,13 +1,29 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.fields import GenericForeignKey
 import json
 
 from utils import AutoCreatedUpdatedMixin
 
 
 User = get_user_model()
+
+
+class Subscription(AutoCreatedUpdatedMixin):
+    PROPACK = 'PROPACK'
+    SUB_TYPES = [
+        (PROPACK, 'propack'),
+    ]
+    sub_id = models.TextField(default='', blank=True)
+    sub_type = models.TextField(default='PROPACK', choices=SUB_TYPES)
+    start_date = models.DateField(null=True)
+    end_date = models.DateField(null=True)
+    payment_url = models.URLField(blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
+
+    def __str__(self):
+        return f'{self.user.username} -> {self.sub_type} : {self.start_date} - {self.end_date}'
 
 
 class OrderItem(AutoCreatedUpdatedMixin):

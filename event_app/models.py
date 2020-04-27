@@ -1,8 +1,8 @@
 from uuid import uuid4
-
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
+from django.utils.timezone import localdate, now
 
 from utils import AutoCreatedUpdatedMixin
 from .managers import UserManager, LinkManager
@@ -17,7 +17,6 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
     is_validated = models.BooleanField(default=False)
     username = models.TextField(unique=True)
     profile_pic = models.URLField(default="", null=True, blank=True)
-    user_type = models.CharField(default="normal", max_length=256)
     background_color = models.TextField(default=None, null=True, blank=True)
     background_image = models.URLField(default=None, null=True, blank=True)
     college = models.ForeignKey(
@@ -34,11 +33,19 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
     def __str__(self):
         return self.email
 
+    @property
+    def user_type(self):
+        from payments.models import Subscription
+        today = localdate(now())
+        return 'pro' if self.subscriptions.filter(sub_type=Subscription.PROPACK, start_date__lte=today,
+                                                  end_date__gte=today) else 'normal'
+
     def detail(self):
         ret = super(User, self).detail()
         for i in ["password", "last_login", "is_superuser", "is_staff", "secret"]:
             del ret[i]
         ret["links"] = [link.detail() for link in self.links.all()]
+        ret["user_type"] = self.user_type
         return ret
 
     def change_secret(self):
@@ -83,9 +90,3 @@ class ProPack(AutoCreatedUpdatedMixin):
     monthly_price = models.IntegerField(default=300)
     yearly_price = models.IntegerField(default=1000)
     order = GenericRelation("payments.OrderItem")
-
-
-class ProPackHolder(AutoCreatedUpdatedMixin):
-    start_date = models.DateField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pro_packs')
-    end_date = models.DateField()

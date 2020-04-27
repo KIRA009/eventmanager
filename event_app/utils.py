@@ -35,9 +35,9 @@ def upload_file(request, file, container):
 def delete_file(url):
     if url is None:
         return
-    resolved, container, file_name = get_container_and_name(url)
+    resolved, res = get_container_and_name(url)
     if resolved:
-        blob_client = STORAGE_CLIENT.get_blob_client(container=container, blob=file_name)
+        blob_client = STORAGE_CLIENT.get_blob_client(container=res[0], blob=res[1])
         try:
             blob_client.delete_blob(delete_snapshots="include")
         except azure_exc.ResourceNotFoundError:

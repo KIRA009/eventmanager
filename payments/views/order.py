@@ -2,8 +2,9 @@ from django.views import View
 import json
 from django.shortcuts import redirect
 
-from payments.models import Order, OrderItem
-from payments.utils import create_order, is_signature_safe, get_order, handle_order
+from payments.models import Order, OrderItem, Subscription
+from payments.utils import create_order, is_signature_safe, get_order, handle_order, create_subscription,\
+    update_subscription, renew_subscription
 from event_manager.settings import RAZORPAY_MID, PAYMENT_CALLBACK_URL, PAYMENT_REDIRECT_URL
 from event_app.models import ProPack
 
@@ -46,6 +47,32 @@ class OrderView(View):
                 },
             }
         )
+
+
+class SubscriptionView(View):
+    def post(self, request):
+        data = request.json
+        created, sub = create_subscription(data['plan_id'], data['total_count'], user=request.User,
+                                           meta_data={'notes[sub_type]': data['sub_type']})
+        if created:
+            return dict(payment_url=sub.payment_url)
+        else:
+            return dict(error=sub, status_code=401)
+
+
+class PaymentWebhookView(View):
+    def post(self, request):
+        data = request.json
+        payload = data['payload']['subscription']['entity']
+        if payload['paid_count'] > 1:
+            renew_subscription(payload['id'], payload['notes']['sub_type'], payload['current_start'],
+                               payload['current_end'])
+        else:
+            subscription = Subscription.objects.get(sub_type=payload['notes']['sub_type'], sub_id=payload['id'],
+                                                    start_date=None, end_date=None)
+            update_subscription(subscription, payload['current_start'], payload['current_end'])
+
+        return redirect(PAYMENT_REDIRECT_URL)
 
 
 class OrderCallBackView(View):
