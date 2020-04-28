@@ -1,23 +1,23 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "c22d3bf46a996bcebae8986fba7a927d",
+    "revision": "d721f93a14335704e368297280b7cc1f",
     "url": "/index.html"
   },
   {
-    "revision": "01613ce972b182ca380d",
+    "revision": "1e67cc5159132dae34cd",
     "url": "/static/css/2.30543508.chunk.css"
   },
   {
-    "revision": "75dcfcc0a042cbbba8bc",
-    "url": "/static/css/main.130bf44c.chunk.css"
+    "revision": "2f3fa576578742354589",
+    "url": "/static/css/main.5902347a.chunk.css"
   },
   {
-    "revision": "01613ce972b182ca380d",
-    "url": "/static/js/2.3f0d9ab6.chunk.js"
+    "revision": "1e67cc5159132dae34cd",
+    "url": "/static/js/2.35d605be.chunk.js"
   },
   {
-    "revision": "75dcfcc0a042cbbba8bc",
-    "url": "/static/js/main.000a9053.chunk.js"
+    "revision": "2f3fa576578742354589",
+    "url": "/static/js/main.94c871d9.chunk.js"
   },
   {
     "revision": "42ac5946195a7306e2a5",
@@ -48,28 +48,28 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/static/media/Patreon-logo-16x9-300x169.0e6435a9.png"
   },
   {
-    "revision": "db4a294ff09fbf18be76a7b288b45fa9",
-    "url": "/static/media/Screenshot (189).db4a294f.png"
-  },
-  {
-    "revision": "df98b79bb37d8f4f3687af1f65994b43",
-    "url": "/static/media/Screenshot (190).df98b79b.png"
-  },
-  {
-    "revision": "cccd8c7e0614d174a628f61d43438d23",
-    "url": "/static/media/Screenshot (191).cccd8c7e.png"
-  },
-  {
-    "revision": "9b65b3199cacf3ab3208a2717c51b60a",
-    "url": "/static/media/Screenshot (192).9b65b319.png"
-  },
-  {
     "revision": "e3fa72d94ed5d37a12504af2df59abfb",
     "url": "/static/media/Social-Media-Icons-Blue-Transparent-21.e3fa72d9.png"
   },
   {
     "revision": "2a6d07cfe17915d4dd36dcd2ae348a7f",
     "url": "/static/media/Splash-Instagraam-Icon-Png-1024x1024.2a6d07cf.png"
+  },
+  {
+    "revision": "2bc4cf793e8211d4af1a8546dac7cac1",
+    "url": "/static/media/WhatsApp Image 2020-04-28 at 4.40.57 PM (1).2bc4cf79.jpeg"
+  },
+  {
+    "revision": "3d8c86b0b874cf76901849b543135db1",
+    "url": "/static/media/WhatsApp Image 2020-04-28 at 4.40.57 PM (2).3d8c86b0.jpeg"
+  },
+  {
+    "revision": "2a19459549d2dbed1a5fe9ce5e02fbb3",
+    "url": "/static/media/WhatsApp Image 2020-04-28 at 4.40.57 PM (3).2a194595.jpeg"
+  },
+  {
+    "revision": "5ead400f20cf347f1d14ce123ad2f6de",
+    "url": "/static/media/WhatsApp Image 2020-04-28 at 4.40.57 PM.5ead400f.jpeg"
   },
   {
     "revision": "2f52a4f82797eb0bab9da5cf30681f9c",
@@ -116,12 +116,16 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/static/media/linkedIn_PNG36.b03d83b3.png"
   },
   {
-    "revision": "f5ae123ab1e24e72615bea84fc7b4845",
-    "url": "/static/media/mobile.f5ae123a.jpg"
+    "revision": "d5181a8428fb0f47dcfaf7b189f3a9e2",
+    "url": "/static/media/mobile.d5181a84.jpg"
   },
   {
     "revision": "0dfef75fa817cb22462b6e722aecfee2",
     "url": "/static/media/patreon-512.0dfef75f.png"
+  },
+  {
+    "revision": "2aef8a90d6fee2e34ea1b214c8feb894",
+    "url": "/static/media/star.2aef8a90.png"
   },
   {
     "revision": "86208827d593356611464711f5e8f88f",
