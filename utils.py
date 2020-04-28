@@ -6,10 +6,22 @@ import django.middleware.common as common
 import json
 from django.contrib.auth import get_user_model
 from django.core import serializers
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 from event_manager.settings import (
-    SECRET_KEY
+    SECRET_KEY,
+    SENDGRIDAPIKEY,
+    EMAIL_FROM
 )
+
+
+def send_email(emails, subject, message):
+    message = Mail(
+        from_email=EMAIL_FROM, to_emails=emails, subject=subject, html_content=message
+    )
+    sg = SendGridAPIClient(SENDGRIDAPIKEY)
+    sg.send(message)
 
 
 def jsonify(data):
@@ -43,14 +55,15 @@ class CustomMiddleware(common.CommonMiddleware):
                     if token.get(i) is None:
                         return dict(error="Invalid token", status_code=401)
                 username = token["username"][: token["len_email"]]
-                password = token["username"][3 + token["len_email"] :]
+                password = token["username"][3 + token["len_email"]:]
                 model = get_user_model()
                 try:
                     user = model.objects.get(email=username, password=password)
-                    # if not user.is_validated:
-                    # return dict(error="Email not verified", status_code=401)
-                    # if user.last_login.isoformat() == token["login_time"]:
-                    request.User = user
+                    if user:
+                        # if not user.is_validated:
+                        # return dict(error="Email not verified", status_code=401)
+                        # if user.last_login.isoformat() == token["login_time"]:
+                        request.User = user
                 except model.DoesNotExist:
                     pass
         if request.content_type == "application/json":
@@ -64,11 +77,19 @@ class CustomMiddleware(common.CommonMiddleware):
         return super().process_response(request, response)
 
 
+class BaseManager(models.Manager):
+    def get(self, **kwargs):
+        try:
+            return self.get(**kwargs)
+        except self.model.DoesNotExist:
+            return None
+
+
 class AutoCreatedUpdatedMixin(models.Model):
     created_at = models.DateTimeField(blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
 
-    objects = models.Manager()
+    objects = BaseManager()
 
     class Meta:
         abstract = True

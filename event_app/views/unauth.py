@@ -3,8 +3,7 @@ from django.utils import timezone as tz
 from django.views import View
 
 from event_app.models import User, College, ProModeFeature
-from utils import create_token
-from event_app.utils import send_email
+from utils import create_token, send_email
 
 
 class RegisterView(View):
@@ -27,42 +26,48 @@ class SendValidateEmailView(View):
         server = request.META["HTTP_HOST"]
         data = request.json
         user = User.objects.get(email=data["email"])
-        email = f"""\
-                    <html>
-                        <head></head>
-                        <body style="text-align:left;">
-                            <header><img src="https://i.postimg.cc/Gh3gjht5/main-logo.png" height="200px" width="200px">
-                            </header><br><br>
-                            <div style="text-align:left; font-size:20px;">
-                            Hi {user.name},<br><br>
-                                Greetings from Team Extremist!<br>
-                                To verify your email,<br>
-                                please click on the button below<br>
-                            </div>
-                            <a style="font-size:20px; background-color:#007bff; text-decoration:none; padding-top:5px;
-                            padding-bottom:10px; padding-left:10px; padding-right:10px; color:#fff; margin:auto auto;"
-                            href="{scheme}://{server}/api/validate/{user.id}/{user.secret}/" type="button">
-                            Click here to validate </a><br><br>
-                            <p style="font-size:20px;">
-                                Thank you,<br>
-                                Team Extremist
-                            </p><br><br>
-                            If you face any problems, feel free to send your queries at xyz@gmail.com
-                        </body>
-                    </html>
-                """
-        send_email([data["email"]], "Validate your account", email)
-        return dict(message="Email sent")
+        if user:
+            email = f"""\
+                        <html>
+                            <head></head>
+                            <body style="text-align:left;">
+                                <header><img src="https://i.postimg.cc/Gh3gjht5/main-logo.png" height="200px" width="200px"> 
+                                </header><br><br>
+                                <div style="text-align:left; font-size:20px;">
+                                Hi {user.name},<br><br>
+                                    Greetings from Team Extremist!<br>
+                                    To verify your email,<br>
+                                    please click on the button below<br>
+                                </div>
+                                <a style="font-size:20px; background-color:#007bff; text-decoration:none; 
+padding-top:5px; 
+                                padding-bottom:10px; padding-left:10px; padding-right:10px; color:#fff; margin:auto 
+auto;" 
+                                href="{scheme}://{server}/api/validate/{user.id}/{user.secret}/" type="button">
+                                Click here to validate </a><br><br>
+                                <p style="font-size:20px;">
+                                    Thank you,<br>
+                                    Team Extremist
+                                </p><br><br>
+                                If you face any problems, feel free to send your queries at xyz@gmail.com
+                            </body>
+                        </html>
+                    """
+            send_email([data["email"]], "Validate your account", email)
+            return dict(message="Email sent")
+        return dict(error="User not found", status_code=404)
 
 
 class CompleteValidateEmailView(View):
     def get(self, request, user_id, secret):
         user = User.objects.get(id=user_id)
-        if not user.is_validated:
-            if user.secret == secret:
-                user.is_validated = True
-                user.save()
-        return dict(message="Email validated")
+        if user:
+            if not user.is_validated:
+                if user.secret == secret:
+                    user.is_validated = True
+                    user.save()
+            return dict(message="Email validated")
+        return dict(error="User not found", status_code=404)
 
 
 class LoginView(View):
@@ -89,14 +94,18 @@ class LoginView(View):
 
 class GetUserView(View):
     def post(self, request):
-        user = User.objects.get(username=request.json["username"])
-        return dict(user=user.detail())
+        user = User.objects.filter(username=request.json["username"]).first()
+        if user:
+            return dict(user=user.detail())
+        return dict(error="User not found", status_code=401)
 
 
 class GetBgView(View):
     def post(self, request):
         user = User.objects.get(username=request.json['username'])
-        return dict(
-            background_color=user.background_color,
-            background_image=user.background_image
-        )
+        if user:
+            return dict(
+                background_color=user.background_color,
+                background_image=user.background_image
+            )
+        return dict(error="User not found", status_code=404)

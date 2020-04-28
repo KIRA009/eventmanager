@@ -1,13 +1,7 @@
 from django.contrib.auth.base_user import BaseUserManager
-from django.db.models import Manager
-from uuid import uuid4
 from django.contrib.auth import get_user_model
-from django.db.utils import IntegrityError
 import re
-
-
-class BaseManager(Manager):
-    pass
+from utils import BaseManager
 
 
 class UserManager(BaseUserManager):
@@ -21,6 +15,8 @@ class UserManager(BaseUserManager):
             return False, "Email already registered"
         from .models import College
         details["college"] = College.objects.get(id=details["college"])
+        if not details['college']:
+            return False, 'College does not exist'
         is_present, username = self.get_username(details['email'])
         if is_present:
             details['username'] = username

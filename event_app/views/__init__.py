@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from .unauth import *
 from .auth import *
 from .pro import *
-from event_app.utils import send_email
+from utils import send_email
 
 
 def index(request):
@@ -25,9 +25,10 @@ class ForgotPwdView(View):
         email = request.POST.dict().get("email")
         if not email:
             return redirect("/forgot-password/")
-        try:
-            user = User.objects.get(email=email)
-            email = f"""
+        user = User.objects.get(email=email)
+        if not user:
+            return redirect("/forgot-password/")
+        email = f"""
             <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -127,19 +128,16 @@ class ForgotPwdView(View):
 </body>
 </html>
             """
-            send_email([user.email], "Reset password", email)
-            return redirect("/forgot-password/")
-        except User.DoesNotExist:
-            return redirect("/forgot-password/")
+        send_email([user.email], "Reset password", email)
+        return redirect("/forgot-password/")
 
 
 class ResetPwdView(View):
     def get(self, request, username, secret):
-        try:
-            user = User.objects.get(username=username)
-            if str(user.secret) != secret:
-                return redirect("/forgot-password/")
-        except User.DoesNotExist:
+        user = User.objects.get(username=username)
+        if not user:
+            return redirect("/forgot-password/")
+        if str(user.secret) != secret:
             return redirect("/forgot-password/")
         return render(
             request,
@@ -149,11 +147,10 @@ class ResetPwdView(View):
 
     def post(self, request, username, secret):
         password = request.POST.dict().get("password")
-        try:
-            user = User.objects.get(username=username)
-            if str(user.secret) != secret:
-                return redirect("/forgot-password/")
-        except User.DoesNotExist:
+        user = User.objects.get(username=username)
+        if not user:
+            return redirect("/forgot-password/")
+        if str(user.secret) != secret:
             return redirect("/forgot-password/")
         user.change_password(password)
         return redirect("/")

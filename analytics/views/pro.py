@@ -9,20 +9,24 @@ class AddClickView(View):
     def post(self, request):
         data = request.json
         link = Link.objects.get(id=data["link_id"])
-        link, _ = Click.objects.get_or_create(link=link, day=localdate(now()))
-        link.clicks += 1
-        link.save()
-        return dict(message="Click added successfully")
+        if link:
+            link, _ = Click.objects.get_or_create(link=link, day=localdate(now()))
+            link.clicks += 1
+            link.save()
+            return dict(message="Click added successfully")
+        return dict(error='Link does not exist', status_code=404)
 
 
 class AddViewView(View):
     def post(self, request):
         data = request.json
         user = User.objects.get(username=data['username'])
-        view, _ = ProfileView.objects.get_or_create(user=user, day=tz.now().date())
-        view.views += 1
-        view.save()
-        return dict(message="View added successfully")
+        if user:
+            view, _ = ProfileView.objects.get_or_create(user=user, day=now().date())
+            view.views += 1
+            view.save()
+            return dict(message="View added successfully")
+        return dict(error='User does not exist', status_code=404)
 
 
 class GetLinkData(View):

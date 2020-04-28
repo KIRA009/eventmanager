@@ -4,7 +4,8 @@ from django.db.utils import IntegrityError
 
 from event_manager.settings import PROFILECONTAINER, ICONCONTAINER
 from event_app.utils import upload_file, delete_file
-from event_app.models import Link, ProModeFeature, User
+from event_app.models import Link, User
+from utils import create_token
 
 
 class UploadProfilePicView(View):
@@ -29,9 +30,8 @@ class UserLinkView(View):
         if "id" in data:
             link_id = data["id"]
             del data["id"]
-            try:
-                link = Link.objects.get(id=link_id, user=request.User)
-            except Link.DoesNotExist:
+            link = Link.objects.get(id=link_id, user=request.User)
+            if not link:
                 return dict(error="User not authorized", status_code=401)
             Link.objects.filter(id=link_id).update(**data)
         else:
@@ -40,7 +40,10 @@ class UserLinkView(View):
 
     def delete(self, request):
         data = request.json
-        Link.objects.get(id=data["id"]).delete()
+        link = Link.objects.get(id=data["id"])
+        if not link:
+            return dict(error="Link not found", status_code=404)
+        link.delete()
         return dict(message="The links are deleted")
 
 
@@ -68,8 +71,9 @@ class UpdateLinkSequenceView(View):
                 links = request.json["links"]
                 for i in range(len(links)):
                     link = Link.objects.get(id=links[i])
-                    link.index = i
-                    link.save()
+                    if link:
+                        link.index = i
+                        link.save()
                 return dict(links=[link.detail() for link in request.User.links.all()])
         except IntegrityError:
             return dict(error="Some error happened", status_code=501)
@@ -102,4 +106,9 @@ class UpdateUserDetailsView(View):
         except IntegrityError as e:
             return dict(error=str(e), status_code=401)
         user = User.objects.get(id=user.id)
-        return dict(user=user.detail())
+        return dict(
+            user=user.detail(),
+            token=create_token(
+                username=f"{user.email}$$${user.password}",
+                len_email=len(user.email),
+            ))

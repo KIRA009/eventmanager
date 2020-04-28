@@ -28,6 +28,7 @@ if DEBUG:
 else:
     PROFILECONTAINER = "eventmanagerprofile"
     ICONCONTAINER = "eventmanagericon"
+
 STORAGE_CLIENT = BlobServiceClient.from_connection_string(
     os.getenv("CONNECTION_STRING")
 )
@@ -36,4 +37,6 @@ RAZORPAY_MID = os.getenv("RAZORPAY_MID")
 RAZORPAY_SECRET = os.getenv("RAZORPAY_SECRET")
 RAZORPAY_KEY = os.getenv("RAZORPAY_KEY")
 PAYMENT_CALLBACK_URL = os.getenv('PAYMENT_CALLBACK_URL')
-PAYMENT_REDIRECT_URL = os.getenv('PAYMENT_REDIRECT_URL')    
+PAYMENT_REDIRECT_URL = os.getenv('PAYMENT_REDIRECT_URL')
+
+ADMINS = ['shohanduttaroy99@gmail.com', 'prasadyash549@yahoo.com', 'akashsurana119@gmail.com']

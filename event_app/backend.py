@@ -9,9 +9,10 @@ class AuthBackend(BaseBackend):
         model = get_user_model()
         try:
             user = model.objects.get(Q(email=username) | Q(phone=username))
-            is_valid = check_password(password, user.password)
-            if is_valid:
-                return user
+            if user:
+                is_valid = check_password(password, user.password)
+                if is_valid:
+                    return user
             return None
         except model.DoesNotExist:
             return None

@@ -1,26 +1,11 @@
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
 import re
 import uuid
 import azure.core.exceptions as azure_exc
 
 from event_manager.settings import (
-    SENDGRIDAPIKEY,
-    EMAIL_FROM,
     STORAGE_CLIENT,
 )
 from utils import decorator
-
-
-def send_email(emails, subject, message):
-    message = Mail(
-        from_email=EMAIL_FROM, to_emails=emails, subject=subject, html_content=message
-    )
-    try:
-        sg = SendGridAPIClient(SENDGRIDAPIKEY)
-        sg.send(message)
-    except Exception as e:
-        pass
 
 
 def upload_file(request, file, container):
