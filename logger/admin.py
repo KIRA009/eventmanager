@@ -13,3 +13,4 @@ class TrackerAdmin(admin.ModelAdmin):
     search_fields = ['user__email', 'user__username']
     actions = ['mark_as_resolved']
     list_display = ['user', 'msg', 'resolved', 'url']
+    date_hierarchy = 'created_at'

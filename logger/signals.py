@@ -13,6 +13,8 @@ def send_email(sender, **kwargs):
     instance = kwargs['instance']
     _vars = {}
     if sender == 'User':
+        if not kwargs['created']:
+            return
         _vars['model_name'] = 'New user registered'
         _vars['message'] = f'{instance.email} registered with {instance.phone if instance.phone else "no phone number"}'
     elif sender == 'Order':

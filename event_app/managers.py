@@ -23,11 +23,7 @@ class UserManager(BaseUserManager):
         details["college"] = College.objects.get(id=details["college"])
         if not details['college']:
             return False, 'College does not exist'
-        is_present, username = self.get_username(details['email'])
-        if is_present:
-            details['username'] = username
-        else:
-            return False, username
+        details['username'] = details['email']
         details["is_staff"] = details["is_superuser"] = False
         user = self.model(**details)
         user.set_password(details['password'])
@@ -42,19 +38,6 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         return user
-
-    def get_username(self, email):
-        pat = re.compile(r"(.*)@(.*)\..*")
-        try:
-            local, domain = pat.findall(email)[0]
-        except IndexError:
-            return False, 'Invalid email'
-        if domain == "yahoo":
-            return True, f"{local}!"
-        elif domain == "gmail":
-            return True, local
-        else:
-            return True, f"{local}&"
 
 
 class LinkManager(BaseManager):

@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.core import serializers
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from python_http_client.exceptions import UnauthorizedError
 
 from event_manager.settings import (
     SECRET_KEY,
@@ -21,7 +22,10 @@ def send_email(emails, subject, message):
         from_email=EMAIL_FROM, to_emails=emails, subject=subject, html_content=message
     )
     sg = SendGridAPIClient(SENDGRIDAPIKEY)
-    sg.send(message)
+    try:
+        sg.send(message)
+    except UnauthorizedError:
+        pass
 
 
 def jsonify(data):

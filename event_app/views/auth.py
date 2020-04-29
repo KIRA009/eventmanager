@@ -101,6 +101,9 @@ class UpdateUserDetailsView(View):
         for i in ['user_type', 'is_validated', 'secret', 'is_staff', 'is_superuser', 'password', 'id']:
             if i in data:
                 del data[i]
+        if 'username' in data:
+            if '@' in data:
+                return dict(error='Cannot have @ in username', status_code=401)
         try:
             User.objects.filter(id=user.id).update(**data)
         except IntegrityError as e:
