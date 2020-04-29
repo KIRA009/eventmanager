@@ -80,7 +80,7 @@ class CustomMiddleware(common.CommonMiddleware):
 class BaseManager(models.Manager):
     def get(self, **kwargs):
         try:
-            return self.get(**kwargs)
+            return super(BaseManager, self).get(**kwargs)
         except self.model.DoesNotExist:
             return None
 

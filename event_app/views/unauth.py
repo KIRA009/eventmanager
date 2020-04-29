@@ -17,6 +17,7 @@ class RegisterView(View):
 
 class CollegeView(View):
     def get(self, request):
+        print(request.User)
         return dict(colleges=[college.detail() for college in College.objects.all()])
 
 

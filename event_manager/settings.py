@@ -39,4 +39,7 @@ RAZORPAY_KEY = os.getenv("RAZORPAY_KEY")
 PAYMENT_CALLBACK_URL = os.getenv('PAYMENT_CALLBACK_URL')
 PAYMENT_REDIRECT_URL = os.getenv('PAYMENT_REDIRECT_URL')
 
-ADMINS = ['shohanduttaroy99@gmail.com', 'prasadyash549@yahoo.com', 'akashsurana119@gmail.com']
+if DEBUG:
+    ADMINS = ['shohanduttaroy99@gmail.com']
+else:
+    ADMINS = ['shohanduttaroy99@gmail.com', 'prasadyash549@yahoo.com', 'akashsurana119@gmail.com']

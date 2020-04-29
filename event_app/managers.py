@@ -5,6 +5,12 @@ from utils import BaseManager
 
 
 class UserManager(BaseUserManager):
+    def get(self, **kwargs):
+        try:
+            return super(UserManager, self).get(**kwargs)
+        except self.model.DoesNotExist:
+            return None
+
     def create_user(self, details):
         model = get_user_model()
         if details.get('phone'):
