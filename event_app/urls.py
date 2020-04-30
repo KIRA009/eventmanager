@@ -16,6 +16,8 @@ unauth_urls = list(
             ("user/", GetUserView),
             ("feature/", ProModeView),
             ("background/get/", GetBgView),
+            ('packs/', GetPacksView),
+            ("check/", CheckAuthView)
         ],
     )
 )

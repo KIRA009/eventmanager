@@ -1,6 +1,7 @@
 import django.conf.global_settings as settings
 from azure.storage.blob import BlobServiceClient
 from corsheaders.defaults import default_headers
+import socket
 
 from .default_settings import *
 
@@ -41,7 +42,7 @@ if DEBUG:
 else:
     ADMINS = ['shohanduttaroy99@gmail.com', 'prasadyash549@yahoo.com', 'akashsurana119@gmail.com']
 
-EMAIL_HOST = 'mail.privateemail.com'
+EMAIL_HOST = socket.gethostbyname('mail.privateemail.com')
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')

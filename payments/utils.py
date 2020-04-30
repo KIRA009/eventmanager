@@ -5,10 +5,10 @@ import hashlib
 from django.utils.timezone import now, localdate, datetime
 from datetime import timedelta
 import pytz
-import json
 
 from event_manager.settings import RAZORPAY_KEY, RAZORPAY_MID, RAZORPAY_SECRET, TIME_ZONE
-from .models import Subscription, Order
+from .models import Subscription, Order, OrderItem
+from event_app.models import ProPack
 
 BASE_URL = "https://api.razorpay.com/v1"
 auth = (RAZORPAY_KEY, RAZORPAY_SECRET)
@@ -69,6 +69,26 @@ def get_order(order_id):
     return res["items"]
 
 
+def get_plan(plan_id):
+    res = requests.get(f"{BASE_URL}/plans/{plan_id}", auth=auth).json()
+    if 'error' in res:
+        return True, res['error']
+    return False, res
+
+
+def create_plan(pack):
+    res = requests.post(f'{BASE_URL}/plans', auth=auth, json=dict(
+        period=pack.period,
+        interval=1,
+        item=dict(
+            name=f"Pro pack - {pack.period}",
+            amount=pack.price * 100,
+            currency=pack.currency,
+        )
+    )).json()
+    return res
+
+
 def handle_order(order, query):
     model = order.order._meta.model_name
     if model == 'propack':
@@ -107,8 +127,10 @@ def update_subscription(sub, order=None, start_date=None, end_date=None):
     if order:
         order = Order(order_id=order['order_id'], amount=int(order['amount']) / 100, payment_id=order['id'], paid=True,
                       user=sub.user)
-        order.meta_data = json.dumps(get_order(order.order_id)[0])
+        meta_data = get_order(order.order_id)
+        order.meta_data = meta_data[0]
         order.save()
+        OrderItem.objects.create(order_id=order, meta_data=meta_data[0], index=0, order=sub)
     sub.save()
 
 

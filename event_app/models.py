@@ -1,8 +1,9 @@
 from uuid import uuid4
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
-from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from django.utils.timezone import localdate, now
+from django.contrib.postgres.fields import ArrayField
+from json import loads
 
 from utils import AutoCreatedUpdatedMixin
 from .managers import UserManager, LinkManager
@@ -40,13 +41,16 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
         return 'pro' if self.subscriptions.filter(sub_type=Subscription.PROPACK, start_date__lte=today,
                                                   end_date__gte=today).exists() else 'normal'
 
-    def detail(self):
-        ret = super(User, self).detail()
+    class Encoding(AutoCreatedUpdatedMixin.Encoding):
+        exclude_fields = AutoCreatedUpdatedMixin.Encoding.exclude_fields.copy()
         for i in ["password", "last_login", "is_superuser", "is_staff", "secret"]:
-            del ret[i]
-        ret["links"] = [link.detail() for link in self.links.all()]
-        ret["user_type"] = self.user_type
-        return ret
+            exclude_fields.append(i)
+
+        process_fields = AutoCreatedUpdatedMixin.Encoding.process_fields.copy()
+        process_fields.update(**dict(
+            links=lambda x: [_.detail() for _ in x.links.all()],
+            user_type=lambda x: x.user_type
+        ))
 
     def change_secret(self):
         self.secret = uuid4()
@@ -87,6 +91,36 @@ class ProModeFeature(AutoCreatedUpdatedMixin):
 
 
 class ProPack(AutoCreatedUpdatedMixin):
-    monthly_price = models.IntegerField(default=300)
-    yearly_price = models.IntegerField(default=1000)
-    order = GenericRelation("payments.OrderItem")
+    INR = 'INR'
+    USD = 'USD'
+    CURRENCIES = (
+        (INR, '₹'),
+        (USD, '$')
+    )
+    MONTHLY = 'monthly'
+    YEARLY = 'yearly'
+    TYPES = (
+        (MONTHLY, 'Monthly pack'),
+        (YEARLY, 'Yearly pack')
+    )
+    price = models.IntegerField(default=300)
+    plan_id = models.TextField(blank=True, default='')
+    period = models.CharField(max_length=256, default=MONTHLY, blank=True, choices=TYPES)
+    currency = models.TextField(choices=CURRENCIES, default=INR)
+    features = ArrayField(models.TextField(blank=True), default=list, blank=True)
+
+    def save(self, *args, **kwargs):
+        from payments.utils import get_plan, create_plan
+        if self.plan_id:
+            error, plan = get_plan(self.plan_id)
+            if error:
+                return
+            if plan['item']['amount'] != 100 * self.price or plan['period'] != self.period:
+                self.plan_id = create_plan(self)['id']
+        super(ProPack, self).save()
+
+    class Encoding(AutoCreatedUpdatedMixin.Encoding):
+        process_fields = AutoCreatedUpdatedMixin.Encoding.process_fields.copy()
+        process_fields.update(**{
+            'features': lambda x: loads(x)
+        })

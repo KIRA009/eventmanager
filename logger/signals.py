@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from event_app.models import User
@@ -22,4 +22,4 @@ def send_email(sender, **kwargs):
             return
         _vars['model_name'] = 'New order receieved and paid'
         _vars['message'] = f'{instance.user.email} paid {instance.amount} for {instance.meta_data}'
-    send_email_to_admins('new_object', _vars['model_name'], **_vars)
+    # send_email_to_admins('new_object', _vars['model_name'], **_vars)

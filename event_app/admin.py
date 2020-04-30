@@ -5,9 +5,9 @@ from payments.models import Subscription
 from payments.utils import update_subscription
 
 
-@admin.register(College, Link, ProModeFeature, ProPack)
+@admin.register(College, Link, ProModeFeature)
 class BaseAdmin(admin.ModelAdmin):
-    fields_exclude = ['created_at', 'updated_at']
+    exclude = ['created_at', 'updated_at']
     show_full_result_count = True
     view_on_site = False
     date_hierarchy = 'created_at'
@@ -26,3 +26,8 @@ class UserAdmin(BaseAdmin):
 
     actions = ['create_pro']
     search_fields = ['username', 'email']
+
+
+@admin.register(ProPack)
+class ProPackAdmin(BaseAdmin):
+    exclude = BaseAdmin.exclude + ['plan_id']

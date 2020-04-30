@@ -34,8 +34,8 @@ class GetLinkData(View):
     def post(self, request):
         data = request.json
         if request.User.user_type == 'pro':
-            analytics = Click.objects.filter(link__user=request.User, link__id=data['link_id'])
-            return dict(analytics=[_.detail() for _ in analytics])
+            analytics = [_.detail() for _ in Click.objects.filter(link__user=request.User, link__id=data['link_id'])]
+            return dict(analytics=analytics)
         else:
             return dict(clicks=Click.objects.get_count(link__user=request.User, link__id=data['link_id'])['count'])
 

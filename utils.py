@@ -6,22 +6,27 @@ import django.middleware.common as common
 import json
 from django.contrib.auth import get_user_model
 from django.core import serializers
+from django.core.serializers.json import DjangoJSONEncoder
 from django.core.mail import send_mail
 
 from event_manager.settings import (
-    EMAIL_HOST_USER
+    EMAIL_HOST_USER,
+    SECRET_KEY,
 )
 
 
 def send_email(emails, subject, message):
-    send_mail(
-        subject=subject,
-        message="This is a system generated email",
-        from_email=EMAIL_HOST_USER,
-        recipient_list=emails,
-        html_message=message,
-        fail_silently=False
-    )
+    try:
+        send_mail(
+            subject=subject,
+            message="This is a system generated email",
+            from_email=EMAIL_HOST_USER,
+            recipient_list=emails,
+            html_message=message,
+            fail_silently=False
+        )
+    except Exception as e:
+        pass
 
 
 def jsonify(data):
@@ -107,9 +112,15 @@ class AutoCreatedUpdatedMixin(models.Model):
     def detail(self):
         ret = json.loads(serializers.serialize('json', [self]))[0]
         ret['fields']['id'] = ret['pk']
-        del ret['fields']['created_at']
-        del ret['fields']['updated_at']
+        for i in self.Encoding.exclude_fields:
+            del ret['fields'][i]
+        for k, v in self.Encoding.process_fields.items():
+            ret['fields'][k] = v(ret['fields'].get(k, self))
         return ret['fields']
+
+    class Encoding:
+        exclude_fields = ['created_at', 'updated_at']
+        process_fields = {}
 
 
 def decorator(func, test_func):
@@ -128,3 +139,4 @@ def decorator(func, test_func):
 
 def login_required(func):
     return decorator(func, lambda u: u.is_authenticated)
+

@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.postgres.fields import JSONField
 import json
 
 from utils import AutoCreatedUpdatedMixin
@@ -22,6 +23,7 @@ class Subscription(AutoCreatedUpdatedMixin):
     payment_url = models.URLField(blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
     test = models.BooleanField(default=False)
+    order = GenericRelation("payments.OrderItem")
 
     def __str__(self):
         return f'{self.user.username} -> {self.sub_type} : {self.start_date} - {self.end_date}'
@@ -31,16 +33,17 @@ class OrderItem(AutoCreatedUpdatedMixin):
     order = GenericForeignKey()
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    meta_data = models.TextField(default="")
+    meta_data = JSONField(default=dict)
     index = models.IntegerField(default=0)
     order_id = models.ForeignKey(
         "Order", on_delete=models.CASCADE, related_name="items"
     )
 
-    def detail(self):
-        det = super(OrderItem, self).detail()
-        det["meta_data"] = json.loads(det["meta_data"])
-        return det
+    class Encoding(AutoCreatedUpdatedMixin.Encoding):
+        process_fields = AutoCreatedUpdatedMixin.Encoding.process_fields.copy()
+        process_fields.update(**dict(
+            meta_data=lambda x: json.loads(x)
+        ))
 
 
 class Order(AutoCreatedUpdatedMixin):
@@ -48,11 +51,12 @@ class Order(AutoCreatedUpdatedMixin):
     amount = models.BigIntegerField(default=0)
     payment_id = models.TextField(default="")
     signature = models.TextField(default="")
-    meta_data = models.TextField(default="")
+    meta_data = JSONField(default=dict)
     paid = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
 
-    def detail(self):
-        det = super(Order, self).detail()
-        det["meta_data"] = json.loads(det["meta_data"])
-        return det
+    class Encoding(AutoCreatedUpdatedMixin.Encoding):
+        process_fields = AutoCreatedUpdatedMixin.Encoding.process_fields.copy()
+        process_fields.update(**dict(
+            meta_data=lambda x: json.loads(x)
+        ))

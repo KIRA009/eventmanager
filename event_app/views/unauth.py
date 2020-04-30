@@ -1,8 +1,9 @@
 from django.contrib.auth import authenticate
 from django.utils import timezone as tz
 from django.views import View
+from django.http import HttpResponse
 
-from event_app.models import User, College, ProModeFeature
+from event_app.models import User, College, ProPack
 from utils import create_token, send_email
 
 
@@ -11,14 +12,20 @@ class RegisterView(View):
         data = request.json
         created, user = User.objects.create_user(data)
         if created:
-            return dict(message="User successfully created")
+            return dict(
+                data="Successful",
+                user=user.detail(),
+                token=create_token(
+                    username=f"{user.email}$$${user.password}",
+                    len_email=len(user.email),
+                ),
+            )
         return dict(error=user, status_code=401)
 
 
 class CollegeView(View):
     def get(self, request):
-        print(request.User)
-        return dict(colleges=[college.detail() for college in College.objects.all()])
+        return dict(colleges=[_.detail() for _ in College.objects.detail()])
 
 
 class SendValidateEmailView(View):
@@ -34,7 +41,7 @@ class SendValidateEmailView(View):
                         <html>
                             <head></head>
                             <body style="text-align:left;">
-                                <header><img src="https://i.postimg.cc/Gh3gjht5/main-logo.png" height="200px" width="200px"> 
+<header><img src="https://i.postimg.cc/Gh3gjht5/main-logo.png" height="200px" width="200px"> 
                                 </header><br><br>
                                 <div style="text-align:left; font-size:20px;">
                                 Hi {user.name},<br><br>
@@ -70,9 +77,11 @@ class CompleteValidateEmailView(View):
                 if user.secret == secret:
                     user.is_validated = True
                     user.save()
-            return dict(message="Email validated")
+            return HttpResponse("Your account is now validated. Click <a href='myweblink.store'>here</a> to go "
+                                "the website")
         except User.DoesNotExist:
-            return dict(error="User not found", status_code=404)
+            return HttpResponse("The email address does not exist. Click <a href='myweblink.store'>here</a> to go "
+                                "the website")
 
 
 class LoginView(View):
@@ -99,7 +108,7 @@ class LoginView(View):
 
 class GetUserView(View):
     def post(self, request):
-        user = User.objects.filter(username=request.json["username"]).first()
+        user = User.objects.filter(username=request.json["username"].lower()).first()
         if user:
             return dict(user=user.detail())
         return dict(error="User not found", status_code=401)
@@ -115,3 +124,8 @@ class GetBgView(View):
             )
         except User.DoesNotExist:
             return dict(error="User not found", status_code=404)
+
+
+class GetPacksView(View):
+    def get(self, request):
+        return dict(packs=[_.detail() for _ in ProPack.objects.all()])
