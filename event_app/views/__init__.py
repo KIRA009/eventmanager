@@ -25,8 +25,9 @@ class ForgotPwdView(View):
         email = request.POST.dict().get("email")
         if not email:
             return redirect("/forgot-password/")
-        user = User.objects.get(email=email)
-        if not user:
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
             return redirect("/forgot-password/")
         email = f"""
             <!DOCTYPE html>
@@ -134,8 +135,9 @@ class ForgotPwdView(View):
 
 class ResetPwdView(View):
     def get(self, request, username, secret):
-        user = User.objects.get(username=username)
-        if not user:
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
             return redirect("/forgot-password/")
         if str(user.secret) != secret:
             return redirect("/forgot-password/")
@@ -147,8 +149,9 @@ class ResetPwdView(View):
 
     def post(self, request, username, secret):
         password = request.POST.dict().get("password")
-        user = User.objects.get(username=username)
-        if not user:
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
             return redirect("/forgot-password/")
         if str(user.secret) != secret:
             return redirect("/forgot-password/")

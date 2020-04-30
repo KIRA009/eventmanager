@@ -26,8 +26,8 @@ class SendValidateEmailView(View):
         scheme = request.META["wsgi.url_scheme"]
         server = request.META["HTTP_HOST"]
         data = request.json
-        user = User.objects.get(email=data["email"])
-        if user:
+        try:
+            user = User.objects.get(email=data["email"])
             email = f"""\
                         <html>
                             <head></head>
@@ -56,19 +56,21 @@ auto;"
                     """
             send_email([data["email"]], "Validate your account", email)
             return dict(message="Email sent")
-        return dict(error="User not found", status_code=404)
+        except User.DoesNotExist:
+            return dict(error="User not found", status_code=404)
 
 
 class CompleteValidateEmailView(View):
     def get(self, request, user_id, secret):
-        user = User.objects.get(id=user_id)
-        if user:
+        try:
+            user = User.objects.get(id=user_id)
             if not user.is_validated:
                 if user.secret == secret:
                     user.is_validated = True
                     user.save()
             return dict(message="Email validated")
-        return dict(error="User not found", status_code=404)
+        except User.DoesNotExist:
+            return dict(error="User not found", status_code=404)
 
 
 class LoginView(View):
@@ -103,10 +105,11 @@ class GetUserView(View):
 
 class GetBgView(View):
     def post(self, request):
-        user = User.objects.get(username=request.json['username'])
-        if user:
+        try:
+            user = User.objects.get(username=request.json['username'])
             return dict(
                 background_color=user.background_color,
                 background_image=user.background_image
             )
-        return dict(error="User not found", status_code=404)
+        except User.DoesNotExist:
+            return dict(error="User not found", status_code=404)

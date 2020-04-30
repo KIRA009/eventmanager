@@ -20,13 +20,14 @@ class AddClickView(View):
 class AddViewView(View):
     def post(self, request):
         data = request.json
-        user = User.objects.get(username=data['username'])
-        if user:
+        try:
+            user = User.objects.get(username=data['username'])
             view, _ = ProfileView.objects.get_or_create(user=user, day=now().date())
             view.views += 1
             view.save()
             return dict(message="View added successfully")
-        return dict(error='User does not exist', status_code=404)
+        except User.DoesNotExist:
+            return dict(error='User does not exist', status_code=404)
 
 
 class GetLinkData(View):
