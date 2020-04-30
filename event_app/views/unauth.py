@@ -28,6 +28,8 @@ class SendValidateEmailView(View):
         data = request.json
         try:
             user = User.objects.get(email=data["email"])
+            if user.is_validated:
+                return dict(error="User already validated", status_code=401)
             email = f"""\
                         <html>
                             <head></head>

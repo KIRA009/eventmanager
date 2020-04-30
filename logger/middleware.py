@@ -22,6 +22,7 @@ class ExceptionHandlerMiddleware(CommonMiddleware):
         else:
             _vars['email'] = 'Anonymous'
             _vars['phone'] = 'nil'
+        # print(traceback.format_exc())
         Tracker.objects.create(trace=traceback.format_exc(), msg=exception, user=user, url=request.path_info)
         if not DEBUG:
             send_email_to_admins('error', 'Error', **_vars)

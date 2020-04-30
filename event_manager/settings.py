@@ -19,9 +19,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static_root")
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_HEADERS = list(default_headers) + ["Token"]
 
-SENDGRIDAPIKEY = os.getenv("SENDGRIDAPIKEY")
-EMAIL_FROM = os.getenv("EMAIL_FROM")
-
 if DEBUG:
     PROFILECONTAINER = "eventmanagerprofiledebug"
     ICONCONTAINER = "eventmanagericondebug"
@@ -43,3 +40,9 @@ if DEBUG:
     ADMINS = ['shohanduttaroy99@gmail.com']
 else:
     ADMINS = ['shohanduttaroy99@gmail.com', 'prasadyash549@yahoo.com', 'akashsurana119@gmail.com']
+
+EMAIL_HOST = 'mail.privateemail.com'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
