@@ -1,23 +1,23 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "051b304ad6adfa8d823a504091ee3cb0",
+    "revision": "b90fc7c9ad1d1aa25e0387140b6bf480",
     "url": "/index.html"
   },
   {
-    "revision": "e4f5d3c1cb15f1526a1c",
+    "revision": "b41fb843e9685fc46f9e",
     "url": "/static/css/2.30543508.chunk.css"
   },
   {
-    "revision": "ba6f3c883a21dc93623e",
-    "url": "/static/css/main.41351a25.chunk.css"
+    "revision": "c4aee6a203b04f2ac1a9",
+    "url": "/static/css/main.3fe6ee9a.chunk.css"
   },
   {
-    "revision": "e4f5d3c1cb15f1526a1c",
-    "url": "/static/js/2.cb1bf847.chunk.js"
+    "revision": "b41fb843e9685fc46f9e",
+    "url": "/static/js/2.4b9b1491.chunk.js"
   },
   {
-    "revision": "ba6f3c883a21dc93623e",
-    "url": "/static/js/main.18e3d718.chunk.js"
+    "revision": "c4aee6a203b04f2ac1a9",
+    "url": "/static/js/main.f0125f03.chunk.js"
   },
   {
     "revision": "42ac5946195a7306e2a5",
@@ -56,16 +56,16 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/static/media/Splash-Instagraam-Icon-Png-1024x1024.2a6d07cf.png"
   },
   {
-    "revision": "080a203cf4a601be3bb1a427cd1eb032",
-    "url": "/static/media/WhatsApp Image 2020-04-29 at 10.50.38 PM (1).080a203c.jpeg"
+    "revision": "047534f121601da4f007930056a2de76",
+    "url": "/static/media/WhatsApp Image 2020-04-29 at 10.50.38 PM (1).047534f1.jpeg"
   },
   {
     "revision": "4eaea5a786131dc98894aa46012fbb9e",
     "url": "/static/media/WhatsApp Image 2020-04-29 at 10.50.38 PM (2).4eaea5a7.jpeg"
   },
   {
-    "revision": "cfe2976ee70941b7ae77c1f01e5d299f",
-    "url": "/static/media/WhatsApp Image 2020-04-29 at 10.50.38 PM (3).cfe2976e.jpeg"
+    "revision": "a23d7e5cd3562c6adb9a5708dfce9d2a",
+    "url": "/static/media/WhatsApp Image 2020-04-29 at 10.50.38 PM (3).a23d7e5c.jpeg"
   },
   {
     "revision": "2f52a4f82797eb0bab9da5cf30681f9c",
@@ -118,9 +118,5 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
     "revision": "0dfef75fa817cb22462b6e722aecfee2",
     "url": "/static/media/patreon-512.0dfef75f.png"
-  },
-  {
-    "revision": "86208827d593356611464711f5e8f88f",
-    "url": "/static/media/tick.86208827.png"
   }
 ]);

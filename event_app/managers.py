@@ -9,9 +9,13 @@ class UserManager(BaseUserManager):
     def create_user(self, details):
         model = get_user_model()
         if details.get('phone'):
-            if model.objects.filter(phone=details['phone']).exists():
+            phone = details.get('phone')
+            if model.objects.filter(phone=phone).exists():
                 return False, "Phone number already registered"
-
+            if not phone.isdigit():
+                return False, "Phone number should contain only digits"
+            if len(phone) != 10:
+                return False, "Phone number should be 10 digits long"
         if model.objects.filter(email=details['email']).exists():
             return False, "Email already registered"
         from .models import College
