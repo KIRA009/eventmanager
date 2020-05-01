@@ -118,6 +118,8 @@ def create_subscription(plan_id, total_count, user, meta_data):
 
 
 def update_subscription(sub, order=None, start_date=None, end_date=None):
+    if sub is None:
+        return None
     if isinstance(start_date, int):
         sub.start_date = datetime.fromtimestamp(start_date, tz).date()
         sub.end_date = datetime.fromtimestamp(end_date, tz).date()

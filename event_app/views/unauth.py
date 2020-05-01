@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from event_app.models import User, College, ProPack
 from utils.token import create_token
 from utils.tasks import send_email
+from event_manager.settings import EMAIL_HOST_USER
 
 
 class RegisterView(View):
@@ -60,7 +61,7 @@ auto;"
                                     Thank you,<br>
                                     Team Extremist
                                 </p><br><br>
-                                If you face any problems, feel free to send your queries at xyz@gmail.com
+                                If you face any problems, feel free to send your queries at {EMAIL_HOST_USER}
                             </body>
                         </html>
                     """
@@ -78,10 +79,10 @@ class CompleteValidateEmailView(View):
                 if user.secret == secret:
                     user.is_validated = True
                     user.save()
-            return HttpResponse("Your account is now validated. Click <a href='myweblink.store'>here</a> to go "
+            return HttpResponse("Your account is now validated. Click <a href='https://myweblink.store'>here</a> to go "
                                 "the website")
         except User.DoesNotExist:
-            return HttpResponse("The email address does not exist. Click <a href='myweblink.store'>here</a> to go "
+            return HttpResponse("The email address does not exist. Click <a href='https://myweblink.store'>here</a> to go "
                                 "the website")
 
 

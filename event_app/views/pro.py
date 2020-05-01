@@ -22,8 +22,11 @@ class ProModeHeaderView(View):
 
 class ProModeView(View):
     def post(self, request):
+        data = request.json
+        if 'username' not in data:
+            return dict(error="Username not found", status_code=401)
         feature = ProModeFeature.objects.filter(
-            user__username=request.json["username"]
+            user__username=data['username']
         ).first()
         if feature:
             return dict(feature=feature.detail())
