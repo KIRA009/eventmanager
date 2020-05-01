@@ -1,6 +1,7 @@
 import re
 import uuid
 import azure.core.exceptions as azure_exc
+from celery.task import task
 
 from event_manager.settings import (
     STORAGE_CLIENT,
@@ -17,6 +18,7 @@ def upload_file(request, file, container):
     return f"https://storageeventmanager.blob.core.windows.net/{container}/{file_name}"
 
 
+@task(name="delete_file")
 def delete_file(url):
     if url is None:
         return

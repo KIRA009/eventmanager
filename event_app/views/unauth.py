@@ -5,7 +5,7 @@ from django.http import HttpResponse
 
 from event_app.models import User, College, ProPack
 from utils.token import create_token
-from utils.email import send_email
+from utils.tasks import send_email
 
 
 class RegisterView(View):
@@ -26,7 +26,7 @@ class RegisterView(View):
 
 class CollegeView(View):
     def get(self, request):
-        return dict(colleges=[_.detail() for _ in College.objects.detail()])
+        return dict(colleges=[_.detail() for _ in College.objects.all()])
 
 
 class SendValidateEmailView(View):

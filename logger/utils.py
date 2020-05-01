@@ -1,6 +1,6 @@
 import os
 
-from utils.email import send_email
+from utils.tasks import send_email
 from utils.decorators import decorator
 from event_manager.settings import ADMINS, BASE_DIR
 

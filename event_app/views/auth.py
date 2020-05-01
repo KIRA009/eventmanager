@@ -3,7 +3,8 @@ from django.db import transaction
 from django.db.utils import IntegrityError
 
 from event_manager.settings import PROFILECONTAINER, ICONCONTAINER
-from event_app.utils import upload_file, delete_file
+from event_app.utils import upload_file
+from utils.tasks import delete_file
 from event_app.models import Link, User
 from utils.token import create_token
 

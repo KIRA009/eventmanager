@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from .unauth import *
 from .auth import *
 from .pro import *
-from utils.email import send_email
+from utils.tasks import send_email
 
 
 def index(request):

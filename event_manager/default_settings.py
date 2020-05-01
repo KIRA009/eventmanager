@@ -49,7 +49,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     'logger.middleware.ExceptionHandlerMiddleware',
-    "utils.CustomMiddleware",
+    "utils.middleware.CustomMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
 ]
