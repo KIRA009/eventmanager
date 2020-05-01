@@ -5,7 +5,7 @@ import azure.core.exceptions as azure_exc
 from event_manager.settings import (
     STORAGE_CLIENT,
 )
-from utils import decorator
+from utils.decorators import decorator
 
 
 def upload_file(request, file, container):

@@ -1,7 +1,7 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth import get_user_model
 import re
-from utils import BaseManager
+from utils.base_manager import BaseManager
 
 
 class UserManager(BaseUserManager):

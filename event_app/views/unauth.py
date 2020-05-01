@@ -4,7 +4,8 @@ from django.views import View
 from django.http import HttpResponse
 
 from event_app.models import User, College, ProPack
-from utils import create_token, send_email
+from utils.token import create_token
+from utils.email import send_email
 
 
 class RegisterView(View):

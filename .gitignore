@@ -16,3 +16,5 @@ logger/migrations
 temp
 
 .pre-commit-config.yaml
+abc/
+.coverage

@@ -5,7 +5,7 @@ from django.db.utils import IntegrityError
 from event_manager.settings import PROFILECONTAINER, ICONCONTAINER
 from event_app.utils import upload_file, delete_file
 from event_app.models import Link, User
-from utils import create_token
+from utils.token import create_token
 
 
 class UploadProfilePicView(View):

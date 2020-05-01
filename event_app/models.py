@@ -5,7 +5,7 @@ from django.utils.timezone import localdate, now
 from django.contrib.postgres.fields import ArrayField
 from json import loads
 
-from utils import AutoCreatedUpdatedMixin
+from utils.base_model_mixin import AutoCreatedUpdatedMixin
 from .managers import UserManager, LinkManager
 
 

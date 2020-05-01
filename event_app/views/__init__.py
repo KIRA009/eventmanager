@@ -1,10 +1,9 @@
-from django.views import View
 from django.shortcuts import render, redirect
 
 from .unauth import *
 from .auth import *
 from .pro import *
-from utils import send_email
+from utils.email import send_email
 
 
 def index(request):

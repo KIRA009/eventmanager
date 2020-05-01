@@ -1,6 +1,6 @@
 from django.db import models
 
-from utils import AutoCreatedUpdatedMixin
+from utils.base_model_mixin import AutoCreatedUpdatedMixin
 from event_app.models import Link, User
 from .managers import ClickManager, ProfileViewManager
 

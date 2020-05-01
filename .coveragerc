@@ -1,0 +1,15 @@
+[run]
+omit =
+    share/*
+    lib/*
+    bin/*
+    lib64/*
+    */apps.py
+    */migrations/*
+    include/*
+    manage.py/*
+    event_manager/*
+    */tests/*
+
+[html]
+directory = abc

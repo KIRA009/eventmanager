@@ -5,7 +5,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.postgres.fields import JSONField
 import json
 
-from utils import AutoCreatedUpdatedMixin
+from utils.base_model_mixin import AutoCreatedUpdatedMixin
 
 
 User = get_user_model()
