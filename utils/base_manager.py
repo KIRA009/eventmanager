@@ -1,4 +1,5 @@
 from django.db import models
+from .exceptions import NotFound
 
 
 class BaseManager(models.Manager):
@@ -6,4 +7,4 @@ class BaseManager(models.Manager):
         try:
             return super(BaseManager, self).get(**kwargs)
         except self.model.DoesNotExist:
-            return None
+            raise NotFound(f'The {self.model._meta.model_name} requested for does not exist')

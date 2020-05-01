@@ -6,23 +6,22 @@ from django.http import HttpResponse
 from event_app.models import User, College, ProPack
 from utils.token import create_token
 from utils.tasks import send_email
+from utils.exceptions import NotFound, AccessDenied
 from event_manager.settings import EMAIL_HOST_USER
 
 
 class RegisterView(View):
     def post(self, request):
         data = request.json
-        created, user = User.objects.create_user(data)
-        if created:
-            return dict(
-                data="Successful",
-                user=user.detail(),
-                token=create_token(
-                    username=f"{user.email}$$${user.password}",
-                    len_email=len(user.email),
-                ),
-            )
-        return dict(error=user, status_code=401)
+        user = User.objects.create_user(data)
+        return dict(
+            data="Successful",
+            user=user.detail(),
+            token=create_token(
+                username=f"{user.email}$$${user.password}",
+                len_email=len(user.email),
+            ),
+        )
 
 
 class CollegeView(View):
@@ -38,7 +37,7 @@ class SendValidateEmailView(View):
         try:
             user = User.objects.get(email=data["email"])
             if user.is_validated:
-                return dict(error="User already validated", status_code=401)
+                raise NotFound("User already validated")
             email = f"""\
                         <html>
                             <head></head>
@@ -68,7 +67,7 @@ auto;"
             send_email([data["email"]], "Validate your account", email)
             return dict(message="Email sent")
         except User.DoesNotExist:
-            return dict(error="User not found", status_code=404)
+            raise NotFound("User not found")
 
 
 class CompleteValidateEmailView(View):
@@ -105,15 +104,18 @@ class LoginView(View):
                     len_email=len(user.email),
                 ),
             )
-        return dict(status_code=401, error="Invalid credentials")
+        raise NotFound("Invalid credentials")
 
 
 class GetUserView(View):
     def post(self, request):
-        user = User.objects.filter(username=request.json["username"].lower()).first()
+        username = request.json["username"]
+        if username is not None:
+            username = username.lower()
+        user = User.objects.filter(username=username).first()
         if user:
             return dict(user=user.detail())
-        return dict(error="User not found", status_code=401)
+        raise NotFound("User not found")
 
 
 class GetBgView(View):
@@ -125,7 +127,7 @@ class GetBgView(View):
                 background_image=user.background_image
             )
         except User.DoesNotExist:
-            return dict(error="User not found", status_code=404)
+            raise NotFound("User not found")
 
 
 class GetPacksView(View):

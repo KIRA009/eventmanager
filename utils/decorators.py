@@ -1,4 +1,5 @@
 from .middleware import jsonify
+from .exceptions import AccessDenied
 
 
 def decorator(func, test_func):
@@ -10,7 +11,7 @@ def decorator(func, test_func):
         elif request.user.is_authenticated:
             if test_func(request.user):
                 return func(*args, **kwargs)
-        return jsonify(dict(error="Access denied", status_code=401))
+        raise AccessDenied()
 
     return inner
 

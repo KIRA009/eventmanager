@@ -7,6 +7,7 @@ from event_app.utils import upload_file
 from utils.tasks import delete_file
 from event_app.models import Link, User
 from utils.token import create_token
+from utils.exceptions import AccessDenied, NotFound
 
 
 class UploadProfilePicView(View):
@@ -32,8 +33,6 @@ class UserLinkView(View):
             link_id = data["id"]
             del data["id"]
             link = Link.objects.get(id=link_id, user=request.User)
-            if not link:
-                return dict(error="User not authorized", status_code=401)
             Link.objects.filter(id=link_id).update(**data)
         else:
             link = Link.objects.create(**data, user=request.User)
@@ -42,8 +41,6 @@ class UserLinkView(View):
     def delete(self, request):
         data = request.json
         link = Link.objects.get(id=data["id"])
-        if not link:
-            return dict(error="Link not found", status_code=404)
         link.delete()
         return dict(message="The links are deleted")
 
@@ -52,17 +49,15 @@ class UploadIconView(View):
     def post(self, request):
         data = request.POST.dict()
         file = request.FILES.dict().get("photo")
-        link = Link.objects.filter(id=data["link_id"], user=request.User).first()
-        if link:
-            if link.icon:
-                delete_file(link.icon)
-            if file is None:
-                link.icon = None
-            else:
-                link.icon = upload_file(request, file, ICONCONTAINER)
-            link.save()
-            return dict(link=link.detail())
-        return dict(error="Link not found", status_code=404)
+        link = Link.objects.get(id=data["link_id"], user=request.User)
+        if link.icon:
+            delete_file(link.icon)
+        if file is None:
+            link.icon = None
+        else:
+            link.icon = upload_file(request, file, ICONCONTAINER)
+        link.save()
+        return dict(link=link.detail())
 
 
 class UpdateLinkSequenceView(View):
@@ -104,11 +99,11 @@ class UpdateUserDetailsView(View):
                 del data[i]
         if 'username' in data:
             if '@' in data:
-                return dict(error='Cannot have @ in username', status_code=401)
+                raise AccessDenied('Cannot have @ in username')
         try:
             User.objects.filter(id=user.id).update(**data)
         except IntegrityError as e:
-            return dict(error=str(e), status_code=401)
+            raise AccessDenied(str(e))
         user = User.objects.get(id=user.id)
         return dict(
             user=user.detail(),

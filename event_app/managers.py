@@ -1,7 +1,7 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth import get_user_model
-import re
 from utils.base_manager import BaseManager
+from utils.exceptions import NotFound
 
 
 class UserManager(BaseUserManager):
@@ -11,26 +11,24 @@ class UserManager(BaseUserManager):
         if details.get('phone'):
             phone = details.get('phone')
             if model.objects.filter(phone=phone).exists():
-                return False, "Phone number already registered"
+                raise NotFound("Phone number already registered")
             if not phone.isdigit():
-                return False, "Phone number should contain only digits"
+                raise NotFound("Phone number should contain only digits")
             if len(phone) != 10:
-                return False, "Phone number should be 10 digits long"
+                raise NotFound("Phone number should be 10 digits long")
         if model.objects.filter(email=details['email']).exists():
-            return False, "Email already registered"
+            raise NotFound("Email already registered")
         from .models import College
         details["college"] = College.objects.get(id=details["college"])
-        if not details['college']:
-            return False, 'College does not exist'
         details['username'] = details['email']
         details["is_staff"] = details["is_superuser"] = False
         user = self.model(**details)
         user.set_password(details['password'])
         try:
             user.save(using=self._db)
-            return True, user
+            return user
         except Exception as e:
-            return False, str(e)
+            raise NotFound(str(e))
 
     def create_superuser(self, email, password):
         user = self.model(email=email.lower(), is_superuser=True, is_staff=True)

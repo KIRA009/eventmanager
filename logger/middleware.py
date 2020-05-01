@@ -22,6 +22,8 @@ class ExceptionHandlerMiddleware(CommonMiddleware):
         else:
             _vars['email'] = 'Anonymous'
             _vars['phone'] = 'nil'
+        if 'status_code' in exception.__dict__:
+            return dict(error=exception.message, status_code=exception.status_code)
         if DEBUG:
             print(traceback.format_exc())
         else:

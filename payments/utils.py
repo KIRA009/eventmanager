@@ -8,7 +8,7 @@ import pytz
 
 from event_manager.settings import RAZORPAY_KEY, RAZORPAY_MID, RAZORPAY_SECRET, TIME_ZONE
 from .models import Subscription, Order, OrderItem
-from event_app.models import ProPack
+from utils.exceptions import NotFound, AccessDenied
 
 BASE_URL = "https://api.razorpay.com/v1"
 auth = (RAZORPAY_KEY, RAZORPAY_SECRET)
@@ -27,8 +27,8 @@ def create_order(amount):
         auth=auth,
     ).json()
     if "error" in res:
-        return False, res["error"]
-    return True, res["id"]
+        raise NotFound(res["error"]["description"])
+    return res["id"]
 
 
 def compare_string(expected_str, actual_str):
@@ -111,10 +111,10 @@ def create_subscription(plan_id, total_count, user, meta_data):
         **meta_data
     ), auth=auth).json()
     if "error" in res:
-        return False, res["error"]
+        raise AccessDenied(res["error"]['description'])
     sub = Subscription.objects.create(sub_id=res['id'], sub_type=meta_data['notes[sub_type]'],
                                       payment_url=res['short_url'], user=user)
-    return True, sub
+    return sub
 
 
 def update_subscription(sub, order=None, start_date=None, end_date=None):

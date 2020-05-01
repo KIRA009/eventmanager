@@ -14,21 +14,10 @@ class OrderView(View):
         data = request.json
         amount = 0
         items = []
-        for _item in data['items']:
-            if _item['type'] == 'pro_pack':
-                item = ProPack.objects.get()
-                if _item['meta_data']['pack_type'] == 'monthly':
-                    amount += item.monthly_price
-                else:
-                    amount += item.yearly_price
-            items.append(item)
-        created, order_id = create_order(amount)
-        if created:
-            order = Order.objects.create(
-                order_id=order_id, amount=amount, user=request.User, meta_data=""
-            )
-        else:
-            return dict(error=order_id["description"], status_code=404)
+        order_id = create_order(amount)
+        order = Order.objects.create(
+            order_id=order_id, amount=amount, user=request.User, meta_data=""
+        )
         items = [OrderItem(order=item, order_id=order, index=i) for i, item in enumerate(items)]
         OrderItem.objects.bulk_create(items)
         return dict(
@@ -52,12 +41,9 @@ class OrderView(View):
 class SubscriptionView(View):
     def post(self, request):
         data = request.json
-        created, sub = create_subscription(data['plan_id'], data['total_count'], user=request.User,
+        sub = create_subscription(data['plan_id'], data['total_count'], user=request.User,
                                            meta_data={'notes[sub_type]': data['sub_type']})
-        if created:
-            return dict(payment_url=sub.payment_url)
-        else:
-            return dict(error=sub, status_code=401)
+        return dict(payment_url=sub.payment_url)
 
 
 class PaymentWebhookView(View):

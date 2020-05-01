@@ -4,6 +4,7 @@ import json
 from django.http import JsonResponse
 
 from .token import retrieve_token
+from .exceptions import AccessDenied
 
 
 def jsonify(data):
@@ -24,7 +25,7 @@ class CustomMiddleware(common.CommonMiddleware):
             if decoded:
                 for i in ["username", "len_email"]:
                     if token.get(i) is None:
-                        return dict(error="Invalid token", status_code=401)
+                        raise AccessDenied("Invalid token")
                 username = token["username"][: token["len_email"]]
                 password = token["username"][3 + token["len_email"]:]
                 model = get_user_model()

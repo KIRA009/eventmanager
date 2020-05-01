@@ -3,6 +3,7 @@ from django.views import View
 from event_app.models import ProModeFeature
 from event_app.utils import upload_file, delete_file
 from event_manager.settings import ICONCONTAINER
+from utils.exceptions import AccessDenied
 
 
 class ProModeHeaderView(View):
@@ -24,7 +25,7 @@ class ProModeView(View):
     def post(self, request):
         data = request.json
         if 'username' not in data:
-            return dict(error="Username not found", status_code=401)
+            raise AccessDenied("Username not found")
         feature = ProModeFeature.objects.filter(
             user__username=data['username']
         ).first()
