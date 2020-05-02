@@ -1,5 +1,5 @@
 from django.views import View
-from django.utils.timezone import now, localdate
+from django.utils.timezone import now, localdate, timedelta
 
 from analytics.models import Click, ProfileView
 from event_app.models import Link, User
@@ -30,19 +30,53 @@ class AddViewView(View):
 
 
 class GetLinkData(View):
-    def post(self, request):
-        data = request.json
+    def get(self, request):
+        month_ago = localdate(now()) - timedelta(days=28)
+        analytics = []
         if request.User.user_type == 'pro':
-            analytics = [_.detail() for _ in Click.objects.filter(link__user=request.User, link__id=data['link_id'])]
+            for link in request.User.links.all():
+                clicks = []
+                total_clicks = 0
+                i = 0
+                for click in link.clicks.filter(day__gte=month_ago).order_by('day'):
+                    while click.day != month_ago + timedelta(days=i):
+                        clicks.append(dict(day=month_ago + timedelta(days=i), clicks=0))
+                        i += 1
+                    i += 1
+                    clicks.append(dict(day=click.day, clicks=click.clicks))
+                    total_clicks += click.clicks
+                while i <= 28:
+                    clicks.append(dict(day=month_ago + timedelta(days=i), clicks=0))
+                    i += 1
+                analytics.append(dict(link_id=link.id, clicks=clicks, total_clicks=total_clicks))
             return dict(analytics=analytics)
         else:
-            return dict(clicks=Click.objects.get_count(link__user=request.User, link__id=data['link_id'])['count'])
+            for link in request.User.links.all():
+                total_clicks = link.clicks.get_count(day__gte=month_ago, link__user=request.User)['count']
+                if total_clicks is None:
+                    total_clicks = 0
+                analytics.append(dict(link_id=link.id, clicks=[], total_clicks=total_clicks))
+            return dict(analytics=analytics)
 
 
 class GetProfileViewData(View):
     def get(self, request):
+        month_ago = localdate(now()) - timedelta(days=28)
         if request.User.user_type == 'pro':
-            analytics = ProfileView.objects.filter(user=request.User)
-            return dict(analytics=[_.detail() for _ in analytics])
+            i = 0
+            analytics = []
+            for day in ProfileView.objects.filter(user=request.User, day__gte=month_ago).order_by('day'):
+                while day.day != month_ago + timedelta(days=i):
+                    analytics.append(dict(views=0, day=month_ago + timedelta(days=i)))
+                    i += 1
+                i += 1
+                analytics.append(dict(views=day.views, day=day.day))
+            while i <= 28:
+                analytics.append(dict(views=0, day=month_ago + timedelta(days=i)))
+                i += 1
+            return dict(analytics=analytics)
         else:
-            return dict(views=ProfileView.objects.get_count(user=request.User)['count'])
+            views = ProfileView.objects.get_count(day__gte=month_ago, user=request.User)['count']
+            if views is None:
+                views = 0
+            return dict(views=views)
