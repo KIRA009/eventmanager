@@ -12,7 +12,7 @@ from .managers import UserManager, LinkManager
 class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
     email = models.EmailField(max_length=256, unique=True)
     is_staff = models.BooleanField(default=False)
-    phone = models.CharField(max_length=10)
+    phone = models.CharField(max_length=10, blank=True)
     name = models.CharField(max_length=256)
     secret = models.UUIDField(default=uuid4)
     is_validated = models.BooleanField(default=False)

@@ -7,7 +7,7 @@ from event_app.utils import upload_file
 from utils.tasks import delete_file
 from event_app.models import Link, User
 from utils.token import create_token
-from utils.exceptions import AccessDenied, NotFound
+from utils.exceptions import AccessDenied
 
 
 class UploadProfilePicView(View):

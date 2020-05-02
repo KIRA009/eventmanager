@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     "event_app",
     "analytics",
     "payments",
-    'logger'
+    'logger',
+    'marketing'
 ]
 
 MIDDLEWARE = [

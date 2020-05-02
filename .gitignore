@@ -12,6 +12,7 @@ event_app/migrations
 analytics/migrations
 payments/migrations
 logger/migrations
+marketing/migrations
 *.bashrc
 temp
 
