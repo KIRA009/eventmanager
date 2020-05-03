@@ -23,7 +23,7 @@ def send_email(sender, **kwargs):
             return
         _vars['model_name'] = 'New user registered'
         _vars['message'] = f'{instance.email} registered with {instance.phone if instance.phone else "no phone number"}'
-        sub = Subscription(sub_id=str(uuid4()), sub_type=Subscription.PROPACK, user=instance, test=True)
+        sub = Subscription(sub_id=str(uuid4()), sub_type=Subscription.PROPACK, user=instance)
         update_subscription(sub, start_date=int(mktime(localdate(now()).timetuple())),
                             end_date=int(mktime((localdate(now()) + timedelta(days=7)).timetuple())))
     elif sender == 'Order':

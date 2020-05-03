@@ -6,7 +6,7 @@ from django.utils.timezone import now, localdate, datetime
 from datetime import timedelta
 import pytz
 
-from event_manager.settings import RAZORPAY_KEY, RAZORPAY_SECRET, TIME_ZONE
+from event_manager.settings import RAZORPAY_KEY, RAZORPAY_SECRET, TIME_ZONE, PAYMENT_TEST
 from .models import Subscription, Order, OrderItem
 from utils.exceptions import NotFound, AccessDenied
 
@@ -133,6 +133,8 @@ def update_subscription(sub, order=None, start_date=None, end_date=None):
         order.meta_data = meta_data[0]
         order.save()
         OrderItem.objects.create(order_id=order, meta_data=meta_data[0], index=0, order=sub)
+    if PAYMENT_TEST:
+        sub.test = True
     sub.save()
 
 
