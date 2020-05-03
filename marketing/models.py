@@ -14,5 +14,6 @@ class Marketeer(AutoCreatedUpdatedMixin):
     insta_username = models.TextField(unique=True)
     signed_up = models.BooleanField(default=False)
     bought_pro_pack = models.BooleanField(default=False)
+    added_link_in_insta = models.BooleanField(default=False)
     status = models.TextField(blank=True, choices=STATUS_CHOICES)
     marketeer = models.ForeignKey(User, on_delete=models.CASCADE)

@@ -3,7 +3,6 @@ from django.contrib import admin
 from .models import Marketeer
 
 
-@admin.register(Marketeer)
 class MarketeerAdmin(admin.ModelAdmin):
     exclude = ['created_at', 'updated_at', 'marketeer']
 
@@ -30,4 +29,7 @@ class MarketeerAdmin(admin.ModelAdmin):
             return True
         return obj.marketeer == request.user
 
-    list_display = ['insta_username', 'signed_up', 'bought_pro_pack', 'marketeer', 'status']
+    list_display = ['insta_username', 'signed_up', 'bought_pro_pack', 'marketeer', 'status', 'added_link_in_insta']
+
+
+admin.site.register(Marketeer, MarketeerAdmin)

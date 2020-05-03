@@ -1,11 +1,15 @@
 from django.contrib import admin
+from django.contrib.auth.admin import Group, GroupAdmin
 
 from .models import *
 from payments.models import Subscription
 from payments.utils import update_subscription
+from utils.base_admin import CustomAdmin
 
 
-@admin.register(College, Link, ProModeFeature)
+admin.site = CustomAdmin()
+
+
 class BaseAdmin(admin.ModelAdmin):
     exclude = ['created_at', 'updated_at']
     show_full_result_count = True
@@ -14,7 +18,6 @@ class BaseAdmin(admin.ModelAdmin):
     list_per_page = 30
 
 
-@admin.register(User)
 class UserAdmin(BaseAdmin):
     def create_pro(self, request, queryset):
         for user in queryset:
@@ -28,6 +31,11 @@ class UserAdmin(BaseAdmin):
     search_fields = ['username', 'email']
 
 
-@admin.register(ProPack)
 class ProPackAdmin(BaseAdmin):
     exclude = BaseAdmin.exclude + ['plan_id']
+
+
+admin.site.register([College, Link, ProModeFeature], BaseAdmin)
+admin.site.register(User, UserAdmin)
+admin.site.register(ProPack, ProPackAdmin)
+admin.site.register(Group, GroupAdmin)

@@ -3,7 +3,6 @@ import django.contrib.admin as admin
 from .models import *
 
 
-@admin.register(Tracker)
 class TrackerAdmin(admin.ModelAdmin):
     def mark_as_resolved(self, request, queryset):
         queryset.update(resolved=True)
@@ -14,3 +13,6 @@ class TrackerAdmin(admin.ModelAdmin):
     actions = ['mark_as_resolved']
     list_display = ['user', 'msg', 'resolved', 'url']
     date_hierarchy = 'created_at'
+
+
+admin.site.register(Tracker, TrackerAdmin)
