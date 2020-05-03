@@ -5,15 +5,15 @@ from .models import Marketeer
 
 @admin.register(Marketeer)
 class MarketeerAdmin(admin.ModelAdmin):
-    exclude = ['created_at', 'updated_at', 'user']
+    exclude = ['created_at', 'updated_at', 'marketeer']
 
     def get_queryset(self, request):
         if request.user.is_superuser:
             return Marketeer.objects.all()
-        return Marketeer.objects.filter(user=request.user)
+        return Marketeer.objects.filter(marketeer=request.user)
 
     def save_model(self, request, obj, form, change):
-        obj.user = request.user
+        obj.marketeer = request.user
         super().save_model(request, obj, form, change)
 
     def has_change_permission(self, request, obj=None):
@@ -21,13 +21,13 @@ class MarketeerAdmin(admin.ModelAdmin):
             return True
         if request.user.is_superuser:
             return True
-        return obj.user == request.user
+        return obj.marketeer == request.user
 
     def has_delete_permission(self, request, obj=None):
         if not obj:
             return True
         if request.user.is_superuser:
             return True
-        return obj.user == request.user
+        return obj.marketeer == request.user
 
-    list_display = ['username', 'registered']
+    list_display = ['insta_username', 'signed_up', 'bought_pro_pack', 'marketeer', 'status']

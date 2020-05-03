@@ -31,7 +31,6 @@ STORAGE_CLIENT = BlobServiceClient.from_connection_string(
     os.getenv("CONNECTION_STRING")
 )
 
-RAZORPAY_MID = os.getenv("RAZORPAY_MID")
 RAZORPAY_SECRET = os.getenv("RAZORPAY_SECRET")
 RAZORPAY_KEY = os.getenv("RAZORPAY_KEY")
 PAYMENT_CALLBACK_URL = os.getenv('PAYMENT_CALLBACK_URL')

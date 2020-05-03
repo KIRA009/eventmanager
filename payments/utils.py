@@ -6,7 +6,7 @@ from django.utils.timezone import now, localdate, datetime
 from datetime import timedelta
 import pytz
 
-from event_manager.settings import RAZORPAY_KEY, RAZORPAY_MID, RAZORPAY_SECRET, TIME_ZONE
+from event_manager.settings import RAZORPAY_KEY, RAZORPAY_SECRET, TIME_ZONE
 from .models import Subscription, Order, OrderItem
 from utils.exceptions import NotFound, AccessDenied
 

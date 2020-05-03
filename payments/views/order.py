@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 from payments.models import Order, OrderItem, Subscription
 from payments.utils import create_order, is_signature_safe, get_order, handle_order, create_subscription,\
     update_subscription, renew_subscription
-from event_manager.settings import RAZORPAY_MID, PAYMENT_CALLBACK_URL, PAYMENT_REDIRECT_URL
+from event_manager.settings import RAZORPAY_KEY, PAYMENT_CALLBACK_URL, PAYMENT_REDIRECT_URL
 from event_app.models import ProPack
 
 
@@ -24,7 +24,7 @@ class OrderView(View):
             form={
                 "url": "https://api.razorpay.com/v1/checkout/embedded",
                 "fields": {
-                    "key_id": RAZORPAY_MID,
+                    "key_id": RAZORPAY_KEY,
                     "order_id": order_id,
                     "name": "MyWork",
                     "image": "https://cdn.razorpay.com/logos/BUVwvgaqVByGp2_large.png",

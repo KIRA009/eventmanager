@@ -101,7 +101,7 @@ class ProPack(AutoCreatedUpdatedMixin):
     YEARLY = 'yearly'
     TYPES = (
         (MONTHLY, 'Monthly pack'),
-        (YEARLY, 'Yearly pack')
+        (YEARLY, 'Yearly pack'),
     )
     price = models.IntegerField(default=300)
     plan_id = models.TextField(blank=True, default='')
