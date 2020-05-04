@@ -28,21 +28,27 @@ class Subscription(AutoCreatedUpdatedMixin):
     def __str__(self):
         return f'{self.user.username} -> {self.sub_type} : {self.start_date} - {self.end_date}'
 
+    class Encoding(AutoCreatedUpdatedMixin.Encoding):
+        exclude_fields = AutoCreatedUpdatedMixin.Encoding.get_exclude_fields_copy()
+        exclude_fields += ['user']
+
 
 class OrderItem(AutoCreatedUpdatedMixin):
     order = GenericForeignKey()
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    meta_data = JSONField(default=dict)
     index = models.IntegerField(default=0)
     order_id = models.ForeignKey(
         "Order", on_delete=models.CASCADE, related_name="items"
     )
 
     class Encoding(AutoCreatedUpdatedMixin.Encoding):
+        exclude_fields = AutoCreatedUpdatedMixin.Encoding.exclude_fields.copy()
+        exclude_fields += ['object_id', 'order_id', 'content_type']
         process_fields = AutoCreatedUpdatedMixin.Encoding.process_fields.copy()
         process_fields.update(**dict(
-            meta_data=lambda x: json.loads(x)
+            order=lambda x: x.order.detail(),
+            order_type=lambda x: x.content_type.model
         ))
 
 
@@ -65,4 +71,5 @@ class Order(AutoCreatedUpdatedMixin):
         process_fields = AutoCreatedUpdatedMixin.Encoding.process_fields.copy()
         process_fields.update(**dict(
             meta_data=lambda x: Order.process_meta(x),
+            items=lambda x: [_.detail() for _ in x.items.all()]
         ))

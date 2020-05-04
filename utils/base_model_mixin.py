@@ -38,3 +38,11 @@ class AutoCreatedUpdatedMixin(models.Model):
     class Encoding:
         exclude_fields = ['created_at', 'updated_at']
         process_fields = {}
+
+        @classmethod
+        def get_exclude_fields_copy(cls):
+            return cls.exclude_fields.copy()
+
+        @classmethod
+        def get_process_fields_copy(cls):
+            return cls.process_fields.copy()

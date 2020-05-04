@@ -5,8 +5,9 @@ import hashlib
 from django.utils.timezone import now, localdate, datetime
 from datetime import timedelta
 import pytz
+from celery.task import task
 
-from event_manager.settings import RAZORPAY_KEY, RAZORPAY_SECRET, TIME_ZONE, PAYMENT_TEST
+from event_manager.settings import RAZORPAY_KEY, RAZORPAY_SECRET, TIME_ZONE, PAYMENT_TEST, PAYMENT_CALLBACK_URL
 from .models import Subscription, Order, OrderItem
 from utils.exceptions import NotFound, AccessDenied
 
@@ -90,15 +91,7 @@ def create_plan(pack):
 
 
 def handle_order(order, query):
-    model = order.order._meta.model_name
-    if model == 'propack':
-        today = localdate(now())
-        pack = Subscription(user=order.order_id.user, start_date=today)
-        if query['meta_data']['pack_type'] == 'monthly':
-            pack.end_date = today + timedelta(days=30)
-        else:
-            pack.end_date = today + timedelta(days=365)
-        pack.save()
+    pass
 
 
 def create_subscription(plan_id, total_count, user, meta_data):
@@ -132,7 +125,7 @@ def update_subscription(sub, order=None, start_date=None, end_date=None):
         meta_data = get_order(order.order_id)
         order.meta_data = meta_data[0]
         order.save()
-        OrderItem.objects.create(order_id=order, meta_data=meta_data[0], index=0, order=sub)
+        OrderItem.objects.create(order_id=order, index=0, order=sub)
     if PAYMENT_TEST:
         sub.test = True
     sub.save()
@@ -143,3 +136,25 @@ def renew_subscription(sub_id, sub_type, start_date, end_date, order):
     sub.pk = None
     update_subscription(sub, order, start_date, end_date)
 
+
+def create_order_form(order, items):
+    return {
+        "url": "https://api.razorpay.com/v1/checkout/embedded",
+        "fields": {
+            "key_id": RAZORPAY_KEY,
+            "order_id": order.order_id,
+            "name": "MyWebLink",
+            "image": "https://cdn.razorpay.com/logos/BUVwvgaqVByGp2_large.png",
+            "notes[query]": items,
+            "prefill[name]": order.user.name,
+            "prefill[contact]": order.user.phone,
+            "prefill[email]": order.user.email,
+            "callback_url": PAYMENT_CALLBACK_URL
+        },
+    }
+
+
+@task(name='cancel_subscription')
+def cancel_subscription(user_id, sub_id):
+    if Subscription.objects.filter(sub_id=sub_id, user_id=user_id).exists:
+        requests.post(f'{BASE_URL}/subscriptions/{sub_id}/cancel', auth=auth)

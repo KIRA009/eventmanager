@@ -3,8 +3,8 @@ import json
 from django.shortcuts import redirect
 
 from payments.models import Order, OrderItem
-from payments.utils import create_order, is_signature_safe, get_order, handle_order, create_subscription
-from event_manager.settings import RAZORPAY_KEY, PAYMENT_CALLBACK_URL, PAYMENT_REDIRECT_URL
+from payments.utils import create_order, is_signature_safe, get_order, handle_order, create_order_form
+from event_manager.settings import PAYMENT_REDIRECT_URL
 
 
 class OrderView(View):
@@ -22,29 +22,8 @@ class OrderView(View):
         items = [OrderItem(order=item, order_id=order, index=i) for i, item in enumerate(items)]
         OrderItem.objects.bulk_create(items)
         return dict(
-            form={
-                "url": "https://api.razorpay.com/v1/checkout/embedded",
-                "fields": {
-                    "key_id": RAZORPAY_KEY,
-                    "order_id": order_id,
-                    "name": "MyWork",
-                    "image": "https://cdn.razorpay.com/logos/BUVwvgaqVByGp2_large.png",
-                    "notes[query]": json.dumps(data['items']),
-                    "prefill[name]": order.user.name,
-                    "prefill[contact]": order.user.phone,
-                    "prefill[email]": order.user.email,
-                    "callback_url": PAYMENT_CALLBACK_URL
-                },
-            }
+            form=create_order_form(order, json.dumps(data['items']))
         )
-
-
-class SubscriptionView(View):
-    def post(self, request):
-        data = request.json
-        sub = create_subscription(data['plan_id'], data['total_count'], user=request.User,
-                                           meta_data={'notes[sub_type]': data['sub_type']})
-        return dict(payment_url=sub.payment_url)
 
 
 class OrderCallBackView(View):

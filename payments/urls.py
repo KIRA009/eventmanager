@@ -7,6 +7,7 @@ auth_urls = list(
     map(lambda x: path(x[0], login_required(x[1].as_view())), [
         ("order/", OrderView),
         ("subscribe/", SubscriptionView),
+        ("cancel/", CancelSubscriptionView),
     ])
 )
 

@@ -40,7 +40,7 @@ PAYMENT_TEST = int(os.getenv('PAYMENT_TEST', 1)) == 1
 if DEBUG:
     ADMINS = ['shohanduttaroy99@gmail.com']
 else:
-    ADMINS = ['shohanduttaroy99@gmail.com', 'prasadyash549@yahoo.com', 'akashsurana119@gmail.com']
+    ADMINS = ['shohanduttaroy10@gmail.com', 'prasadyash549@yahoo.com', 'akashsurana119@gmail.com']
 
 EMAIL_HOST = socket.gethostbyname('mail.privateemail.com')
 EMAIL_PORT = 465

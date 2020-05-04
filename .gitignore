@@ -15,6 +15,7 @@ logger/migrations
 marketing/migrations
 *.bashrc
 temp
+static_root
 
 .pre-commit-config.yaml
 abc/
