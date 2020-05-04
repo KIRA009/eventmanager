@@ -55,8 +55,14 @@ class Order(AutoCreatedUpdatedMixin):
     paid = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
 
+    @staticmethod
+    def process_meta(meta):
+        if meta.get('notes'):
+            meta['notes']['query'] = json.loads(meta['notes']['query'])
+        return meta
+
     class Encoding(AutoCreatedUpdatedMixin.Encoding):
         process_fields = AutoCreatedUpdatedMixin.Encoding.process_fields.copy()
         process_fields.update(**dict(
-            meta_data=lambda x: json.loads(x)
+            meta_data=lambda x: Order.process_meta(x),
         ))

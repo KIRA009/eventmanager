@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate
 
 class CustomLogin(AuthenticationForm):
     def clean(self):
-        username = self.cleaned_data.get('username')
+        username = self.cleaned_data.get('username').lower()
         password = self.cleaned_data.get('password').lower()
 
         if username is not None and password:

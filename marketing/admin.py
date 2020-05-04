@@ -29,7 +29,8 @@ class MarketeerAdmin(admin.ModelAdmin):
             return True
         return obj.marketeer == request.user
 
-    list_display = ['insta_username', 'signed_up', 'bought_pro_pack', 'marketeer', 'status', 'added_link_in_insta']
+    list_display = ['insta_username', 'signed_up', 'bought_pro_pack', 'marketeer', 'status', 'added_link_in_insta',
+                    'followed_myweblink_on_insta']
 
 
 admin.site.register(Marketeer, MarketeerAdmin)

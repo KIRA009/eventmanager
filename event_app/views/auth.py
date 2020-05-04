@@ -94,18 +94,17 @@ class UpdateUserDetailsView(View):
     def post(self, request):
         user = request.User
         data = request.json
-        for i in ['user_type', 'is_validated', 'secret', 'is_staff', 'is_superuser', 'password', 'id']:
-            if i in data:
+        for i in data:
+            if i not in ['name', 'username', 'email']:
                 del data[i]
         if 'username' in data:
             if '@' in data:
                 raise AccessDenied('Cannot have @ in username')
             data['username'] = data['username'].lower()
-        try:
-            User.objects.filter(id=user.id).update(**data)
-        except IntegrityError as e:
-            raise AccessDenied(str(e))
-        user = User.objects.get(id=user.id)
+        user.name = data['name']
+        user.username = data['username']
+        user.email = data['email']
+        user.save()
         return dict(
             user=user.detail(),
             token=create_token(

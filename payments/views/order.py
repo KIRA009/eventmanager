@@ -2,14 +2,15 @@ from django.views import View
 import json
 from django.shortcuts import redirect
 
-from payments.models import Order, OrderItem, Subscription
-from payments.utils import create_order, is_signature_safe, get_order, handle_order, create_subscription,\
-    update_subscription, renew_subscription
+from payments.models import Order, OrderItem
+from payments.utils import create_order, is_signature_safe, get_order, handle_order, create_subscription
 from event_manager.settings import RAZORPAY_KEY, PAYMENT_CALLBACK_URL, PAYMENT_REDIRECT_URL
-from event_app.models import ProPack
 
 
 class OrderView(View):
+    def get(self, request):
+        return dict(orders=[_.detail() for _ in request.User.orders.all()])
+
     def post(self, request):
         data = request.json
         amount = 0
@@ -44,21 +45,6 @@ class SubscriptionView(View):
         sub = create_subscription(data['plan_id'], data['total_count'], user=request.User,
                                            meta_data={'notes[sub_type]': data['sub_type']})
         return dict(payment_url=sub.payment_url)
-
-
-class PaymentWebhookView(View):
-    def post(self, request):
-        data = request.json
-        sub = data['payload']['subscription']['entity']
-        order = data['payload']['payment']['entity']
-        if sub['paid_count'] > 1:
-            renew_subscription(sub['id'], sub['notes']['sub_type'], sub['current_start'], sub['current_end'], order)
-        else:
-            subscription = Subscription.objects.get(sub_type=sub['notes']['sub_type'], sub_id=sub['id'],
-                                                    start_date=None, end_date=None)
-            update_subscription(subscription, order, sub['current_start'], sub['current_end'])
-
-        return dict()
 
 
 class OrderCallBackView(View):

@@ -4,9 +4,11 @@ from django.db import models
 from django.utils.timezone import localdate, now
 from django.contrib.postgres.fields import ArrayField
 from json import loads
+from django.db.utils import IntegrityError
 
 from utils.base_model_mixin import AutoCreatedUpdatedMixin
 from .managers import UserManager, LinkManager
+from utils.exceptions import AccessDenied
 
 
 class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
@@ -59,6 +61,14 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
     def change_password(self, password):
         self.set_password(password)
         self.change_secret()
+
+    def save(self, *args, **kwargs):
+        self.email = self.email.lower()
+        self.username = self.username.lower()
+        try:
+            super().save(*args, **kwargs)
+        except IntegrityError as e:
+            raise AccessDenied(str(e))
 
 
 class College(AutoCreatedUpdatedMixin):
