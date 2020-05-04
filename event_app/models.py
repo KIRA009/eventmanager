@@ -20,8 +20,6 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
     is_validated = models.BooleanField(default=False)
     username = models.TextField(unique=True)
     profile_pic = models.URLField(default="", null=True, blank=True)
-    background_color = models.TextField(default=None, null=True, blank=True)
-    background_image = models.URLField(default=None, null=True, blank=True)
     college = models.ForeignKey(
         "College",
         related_name="students",
@@ -97,6 +95,9 @@ class Link(AutoCreatedUpdatedMixin):
 class ProModeFeature(AutoCreatedUpdatedMixin):
     header_icon = models.URLField(default="", null=True, blank=True)
     header_text = models.TextField(default="", null=True, blank=True)
+    background_color = models.TextField(default=None, null=True, blank=True)
+    background_image = models.URLField(default=None, null=True, blank=True)
+    link_style = models.TextField(blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="feature")
 
 

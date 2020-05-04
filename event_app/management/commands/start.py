@@ -1,5 +1,5 @@
 import shlex
-from subprocess import Popen, PIPE, call, check_output
+from subprocess import Popen, call, check_output, CalledProcessError
 from django.core.management.base import BaseCommand
 from django.utils import autoreload
 import signal
@@ -9,10 +9,11 @@ from event_manager.settings import DEBUG
 
 
 def restart_server():
-    cmd = 'python3 manage.py makemigrations'
-    call(shlex.split(cmd))
-    cmd = 'python3 manage.py migrate'
-    call(shlex.split(cmd))
+    if not DEBUG:
+        cmd = 'python3 manage.py makemigrations'
+        call(shlex.split(cmd))
+        cmd = 'python3 manage.py migrate'
+        call(shlex.split(cmd))
     cmd = 'rm -rf static_root'
     call(shlex.split(cmd))
     cmd = 'python3 manage.py collectstatic'
@@ -21,13 +22,16 @@ def restart_server():
     call(shlex.split(cmd))
     cmd = 'pkill -f celery'
     call(shlex.split(cmd))
-    process = check_output(["lsof", "-i", ":8000"])
-    for process in str(process.decode("utf-8")).split("\n")[1:]:
-        data = [x for x in process.split(" ") if x != '']
-        if len(data) <= 1:
-            continue
+    try:
+        process = check_output(["lsof", "-i", ":8000"])
+        for process in str(process.decode("utf-8")).split("\n")[1:]:
+            data = [x for x in process.split(" ") if x != '']
+            if len(data) <= 1:
+                continue
 
-        os.kill(int(data[1]), signal.SIGKILL)
+            os.kill(int(data[1]), signal.SIGKILL)
+    except CalledProcessError:
+        pass
     if DEBUG:
         cmd = 'python3 manage.py runserver'
     else:

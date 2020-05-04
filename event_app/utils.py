@@ -10,7 +10,7 @@ from utils.decorators import decorator
 
 
 def upload_file(request, file, container):
-    if file is None:
+    if not file:
         return None
     file_name = request.User.username + str(uuid.uuid4()) + file.name.replace(' ', '')
     blob_client = STORAGE_CLIENT.get_blob_client(container=container, blob=file_name)
@@ -20,7 +20,7 @@ def upload_file(request, file, container):
 
 @task(name="delete_file")
 def delete_file(url):
-    if url is None:
+    if not url:
         return
     resolved, res = get_container_and_name(url)
     if resolved:

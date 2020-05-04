@@ -3,7 +3,7 @@ from django.utils import timezone as tz
 from django.views import View
 from django.http import HttpResponse
 
-from event_app.models import User, College, ProPack
+from event_app.models import User, College, ProPack, ProModeFeature
 from utils.token import create_token
 from utils.tasks import send_email
 from utils.exceptions import NotFound, AccessDenied
@@ -120,14 +120,13 @@ class GetUserView(View):
 
 class GetBgView(View):
     def post(self, request):
-        try:
-            user = User.objects.get(username=request.json['username'])
-            return dict(
-                background_color=user.background_color,
-                background_image=user.background_image
-            )
-        except User.DoesNotExist:
-            raise NotFound("User not found")
+        user = User.objects.get(username=request.json['username'])
+        feature, _ = ProModeFeature.objects.get_or_create(user=user)
+        return dict(
+            background_color=feature.background_color,
+            background_image=feature.background_image,
+            link_style=feature.link_style
+        )
 
 
 class GetPacksView(View):

@@ -2,7 +2,7 @@ from django.views import View
 
 from event_app.models import ProModeFeature
 from event_app.utils import upload_file, delete_file
-from event_manager.settings import ICONCONTAINER
+from event_manager.settings import ICONCONTAINER, PROFILECONTAINER
 from utils.exceptions import AccessDenied
 
 
@@ -32,3 +32,21 @@ class ProModeView(View):
         if feature:
             return dict(feature=feature.detail())
         return dict(feature=None)
+
+
+class SetBgView(View):
+    def post(self, request):
+        data = request.POST.dict()
+        feature, _ = ProModeFeature.objects.get_or_create(user=request.User)
+        feature.background_color = data.get("background_color", None)
+        img = request.FILES.dict().get('photo')
+        delete_file(feature.background_image)
+        feature.background_image = upload_file(request, img, PROFILECONTAINER)
+        feature.link_style = data['link_style']
+        feature.save()
+        return dict(
+            background_color=feature.background_color,
+            background_image=feature.background_image,
+            link_style=feature.link_style
+        )
+

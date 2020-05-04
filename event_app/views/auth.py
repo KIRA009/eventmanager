@@ -5,7 +5,7 @@ from django.db.utils import IntegrityError
 from event_manager.settings import PROFILECONTAINER, ICONCONTAINER
 from event_app.utils import upload_file
 from utils.tasks import delete_file
-from event_app.models import Link, User
+from event_app.models import Link
 from utils.token import create_token
 from utils.exceptions import AccessDenied
 
@@ -73,21 +73,6 @@ class UpdateLinkSequenceView(View):
                 return dict(links=[_.detail() for _ in request.User.links.all()])
         except IntegrityError:
             return dict(error="Some error happened", status_code=501)
-
-
-class SetBgView(View):
-    def post(self, request):
-        data = request.POST.dict()
-        user = request.User
-        user.background_color = data.get("background_color", None)
-        img = request.FILES.dict().get('photo')
-        delete_file(user.background_image)
-        user.background_image = upload_file(request, img, PROFILECONTAINER)
-        user.save()
-        return dict(
-            background_color=user.background_color,
-            background_image=user.background_image
-        )
 
 
 class UpdateUserDetailsView(View):
