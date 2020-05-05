@@ -156,5 +156,10 @@ def create_order_form(order, items):
 
 @task(name='cancel_subscription')
 def cancel_subscription(user_id, sub_id):
-    if Subscription.objects.filter(sub_id=sub_id, user_id=user_id).exists:
+    try:
+        sub = Subscription.objects.get(sub_id=sub_id, user_id=user_id, is_unsubscribed=False)
+        sub.is_unsubscribed = True
+        sub.save()
         requests.post(f'{BASE_URL}/subscriptions/{sub_id}/cancel', auth=auth)
+    except Subscription.DoesNotExist:
+        pass

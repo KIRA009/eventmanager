@@ -120,13 +120,18 @@ class GetUserView(View):
 
 class GetBgView(View):
     def post(self, request):
-        user = User.objects.get(username=request.json['username'])
-        feature, _ = ProModeFeature.objects.get_or_create(user=user)
-        return dict(
-            background_color=feature.background_color,
-            background_image=feature.background_image,
-            link_style=feature.link_style
-        )
+        try:
+            user = User.objects.get(username=request.json['username'])
+            if user.user_type == 'pro':
+                feature, _ = ProModeFeature.objects.get_or_create(user=user)
+                return dict(
+                    background_color=feature.background_color,
+                    background_image=feature.background_image,
+                    link_style=feature.link_style
+                )
+            raise AccessDenied('User is not a pro member')
+        except User.DoesNotExist:
+            raise NotFound()
 
 
 class GetPacksView(View):

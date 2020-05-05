@@ -38,11 +38,15 @@ class SetBgView(View):
     def post(self, request):
         data = request.POST.dict()
         feature, _ = ProModeFeature.objects.get_or_create(user=request.User)
-        feature.background_color = data.get("background_color", None)
-        img = request.FILES.dict().get('photo')
-        delete_file(feature.background_image)
-        feature.background_image = upload_file(request, img, PROFILECONTAINER)
-        feature.link_style = data['link_style']
+        if 'background_color' in data:
+            feature.background_color = data["background_color"]
+        img = request.FILES.dict()
+        if 'photo' in img:
+            img = img['photo']
+            delete_file(feature.background_image)
+            feature.background_image = upload_file(request, img, PROFILECONTAINER)
+        if 'link_style' in data:
+            feature.link_style = data['link_style']
         feature.save()
         return dict(
             background_color=feature.background_color,
