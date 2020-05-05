@@ -4,6 +4,7 @@ from event_app.models import ProModeFeature
 from event_app.utils import upload_file, delete_file
 from event_manager.settings import ICONCONTAINER, PROFILECONTAINER
 from utils.exceptions import AccessDenied
+from event_app.validators import *
 
 
 class ProModeHeaderView(View):
@@ -22,10 +23,9 @@ class ProModeHeaderView(View):
 
 
 class ProModeView(View):
+    @get_user_schema
     def post(self, request):
         data = request.json
-        if 'username' not in data:
-            raise AccessDenied("Username not found")
         feature = ProModeFeature.objects.filter(
             user__username=data['username']
         ).first()

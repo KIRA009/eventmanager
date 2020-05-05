@@ -161,5 +161,5 @@ def cancel_subscription(user_id, sub_id):
         sub.is_unsubscribed = True
         sub.save()
         requests.post(f'{BASE_URL}/subscriptions/{sub_id}/cancel', auth=auth)
-    except Subscription.DoesNotExist:
+    except NotFound:
         pass

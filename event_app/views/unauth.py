@@ -8,9 +8,11 @@ from utils.token import create_token
 from utils.tasks import send_email
 from utils.exceptions import NotFound, AccessDenied
 from event_manager.settings import EMAIL_HOST_USER
+from event_app.validators import *
 
 
 class RegisterView(View):
+    @register_view_schema
     def post(self, request):
         data = request.json
         user = User.objects.create_user(data)
@@ -30,6 +32,7 @@ class CollegeView(View):
 
 
 class SendValidateEmailView(View):
+    @send_verification_schema
     def post(self, request):
         scheme = request.META["wsgi.url_scheme"]
         server = request.META["HTTP_HOST"]
@@ -86,6 +89,7 @@ class CompleteValidateEmailView(View):
 
 
 class LoginView(View):
+    @login_view_schema
     def post(self, request):
         data = request.json
         user = authenticate(
@@ -108,6 +112,7 @@ class LoginView(View):
 
 
 class GetUserView(View):
+    @get_user_schema
     def post(self, request):
         username = request.json["username"]
         if username is not None:
@@ -119,6 +124,7 @@ class GetUserView(View):
 
 
 class GetBgView(View):
+    @get_user_schema
     def post(self, request):
         try:
             user = User.objects.get(username=request.json['username'])
@@ -131,7 +137,11 @@ class GetBgView(View):
                 )
             raise AccessDenied('User is not a pro member')
         except User.DoesNotExist:
-            raise NotFound()
+            return dict(
+                background_color=None,
+                background_image=None,
+                link_style=None
+            )
 
 
 class GetPacksView(View):

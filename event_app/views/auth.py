@@ -8,6 +8,7 @@ from utils.tasks import delete_file
 from event_app.models import Link
 from utils.token import create_token
 from utils.exceptions import AccessDenied
+from event_app.validators import *
 
 
 class UploadProfilePicView(View):
@@ -38,6 +39,7 @@ class UserLinkView(View):
             link = Link.objects.create(**data, user=request.User)
         return dict(link=link.detail())
 
+    @del_link_schema
     def delete(self, request):
         data = request.json
         link = Link.objects.get(id=data["id"])
@@ -61,6 +63,7 @@ class UploadIconView(View):
 
 
 class UpdateLinkSequenceView(View):
+    @update_link_sequence_schema
     def post(self, request):
         try:
             with transaction.atomic():
@@ -76,6 +79,7 @@ class UpdateLinkSequenceView(View):
 
 
 class UpdateUserDetailsView(View):
+    @update_user_schema
     def post(self, request):
         user = request.User
         data = request.json
