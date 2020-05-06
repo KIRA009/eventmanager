@@ -23,9 +23,11 @@ CORS_ALLOW_HEADERS = list(default_headers) + ["Token"]
 if DEBUG:
     PROFILECONTAINER = "eventmanagerprofiledebug"
     ICONCONTAINER = "eventmanagericondebug"
+    PRODUCTCONTAINER = "eventmanagerproductdebug"
 else:
     PROFILECONTAINER = "eventmanagerprofile"
     ICONCONTAINER = "eventmanagericon"
+    PRODUCTCONTAINER = "eventmanagerproduct"
 
 STORAGE_CLIENT = BlobServiceClient.from_connection_string(
     os.getenv("CONNECTION_STRING")

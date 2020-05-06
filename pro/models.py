@@ -12,7 +12,7 @@ class ProModeFeature(AutoCreatedUpdatedMixin):
     background_color = models.TextField(default=None, null=True, blank=True)
     background_image = models.URLField(default=None, null=True, blank=True)
     link_style = models.TextField(blank=True, null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="features")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="feature")
 
 
 class ProPack(AutoCreatedUpdatedMixin):
@@ -49,3 +49,13 @@ class ProPack(AutoCreatedUpdatedMixin):
         process_fields.update(**{
             'features': lambda x: loads(x)
         })
+
+
+class Product(AutoCreatedUpdatedMixin):
+    name = models.TextField(blank=False, default='Product')
+    description = models.TextField(blank=True, default='Description')
+    disc_price = models.IntegerField(default=0)
+    price = models.IntegerField(default=0)
+    images = ArrayField(models.URLField(blank=True), blank=True, default=list)
+    sizes_available = ArrayField(models.TextField(blank=True), blank=True, default=list)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='products')

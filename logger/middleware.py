@@ -25,6 +25,7 @@ class ExceptionHandlerMiddleware(CommonMiddleware):
         if 'status_code' in exception.__dict__:
             return dict(error=exception.message, status_code=exception.status_code)
         if DEBUG:
+            # pass
             print(traceback.format_exc())
         else:
             Tracker.objects.create(trace=traceback.format_exc(), msg=exception, user=user, url=request.path_info)

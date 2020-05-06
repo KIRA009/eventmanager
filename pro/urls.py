@@ -20,6 +20,7 @@ pro_urls = list(
         [
             ("feature/header/", ProModeHeaderView),
             ('background/set/', SetBgView),
+            ("product/create/", CreateProductView)
         ],
     )
 )
