@@ -20,11 +20,13 @@ import event_app.urls
 import analytics.urls
 import payments.urls
 import logger.urls
+import pro.urls
 from event_app.views import *
 
 urlpatterns = [
     path("admin-dashboard/", admin.site.urls),
     path("api/", include(event_app.urls)),
+    path("pro/", include(pro.urls)),
     path("analytics/", include(analytics.urls)),
     path("payment/", include(payments.urls)),
     path("logger/", include(logger.urls)),

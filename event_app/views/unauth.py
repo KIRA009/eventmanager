@@ -3,7 +3,8 @@ from django.utils import timezone as tz
 from django.views import View
 from django.http import HttpResponse
 
-from event_app.models import User, College, ProPack, ProModeFeature
+from event_app.models import User, College
+from pro.models import ProModeFeature, ProPack
 from utils.token import create_token
 from utils.tasks import send_email
 from utils.exceptions import NotFound, AccessDenied
@@ -121,27 +122,6 @@ class GetUserView(View):
         if user:
             return dict(user=user.detail())
         raise NotFound("User not found")
-
-
-class GetBgView(View):
-    @get_user_schema
-    def post(self, request):
-        try:
-            user = User.objects.get(username=request.json['username'])
-            if user.user_type == 'pro':
-                feature, _ = ProModeFeature.objects.get_or_create(user=user)
-                return dict(
-                    background_color=feature.background_color,
-                    background_image=feature.background_image,
-                    link_style=feature.link_style
-                )
-            raise AccessDenied('User is not a pro member')
-        except User.DoesNotExist:
-            return dict(
-                background_color=None,
-                background_image=None,
-                link_style=None
-            )
 
 
 class GetPacksView(View):

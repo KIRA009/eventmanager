@@ -13,6 +13,7 @@ analytics/migrations
 payments/migrations
 logger/migrations
 marketing/migrations
+pro/migrations
 *.bashrc
 temp
 static_root

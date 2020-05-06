@@ -37,7 +37,3 @@ def get_container_and_name(url):
         return True, pat.findall(url)[0]
     except IndexError:
         return False, None, None
-
-
-def pro_required(func):
-    return decorator(func, lambda u: u.user_type == "pro")

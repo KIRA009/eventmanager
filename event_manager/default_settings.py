@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "event_app",
+    'pro',
     "analytics",
     "payments",
     'logger',

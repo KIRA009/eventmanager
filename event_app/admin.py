@@ -31,11 +31,6 @@ class UserAdmin(BaseAdmin):
     search_fields = ['username', 'email']
 
 
-class ProPackAdmin(BaseAdmin):
-    exclude = BaseAdmin.exclude + ['plan_id']
-
-
-admin.site.register([College, Link, ProModeFeature], BaseAdmin)
+admin.site.register([College, Link], BaseAdmin)
 admin.site.register(User, UserAdmin)
-admin.site.register(ProPack, ProPackAdmin)
 admin.site.register(Group, GroupAdmin)

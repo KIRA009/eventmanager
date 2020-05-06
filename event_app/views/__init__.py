@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect
 
 from .unauth import *
 from .auth import *
-from .pro import *
 from utils.tasks import send_email
 
 

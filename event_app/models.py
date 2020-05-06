@@ -2,9 +2,9 @@ from uuid import uuid4
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils.timezone import localdate, now
+from django.db.utils import IntegrityError
 from django.contrib.postgres.fields import ArrayField
 from json import loads
-from django.db.utils import IntegrityError
 
 from utils.base_model_mixin import AutoCreatedUpdatedMixin
 from .managers import UserManager, LinkManager
@@ -98,7 +98,7 @@ class ProModeFeature(AutoCreatedUpdatedMixin):
     background_color = models.TextField(default=None, null=True, blank=True)
     background_image = models.URLField(default=None, null=True, blank=True)
     link_style = models.TextField(blank=True, null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="feature")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="features")
 
 
 class ProPack(AutoCreatedUpdatedMixin):
