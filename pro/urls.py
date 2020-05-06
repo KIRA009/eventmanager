@@ -10,6 +10,7 @@ unauth_urls = list(
         [
             ("feature/", ProModeView),
             ("background/get/", GetBgView),
+            ("products/get/", GetProductsView)
         ],
     )
 )
@@ -20,7 +21,10 @@ pro_urls = list(
         [
             ("feature/header/", ProModeHeaderView),
             ('background/set/', SetBgView),
-            ("product/create/", CreateProductView)
+            ("product/create/", CreateProductView),
+            ("product/image/add/", AddImageToProductView),
+            ("product/image/del/", DeleteImageFromProductView),
+            ("product/update/", UpdateProductView)
         ],
     )
 )

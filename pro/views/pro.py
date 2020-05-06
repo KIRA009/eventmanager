@@ -1,7 +1,8 @@
 from django.views import View
 
 from pro.models import ProModeFeature, Product
-from event_app.utils import upload_file, delete_file
+from event_app.utils import upload_file
+from utils.tasks import delete_file
 from event_manager.settings import ICONCONTAINER, PROFILECONTAINER, PRODUCTCONTAINER
 from pro.validators import *
 
@@ -58,12 +59,35 @@ class CreateProductView(View):
     @create_product_schema
     def post(self, request):
         data = request.POST.dict()
-        files = request.FILES.dict()
-        print(data)
-        # images = []
-        # for file in files:
-        #     print(file)
-        #     images.append(upload_file(request, file, PRODUCTCONTAINER))
-        # product = Product.objects.create(user=request.User, **data, images=images)
-        # return dict(product=product.detail())
-        return dict()
+        product = Product.objects.create(user=request.User, **data, images=[])
+        return dict(product=product.detail())
+
+
+class AddImageToProductView(View):
+    @add_image_schema
+    def post(self, request):
+        data = request.POST.dict()['product_id']
+        image = request.FILES.dict()['photo']
+        product = Product.objects.get(id=data)
+        product.images.append(upload_file(request, image, PRODUCTCONTAINER))
+        product.save()
+        return dict(product=product.detail())
+
+
+class DeleteImageFromProductView(View):
+    @delete_image_schema
+    def post(self, request):
+        data = request.json
+        product = Product.objects.get(id=data['product_id'])
+        delete_file(data['image'])
+        product.images.remove(data['image'])
+        product.save()
+        return dict(product=product.detail())
+
+
+class UpdateProductView(View):
+    @update_product_schema
+    def post(self, request):
+        data = request.json
+        Product.objects.filter(id=data['id']).update(**data)
+        return dict(product=Product.objects.get(id=data['id']).detail())

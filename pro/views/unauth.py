@@ -1,6 +1,6 @@
 from django.views import View
 
-from pro.models import ProModeFeature
+from pro.models import ProModeFeature, Product
 from event_app.models import User
 from pro.validators import *
 
@@ -28,3 +28,10 @@ class GetBgView(View):
                 background_image=None,
                 link_style=None
             )
+
+
+class GetProductsView(View):
+    @get_user_schema
+    def post(self, request):
+        user = request.json['username']
+        return dict(products=[_.detail() for _ in Product.objects.filter(user__username=user)])

@@ -57,5 +57,11 @@ class Product(AutoCreatedUpdatedMixin):
     disc_price = models.IntegerField(default=0)
     price = models.IntegerField(default=0)
     images = ArrayField(models.URLField(blank=True), blank=True, default=list)
-    sizes_available = ArrayField(models.TextField(blank=True), blank=True, default=list)
+    estimated_delivery = models.TextField(default='', blank=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='products')
+
+    class Encoding(AutoCreatedUpdatedMixin.Encoding):
+        process_fields = AutoCreatedUpdatedMixin.Encoding.get_process_fields_copy()
+        process_fields.update(**dict(
+            images=lambda x: loads(x)
+        ))

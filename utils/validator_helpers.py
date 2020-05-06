@@ -23,4 +23,8 @@ def make_array_object(x, _type, is_required=True):
 
 
 def make_email_object(x, is_required=True):
-    return make_object(x, "email", is_required)
+    return make_object(x, "string", is_required, pattern="^[\w]*@.*\..*$")
+
+
+def make_uri_object(x, is_required=True):
+    return make_object(x, "string", is_required, pattern="^https?://.+")
