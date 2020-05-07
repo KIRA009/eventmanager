@@ -1,9 +1,10 @@
 from django.contrib import admin
 
 from .models import Marketeer
+from utils.base_admin import BaseAdmin
 
 
-class MarketeerAdmin(admin.ModelAdmin):
+class MarketeerAdmin(BaseAdmin):
     exclude = ['created_at', 'updated_at', 'marketeer']
 
     def get_queryset(self, request):

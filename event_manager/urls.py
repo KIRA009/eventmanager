@@ -19,7 +19,6 @@ from django.urls import path, include, re_path
 import event_app.urls
 import analytics.urls
 import payments.urls
-import logger.urls
 import pro.urls
 from event_app.views import *
 
@@ -29,7 +28,6 @@ urlpatterns = [
     path("pro/", include(pro.urls)),
     path("analytics/", include(analytics.urls)),
     path("payment/", include(payments.urls)),
-    path("logger/", include(logger.urls)),
     re_path(
         r"^forgot-password/?$",
         ForgotPwdView.as_view(),

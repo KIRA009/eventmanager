@@ -1,9 +1,10 @@
 import django.contrib.admin as admin
 
 from .models import *
+from utils.base_admin import BaseAdmin
 
 
-class TrackerAdmin(admin.ModelAdmin):
+class TrackerAdmin(BaseAdmin):
     def mark_as_resolved(self, request, queryset):
         queryset.update(resolved=True)
         self.message_user(request, 'The selected issues have been resolved')

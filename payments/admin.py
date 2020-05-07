@@ -1,8 +1,6 @@
 from django.contrib import admin
 
 from .models import *
+from utils.base_admin import BaseAdmin
 
-models = [OrderItem, Order, Subscription]
-
-for model in models:
-    admin.site.register(model)
+admin.site.register([OrderItem, Order, Subscription], BaseAdmin)

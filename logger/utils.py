@@ -1,12 +1,7 @@
 import os
 
 from utils.tasks import send_email
-from utils.decorators import decorator
 from event_manager.settings import ADMINS, BASE_DIR
-
-
-def admin_required(func):
-    return decorator(func, lambda u: u.is_superuser)
 
 
 def send_email_to_admins(template, subject, **kwargs):

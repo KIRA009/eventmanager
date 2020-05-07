@@ -17,6 +17,7 @@ pro/migrations
 *.bashrc
 temp
 static_root
+celerybeat-schedule
 
 .pre-commit-config.yaml
 abc/

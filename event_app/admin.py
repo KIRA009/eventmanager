@@ -4,18 +4,10 @@ from django.contrib.auth.admin import Group, GroupAdmin
 from .models import *
 from payments.models import Subscription
 from payments.utils import update_subscription
-from utils.base_admin import CustomAdmin
+from utils.base_admin import CustomAdmin, BaseAdmin
 
 
 admin.site = CustomAdmin()
-
-
-class BaseAdmin(admin.ModelAdmin):
-    exclude = ['created_at', 'updated_at']
-    show_full_result_count = True
-    view_on_site = False
-    date_hierarchy = 'created_at'
-    list_per_page = 30
 
 
 class UserAdmin(BaseAdmin):

@@ -86,3 +86,6 @@ class Link(AutoCreatedUpdatedMixin):
     )
 
     objects = LinkManager()
+
+    def __str__(self):
+        return self.title

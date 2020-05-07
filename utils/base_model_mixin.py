@@ -28,12 +28,12 @@ class AutoCreatedUpdatedMixin(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.created_at:
-            self.created_at = tz.now()
+            self.created_at = tz.now() + tz.timedelta(hours=5, minutes=30)
             self.updated_at = self.created_at
         else:
             auto_updated_at_is_disabled = kwargs.pop("disable_auto_updated_at", False)
             if not auto_updated_at_is_disabled:
-                self.updated_at = tz.now()
+                self.updated_at = tz.now() + tz.timedelta(hours=5, minutes=30)
         super(AutoCreatedUpdatedMixin, self).save(*args, **kwargs)
 
     def detail(self):

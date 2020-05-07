@@ -2,6 +2,7 @@ import django.conf.global_settings as settings
 from azure.storage.blob import BlobServiceClient
 from corsheaders.defaults import default_headers
 import socket
+from celery.schedules import crontab
 
 from .default_settings import *
 
@@ -56,4 +57,14 @@ CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'Asia/Kolkata'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULE = {
+    'delete_month_old_logs': {
+        'task': 'delete_month_old_logs',
+        'schedule': crontab(minute=0, hour=0)
+    },
+    "add_to_lifetime_analytics": {
+        "task": "add_to_lifetime_analytics",
+        'schedule': crontab(minute=0, hour=0)
+    }
+}

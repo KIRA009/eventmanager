@@ -1,15 +1,7 @@
 from django.contrib import admin
 
-
 from .models import *
-
-
-class BaseAdmin(admin.ModelAdmin):
-    exclude = ['created_at', 'updated_at']
-    show_full_result_count = True
-    view_on_site = False
-    date_hierarchy = 'created_at'
-    list_per_page = 30
+from utils.base_admin import BaseAdmin
 
 
 class ProPackAdmin(BaseAdmin):

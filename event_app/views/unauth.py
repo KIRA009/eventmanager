@@ -99,7 +99,7 @@ class LoginView(View):
         if user:
             # if not user.is_validated:
             #     return dict(error="Email not verified", status_code=401)
-            user.last_login = tz.now()
+            user.last_login = tz.now() + tz.timedelta(hours=5, minutes=30)
             user.save()
             return dict(
                 data="Successful",

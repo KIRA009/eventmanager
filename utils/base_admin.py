@@ -19,3 +19,11 @@ class CustomLogin(AuthenticationForm):
 
 class CustomAdmin(admin.AdminSite):
     login_form = CustomLogin
+
+
+class BaseAdmin(admin.ModelAdmin):
+    exclude = ['created_at', 'updated_at']
+    show_full_result_count = True
+    view_on_site = False
+    date_hierarchy = 'created_at'
+    list_per_page = 30
