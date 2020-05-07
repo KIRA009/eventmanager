@@ -57,7 +57,9 @@ class GetLinkData(View):
                 total_clicks = link.clicks.get_count(day__gte=month_ago, link__user=request.User)['count']
                 if total_clicks is None:
                     total_clicks = 0
-                analytics.append(dict(link_id=link.id, clicks=[], total_clicks=total_clicks))
+                lifetime_clicks = LifeTimeClick.objects.get_or_create(link=link)[0].clicks + total_clicks
+                analytics.append(dict(link_id=link.id, clicks=[], total_clicks=total_clicks,
+                                      lifetime_clicks=lifetime_clicks))
             return dict(analytics=analytics)
 
 
@@ -79,9 +81,10 @@ class GetProfileViewData(View):
                 analytics.append(dict(views=0, day=month_ago + timedelta(days=i)))
                 i += 1
             lifetime_views = LifeTimeView.objects.get_or_create(user=request.User)[0].views + total_views
-            return dict(analytics=dict(analytics=analytics, lifetime_views=lifetime_views, total_views=total_views))
+            return dict(analytics=analytics, lifetime_views=lifetime_views, total_views=total_views)
         else:
             views = ProfileView.objects.get_count(day__gte=month_ago, user=request.User)['count']
             if views is None:
                 views = 0
-            return dict(views=views)
+            lifetime_views = LifeTimeView.objects.get_or_create(user=request.User)[0].views + views
+            return dict(views=views, lifetime_views=lifetime_views)

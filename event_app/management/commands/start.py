@@ -34,11 +34,7 @@ def restart_server():
         pass
     cmd = 'gunicorn -b 0.0.0.0:8000 event_manager.wsgi'
     Popen(shlex.split(cmd))
-    cmd = 'celery worker -l warning -A event_manager -c 2 -B -E'
-    Popen(shlex.split(cmd))
-    cmd = 'pkill -f flower'
-    call(shlex.split(cmd))
-    cmd = 'flower -A event_manager --port=5555 --logging=error'
+    cmd = 'celery worker -l warning -A event_manager -c 2 -B'
     Popen(shlex.split(cmd))
 
 

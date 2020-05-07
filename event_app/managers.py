@@ -1,5 +1,6 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth import get_user_model
+
 from utils.base_manager import BaseManager
 from utils.exceptions import NotFound
 

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+
 from utils.base_model_mixin import AutoCreatedUpdatedMixin
 
 User = get_user_model()
