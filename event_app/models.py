@@ -39,16 +39,14 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
         return 'pro' if self.subscriptions.filter(sub_type=Subscription.PROPACK, start_date__lte=today,
                                                   end_date__gte=today).exists() else 'normal'
 
-    class Encoding(AutoCreatedUpdatedMixin.Encoding):
-        exclude_fields = AutoCreatedUpdatedMixin.Encoding.exclude_fields.copy()
-        for i in ["password", "last_login", "is_superuser", "is_staff", "secret"]:
-            exclude_fields.append(i)
-
-        process_fields = AutoCreatedUpdatedMixin.Encoding.process_fields.copy()
-        process_fields.update(**dict(
-            links=lambda x: [_.detail() for _ in x.links.all()],
-            user_type=lambda x: x.user_type
-        ))
+    exclude_fields = AutoCreatedUpdatedMixin.get_exclude_fields_copy()
+    for i in ["password", "last_login", "is_superuser", "is_staff", "secret"]:
+        exclude_fields.append(i)
+    process_fields = AutoCreatedUpdatedMixin.get_process_fields_copy()
+    process_fields.update(**dict(
+        links=lambda x: x.links.all().detail(),
+        user_type=lambda x: x.user_type
+    ))
 
     def change_secret(self):
         self.secret = uuid4()

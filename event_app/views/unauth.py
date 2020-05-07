@@ -29,7 +29,7 @@ class RegisterView(View):
 
 class CollegeView(View):
     def get(self, request):
-        return dict(colleges=[_.detail() for _ in College.objects.all()])
+        return dict(colleges=College.objects.all().detail())
 
 
 class SendValidateEmailView(View):
@@ -126,4 +126,4 @@ class GetUserView(View):
 
 class GetPacksView(View):
     def get(self, request):
-        return dict(packs=[_.detail() for _ in ProPack.objects.all()])
+        return dict(packs=ProPack.objects.all().detail())

@@ -26,7 +26,7 @@ class UploadProfilePicView(View):
 
 class UserLinkView(View):
     def get(self, request):
-        return dict(links=[_.detail() for _ in request.User.links.all()])
+        return dict(links=request.User.links.all().detail())
 
     def post(self, request):
         data = request.json
@@ -73,7 +73,7 @@ class UpdateLinkSequenceView(View):
                     if link:
                         link.index = i
                         link.save()
-                return dict(links=[_.detail() for _ in request.User.links.all()])
+                return dict(links=request.User.links.all().detail())
         except IntegrityError:
             return dict(error="Some error happened", status_code=501)
 

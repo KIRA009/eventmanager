@@ -44,11 +44,10 @@ class ProPack(AutoCreatedUpdatedMixin):
                 self.plan_id = create_plan(self)['id']
         super(ProPack, self).save()
 
-    class Encoding(AutoCreatedUpdatedMixin.Encoding):
-        process_fields = AutoCreatedUpdatedMixin.Encoding.process_fields.copy()
-        process_fields.update(**{
-            'features': lambda x: loads(x)
-        })
+    process_fields = AutoCreatedUpdatedMixin.get_process_fields_copy()
+    process_fields.update(**{
+        'features': lambda x: loads(x)
+    })
 
 
 class Product(AutoCreatedUpdatedMixin):
@@ -60,8 +59,7 @@ class Product(AutoCreatedUpdatedMixin):
     estimated_delivery = models.TextField(default='', blank=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='products')
 
-    class Encoding(AutoCreatedUpdatedMixin.Encoding):
-        process_fields = AutoCreatedUpdatedMixin.Encoding.get_process_fields_copy()
-        process_fields.update(**dict(
-            images=lambda x: loads(x)
-        ))
+    process_fields = AutoCreatedUpdatedMixin.get_process_fields_copy()
+    process_fields.update(**dict(
+        images=lambda x: loads(x)
+    ))

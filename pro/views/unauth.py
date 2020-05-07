@@ -34,4 +34,4 @@ class GetProductsView(View):
     @get_user_schema
     def post(self, request):
         user = request.json['username']
-        return dict(products=[_.detail() for _ in Product.objects.filter(user__username=user)])
+        return dict(products=Product.objects.filter(user__username=user).detail())

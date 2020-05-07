@@ -1,10 +1,6 @@
-from django.db import models
-from .exceptions import NotFound
+from django.db.models import Manager
+from .base_queryset import BaseQuerySet
 
 
-class BaseManager(models.Manager):
-    def get(self, **kwargs):
-        try:
-            return super(BaseManager, self).get(**kwargs)
-        except self.model.DoesNotExist:
-            raise NotFound(f'The {self.model._meta.model_name} requested for does not exist')
+class BaseManager(Manager.from_queryset(BaseQuerySet)):
+    pass

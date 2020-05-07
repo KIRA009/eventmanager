@@ -24,7 +24,8 @@ pro_urls = list(
             ("product/create/", CreateProductView),
             ("product/image/add/", AddImageToProductView),
             ("product/image/del/", DeleteImageFromProductView),
-            ("product/update/", UpdateProductView)
+            ("product/update/", UpdateProductView),
+            ("product/delete/", DeleteProductView)
         ],
     )
 )

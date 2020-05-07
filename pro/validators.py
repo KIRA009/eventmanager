@@ -31,3 +31,7 @@ update_product_schema = validate(
     make_number_object("price"),
     make_string_object("estimated_delivery")
 )
+
+delete_product_schema = validate(
+    make_number_object("product_id")
+)

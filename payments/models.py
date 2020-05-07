@@ -34,13 +34,12 @@ class Subscription(AutoCreatedUpdatedMixin):
         today = localdate(now())
         return self.start_date <= today <= self.end_date
 
-    class Encoding(AutoCreatedUpdatedMixin.Encoding):
-        exclude_fields = AutoCreatedUpdatedMixin.Encoding.get_exclude_fields_copy()
-        exclude_fields += ['user']
-        process_fields = AutoCreatedUpdatedMixin.Encoding.get_process_fields_copy()
-        process_fields.update(**dict(
-            is_active=lambda x: x.is_active()
-        ))
+    exclude_fields = AutoCreatedUpdatedMixin.get_exclude_fields_copy()
+    exclude_fields += ['user']
+    process_fields = AutoCreatedUpdatedMixin.get_process_fields_copy()
+    process_fields.update(**dict(
+        is_active=lambda x: x.is_active()
+    ))
 
 
 class OrderItem(AutoCreatedUpdatedMixin):
@@ -52,14 +51,13 @@ class OrderItem(AutoCreatedUpdatedMixin):
         "Order", on_delete=models.CASCADE, related_name="items"
     )
 
-    class Encoding(AutoCreatedUpdatedMixin.Encoding):
-        exclude_fields = AutoCreatedUpdatedMixin.Encoding.exclude_fields.copy()
-        exclude_fields += ['object_id', 'order_id', 'content_type']
-        process_fields = AutoCreatedUpdatedMixin.Encoding.process_fields.copy()
-        process_fields.update(**dict(
-            order=lambda x: x.order.detail(),
-            order_type=lambda x: x.content_type.model
-        ))
+    exclude_fields = AutoCreatedUpdatedMixin.get_exclude_fields_copy()
+    exclude_fields += ['object_id', 'order_id', 'content_type']
+    process_fields = AutoCreatedUpdatedMixin.get_process_fields_copy()
+    process_fields.update(**dict(
+        order=lambda x: x.order.detail(),
+        order_type=lambda x: x.content_type.model
+    ))
 
 
 class Order(AutoCreatedUpdatedMixin):
@@ -77,9 +75,8 @@ class Order(AutoCreatedUpdatedMixin):
             meta['notes']['query'] = json.loads(meta['notes']['query'])
         return meta
 
-    class Encoding(AutoCreatedUpdatedMixin.Encoding):
-        process_fields = AutoCreatedUpdatedMixin.Encoding.process_fields.copy()
-        process_fields.update(**dict(
-            meta_data=lambda x: Order.process_meta(x),
-            items=lambda x: [_.detail() for _ in x.items.all()]
-        ))
+    process_fields = AutoCreatedUpdatedMixin.process_fields.copy()
+    process_fields.update(**dict(
+        meta_data=lambda x: Order.process_meta(x),
+        items=lambda x: x.items.all().detail()
+    ))

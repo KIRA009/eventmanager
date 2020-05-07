@@ -9,7 +9,7 @@ from event_manager.settings import PAYMENT_REDIRECT_URL
 
 class OrderView(View):
     def get(self, request):
-        return dict(orders=[_.detail() for _ in request.User.orders.all()])
+        return dict(orders=request.User.orders.all().detail())
 
     def post(self, request):
         data = request.json

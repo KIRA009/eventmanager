@@ -32,10 +32,7 @@ def restart_server():
             os.kill(int(data[1]), signal.SIGKILL)
     except CalledProcessError:
         pass
-    if DEBUG:
-        cmd = 'python3 manage.py runserver'
-    else:
-        cmd = 'gunicorn -b 0.0.0.0:8000 event_manager.wsgi'
+    cmd = 'gunicorn -b 0.0.0.0:8000 event_manager.wsgi'
     Popen(shlex.split(cmd))
     cmd = 'celery worker -l info -A event_manager -c 2'
     Popen(shlex.split(cmd))

@@ -58,7 +58,7 @@ class SetBgView(View):
 class CreateProductView(View):
     @create_product_schema
     def post(self, request):
-        data = request.POST.dict()
+        data = request.json
         product = Product.objects.create(user=request.User, **data, images=[])
         return dict(product=product.detail())
 
@@ -68,7 +68,7 @@ class AddImageToProductView(View):
     def post(self, request):
         data = request.POST.dict()['product_id']
         image = request.FILES.dict()['photo']
-        product = Product.objects.get(id=data)
+        product = Product.objects.get(id=data, user=request.User)
         product.images.append(upload_file(request, image, PRODUCTCONTAINER))
         product.save()
         return dict(product=product.detail())
@@ -78,10 +78,13 @@ class DeleteImageFromProductView(View):
     @delete_image_schema
     def post(self, request):
         data = request.json
-        product = Product.objects.get(id=data['product_id'])
+        product = Product.objects.get(id=data['product_id'], user=request.User)
         delete_file(data['image'])
-        product.images.remove(data['image'])
-        product.save()
+        try:
+            product.images.remove(data['image'])
+            product.save()
+        except ValueError:
+            pass
         return dict(product=product.detail())
 
 
@@ -89,5 +92,13 @@ class UpdateProductView(View):
     @update_product_schema
     def post(self, request):
         data = request.json
-        Product.objects.filter(id=data['id']).update(**data)
+        Product.objects.filter(id=data['id'], user=request.User).update(**data)
         return dict(product=Product.objects.get(id=data['id']).detail())
+
+
+class DeleteProductView(View):
+    @delete_product_schema
+    def post(self, request):
+        data = request.json
+        Product.objects.filter(id=data['product_id'], user=request.User).delete()
+        return dict(message="Deleted")

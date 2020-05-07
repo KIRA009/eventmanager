@@ -3,13 +3,23 @@ import django.utils.timezone as tz
 import json
 from django.core import serializers
 
-
 from .base_manager import BaseManager
 
 
 class AutoCreatedUpdatedMixin(models.Model):
     created_at = models.DateTimeField(blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
+
+    exclude_fields = ['created_at', 'updated_at']
+    process_fields = {}
+
+    @classmethod
+    def get_exclude_fields_copy(cls):
+        return cls.exclude_fields.copy()
+
+    @classmethod
+    def get_process_fields_copy(cls):
+        return cls.process_fields.copy()
 
     objects = BaseManager()
 
@@ -29,20 +39,8 @@ class AutoCreatedUpdatedMixin(models.Model):
     def detail(self):
         ret = json.loads(serializers.serialize('json', [self]))[0]
         ret['fields']['id'] = ret['pk']
-        for i in self.Encoding.exclude_fields:
+        for i in self.exclude_fields:
             del ret['fields'][i]
-        for k, v in self.Encoding.process_fields.items():
+        for k, v in self.process_fields.items():
             ret['fields'][k] = v(ret['fields'].get(k, self))
         return ret['fields']
-
-    class Encoding:
-        exclude_fields = ['created_at', 'updated_at']
-        process_fields = {}
-
-        @classmethod
-        def get_exclude_fields_copy(cls):
-            return cls.exclude_fields.copy()
-
-        @classmethod
-        def get_process_fields_copy(cls):
-            return cls.process_fields.copy()
