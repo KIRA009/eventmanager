@@ -28,3 +28,8 @@ def make_email_object(x, is_required=True):
 
 def make_uri_object(x, is_required=True):
     return make_object(x, "string", is_required, pattern="^https?://.+")
+
+
+def make_dict_object(x, is_required=True, **kwrags):
+    return make_object(x, "object", is_required, **kwrags)
+

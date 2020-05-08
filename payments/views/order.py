@@ -3,6 +3,7 @@ import json
 from django.shortcuts import redirect
 
 from payments.models import Order, OrderItem
+from pro.models import Product
 from payments.utils import create_order, is_signature_safe, get_order, handle_order, create_order_form
 from event_manager.settings import PAYMENT_REDIRECT_URL
 
@@ -15,15 +16,17 @@ class OrderView(View):
         data = request.json
         amount = 0
         items = []
+        for item in data['items']:
+            if item['type'] == 'product':
+                product = Product.objects.get(id=item['id'])
+                items.append(product)
+                amount += product.disc_price
         order_id = create_order(amount)
-        order = Order.objects.create(
-            order_id=order_id, amount=amount, user=request.User, meta_data=""
-        )
-        items = [OrderItem(order=item, order_id=order, index=i) for i, item in enumerate(items)]
+        order = Order.objects.create(order_id=order_id, amount=amount, user=request.User)
+        items = [OrderItem(order=item, order_id=order, index=i, meta_data=data['items'][i]['meta_data'])
+                 for i, item in enumerate(items)]
         OrderItem.objects.bulk_create(items)
-        return dict(
-            form=create_order_form(order, json.dumps(data['items']))
-        )
+        return dict(form=create_order_form(order, json.dumps(data['items'])))
 
 
 class OrderCallBackView(View):
@@ -35,9 +38,11 @@ class OrderCallBackView(View):
             order.payment_id = data["razorpay_payment_id"]
             order.signature = data["razorpay_signature"]
             order_details = get_order(order.order_id)[0]
-            order.meta_data = json.dumps(order_details)
-            notes = json.loads(order_details['notes']['query'])
+            meta_data = dict()
+            meta_data['payment_details'] = json.dumps(order_details)
+            meta_data['notes'] = json.loads(order_details['notes']['query'])
+            order.meta_data = meta_data
             for item in order.items.all():
-                handle_order(item, notes[item.index])
+                handle_order(item, meta_data['notes'][item.index])
             order.save()
         return redirect(PAYMENT_REDIRECT_URL)

@@ -46,6 +46,7 @@ class OrderItem(AutoCreatedUpdatedMixin):
     order = GenericForeignKey()
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
+    meta_data = JSONField(default=dict)
     index = models.IntegerField(default=0)
     order_id = models.ForeignKey(
         "Order", on_delete=models.CASCADE, related_name="items"
@@ -67,7 +68,7 @@ class Order(AutoCreatedUpdatedMixin):
     signature = models.TextField(default="")
     meta_data = JSONField(default=dict)
     paid = models.BooleanField(default=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders", null=True, blank=True)
 
     @staticmethod
     def process_meta(meta):

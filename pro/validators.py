@@ -1,5 +1,5 @@
 from utils.decorators import validate
-from utils.validator_helpers import make_string_object, make_number_object, make_uri_object
+from utils.validator_helpers import make_string_object, make_number_object, make_uri_object, make_dict_object
 
 
 get_user_schema = validate(
@@ -11,7 +11,8 @@ create_product_schema = validate(
     make_string_object("description"),
     make_number_object("disc_price"),
     make_number_object("price"),
-    make_string_object("estimated_delivery")
+    make_string_object("estimated_delivery"),
+    make_dict_object("meta_data")
 )
 
 add_image_schema = validate(
@@ -29,7 +30,8 @@ update_product_schema = validate(
     make_string_object("description"),
     make_number_object("disc_price"),
     make_number_object("price"),
-    make_string_object("estimated_delivery")
+    make_string_object("estimated_delivery"),
+    make_dict_object("meta_data")
 )
 
 delete_product_schema = validate(

@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from json import loads
 
 from utils.base_model_mixin import AutoCreatedUpdatedMixin
@@ -57,6 +57,7 @@ class Product(AutoCreatedUpdatedMixin):
     price = models.IntegerField(default=0)
     images = ArrayField(models.URLField(blank=True), blank=True, default=list)
     estimated_delivery = models.TextField(default='', blank=False)
+    meta_data = JSONField(default=dict)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='products')
 
     process_fields = AutoCreatedUpdatedMixin.get_process_fields_copy()
