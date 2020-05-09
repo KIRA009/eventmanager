@@ -39,7 +39,7 @@ class GetLinkData(View):
                 total_clicks = 0
                 i = 0
                 for click in link.clicks.filter(day__gte=month_ago).order_by('day'):
-                    while click.day != month_ago + timedelta(days=i):
+                    while click.day > month_ago + timedelta(days=i):
                         clicks.append(dict(day=month_ago + timedelta(days=i), clicks=0))
                         i += 1
                     i += 1
@@ -71,7 +71,7 @@ class GetProfileViewData(View):
             analytics = []
             total_views = 0
             for day in ProfileView.objects.filter(user=request.User, day__gte=month_ago).order_by('day'):
-                while day.day != month_ago + timedelta(days=i):
+                while day.day > month_ago + timedelta(days=i):
                     analytics.append(dict(views=0, day=month_ago + timedelta(days=i)))
                     i += 1
                 i += 1

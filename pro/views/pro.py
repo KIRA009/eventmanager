@@ -45,6 +45,9 @@ class SetBgView(View):
             img = img['photo']
             delete_file(feature.background_image)
             feature.background_image = upload_file(request, img, PROFILECONTAINER)
+        elif 'photo' in data:
+            delete_file(feature.background_image)
+            feature.background_image = upload_file(request, None, PROFILECONTAINER)
         if 'link_style' in data:
             feature.link_style = data['link_style']
         feature.save()

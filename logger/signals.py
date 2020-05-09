@@ -15,6 +15,8 @@ from payments.utils import update_subscription
 @receiver(post_save, sender=User)
 @receiver(post_save, sender=Order)
 def send_email(sender, **kwargs):
+    if DEBUG:
+        return
     sender = sender.__name__
     instance = kwargs['instance']
     _vars = {}
@@ -30,6 +32,5 @@ def send_email(sender, **kwargs):
         if not instance.paid:
             return
         _vars['model_name'] = 'New order receieved and paid'
-        _vars['message'] = f'{instance.user.email} paid {instance.amount} for {instance.meta_data}'
-    if not DEBUG:
-        send_email_to_admins('new_object', _vars['model_name'], **_vars)
+        _vars['message'] = f'{instance.user.email if instance.user.email else instance.meta_data["user_details"]["email"]} paid {instance.amount} for {instance.meta_data}'
+    send_email_to_admins('new_object', _vars['model_name'], **_vars)

@@ -33,3 +33,6 @@ def make_uri_object(x, is_required=True):
 def make_dict_object(x, is_required=True, **kwrags):
     return make_object(x, "object", is_required, **kwrags)
 
+
+def make_boolean_object(x, is_required=True, **kwargs):
+    return make_object(x, "boolean", is_required, **kwargs)

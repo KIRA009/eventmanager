@@ -5,9 +5,11 @@ import hashlib
 from django.utils.timezone import now, localdate, datetime
 from datetime import timedelta
 import pytz
+import json
 from celery.task import task
 
-from event_manager.settings import RAZORPAY_KEY, RAZORPAY_SECRET, TIME_ZONE, PAYMENT_TEST, PAYMENT_CALLBACK_URL
+from event_manager.settings import RAZORPAY_KEY, RAZORPAY_SECRET, TIME_ZONE, PAYMENT_TEST, PAYMENT_CALLBACK_URL, \
+    PAYMENT_CANCEL_URL
 from .models import Subscription, Order, OrderItem
 from utils.exceptions import NotFound, AccessDenied
 
@@ -65,9 +67,18 @@ def is_signature_safe(parameters):
     return True
 
 
-def get_order(order_id):
-    res = requests.get(f"{BASE_URL}/orders/{order_id}/payments", auth=auth).json()
-    return res["items"]
+def get_order(order):
+    ret = dict()
+    res = requests.get(f"{BASE_URL}/orders/{order.order_id}", auth=auth).json()
+    ret['order'] = res
+    res = requests.get(f"{BASE_URL}/orders/{order.order_id}/payments", auth=auth).json()
+    ret['payment'] = res["items"][0]
+    ret['user_details'] = dict(
+        name=order.user.name,
+        email=order.user.email,
+        phone=order.user.phone
+    )
+    return ret
 
 
 def get_plan(plan_id):
@@ -119,11 +130,10 @@ def update_subscription(sub, order=None, start_date=None, end_date=None):
     else:
         sub.start_date = localdate(now())
         sub.end_date = sub.start_date + timedelta(days=30)
+    sub.save()
     if order:
-        order = Order(order_id=order['order_id'], amount=int(order['amount']) / 100, payment_id=order['id'], paid=True,
-                      user=sub.user)
-        meta_data = get_order(order.order_id)
-        order.meta_data = meta_data[0]
+        order = Order(order_id=order['order_id'], amount=int(order['amount']) / 100, paid=True, user=sub.user)
+        order.meta_data = get_order(order)
         order.save()
         OrderItem.objects.create(order_id=order, index=0, order=sub)
     if PAYMENT_TEST:
@@ -132,24 +142,25 @@ def update_subscription(sub, order=None, start_date=None, end_date=None):
 
 
 def renew_subscription(sub_id, sub_type, start_date, end_date, order):
-    sub = Subscription.objects.get(sub_id=sub_id, sub_type="PROPACK")
+    sub = Subscription.objects.get(sub_id=sub_id, sub_type=sub_type)
     sub.pk = None
     update_subscription(sub, order, start_date, end_date)
 
 
-def create_order_form(order, items):
+def create_order_form(order_id, items, user):
     return {
         "url": "https://api.razorpay.com/v1/checkout/embedded",
         "fields": {
             "key_id": RAZORPAY_KEY,
-            "order_id": order.order_id,
+            "order_id": order_id,
             "name": "MyWebLink",
-            "image": "https://cdn.razorpay.com/logos/BUVwvgaqVByGp2_large.png",
-            "notes[query]": items,
-            "prefill[name]": order.user.name,
-            "prefill[contact]": order.user.phone,
-            "prefill[email]": order.user.email,
-            "callback_url": PAYMENT_CALLBACK_URL
+            "prefill[name]": user.name,
+            "prefill[contact]": user.phone,
+            "prefill[email]": user.email,
+            "notes[items]": json.dumps(items['items']),
+            "notes[user]": json.dumps(items['user_details']),
+            "callback_url": PAYMENT_CALLBACK_URL,
+            "cancel_url": PAYMENT_CANCEL_URL
         },
     }
 

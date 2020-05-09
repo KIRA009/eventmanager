@@ -58,6 +58,7 @@ class Product(AutoCreatedUpdatedMixin):
     images = ArrayField(models.URLField(blank=True), blank=True, default=list)
     estimated_delivery = models.TextField(default='', blank=False)
     meta_data = JSONField(default=dict)
+    cod_available = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='products')
 
     process_fields = AutoCreatedUpdatedMixin.get_process_fields_copy()
