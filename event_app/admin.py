@@ -21,8 +21,25 @@ class UserAdmin(BaseAdmin):
 
     actions = ['create_pro']
     search_fields = ['username', 'email']
+    list_display = ['username', 'email', 'phone', 'is_validated']
+    list_filter = ['is_validated']
 
 
-admin.site.register([College, Link], BaseAdmin)
+class LinkAdmin(BaseAdmin):
+    list_display = ['title', 'url', 'visible', 'user']
+    list_filter = ['visible']
+    search_fields = ['user']
+
+
+class CollegeAdmin(BaseAdmin):
+    def attendees(self, instance):
+        return instance.students.count()
+    list_display = ['name', 'state', 'has_college_email', 'attendees']
+    list_filter = ['has_college_email']
+    search_fields = ['name', 'state']
+
+
+admin.site.register(College, CollegeAdmin)
+admin.site.register(Link, LinkAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(Group, GroupAdmin)

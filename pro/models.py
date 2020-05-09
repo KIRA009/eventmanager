@@ -65,3 +65,6 @@ class Product(AutoCreatedUpdatedMixin):
     process_fields.update(**dict(
         images=lambda x: loads(x)
     ))
+
+    def __str__(self):
+        return f'{self.name} -> {self.user}'

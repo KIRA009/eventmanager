@@ -32,7 +32,7 @@ class Subscription(AutoCreatedUpdatedMixin):
 
     def is_active(self):
         today = localdate(now())
-        return self.start_date <= today <= self.end_date
+        return self.start_date <= today <= self.end_date if self.start_date and self.end_date else True
 
     exclude_fields = AutoCreatedUpdatedMixin.get_exclude_fields_copy()
     exclude_fields += ['user']
@@ -73,6 +73,9 @@ class Order(AutoCreatedUpdatedMixin):
         if meta.get('notes'):
             meta['notes']['query'] = json.loads(meta['notes']['query'])
         return meta
+
+    def __str__(self):
+        return f'{self.user.username if self.user else self.meta_data["user_details"]["name"]} -> {self.order_id}'
 
     process_fields = AutoCreatedUpdatedMixin.process_fields.copy()
     process_fields.update(**dict(
