@@ -15,18 +15,21 @@ class GetBgView(View):
                 return dict(
                     background_color=feature.background_color,
                     background_image=feature.background_image,
-                    link_style=feature.link_style
+                    link_style=feature.link_style,
+                    preview_image=feature.preview_image
                 )
             return dict(
                 background_color=None,
                 background_image=None,
-                link_style=None
+                link_style=None,
+                preview_image=None
             )
         except User.DoesNotExist:
             return dict(
                 background_color=None,
                 background_image=None,
-                link_style=None
+                link_style=None,
+                preview_image=None
             )
 
 

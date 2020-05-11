@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.contenttypes.fields import ContentType
 
 from .models import *
 from utils.base_admin import BaseAdmin
@@ -15,6 +16,11 @@ class ProductAdmin(BaseAdmin):
     search_fields = ['user']
     list_filter = ['cod_available']
 
+    def delete_queryset(self, request, queryset):
+        content_type = ContentType.objects.get_for_model(DeletedButUsedProducts)
+        for i in queryset:
+            i.delete(content_type=content_type)
+
 
 class ProModeFeatureAdmin(BaseAdmin):
     search_fields = ['user']
@@ -23,4 +29,4 @@ class ProModeFeatureAdmin(BaseAdmin):
 
 admin.site.register(ProModeFeature, ProModeFeatureAdmin)
 admin.site.register(ProPack, ProPackAdmin)
-admin.site.register(Product, ProductAdmin)
+admin.site.register([Product, DeletedButUsedProducts], ProductAdmin)

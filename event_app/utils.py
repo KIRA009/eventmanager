@@ -6,7 +6,6 @@ from celery.task import task
 from event_manager.settings import (
     STORAGE_CLIENT,
 )
-from utils.decorators import decorator
 
 
 def upload_file(request, file, container):

@@ -1,10 +1,11 @@
 from django.views import View
 
 from pro.models import ProModeFeature, Product
-from event_app.utils import upload_file
 from utils.tasks import delete_file
 from event_manager.settings import ICONCONTAINER, PROFILECONTAINER, PRODUCTCONTAINER
 from pro.validators import *
+from event_app.utils import upload_file
+from pro.utils import convert_to_base64
 
 
 class ProModeHeaderView(View):
@@ -45,16 +46,19 @@ class SetBgView(View):
             img = img['photo']
             delete_file(feature.background_image)
             feature.background_image = upload_file(request, img, PROFILECONTAINER)
+            feature.preview_image = convert_to_base64(img)
         elif 'photo' in data:
             delete_file(feature.background_image)
-            feature.background_image = upload_file(request, None, PROFILECONTAINER)
+            feature.background_image = None
+            feature.preview_image = None
         if 'link_style' in data:
             feature.link_style = data['link_style']
         feature.save()
         return dict(
             background_color=feature.background_color,
             background_image=feature.background_image,
-            link_style=feature.link_style
+            link_style=feature.link_style,
+            preview_image=feature.preview_image
         )
 
 
@@ -73,6 +77,7 @@ class AddImageToProductView(View):
         image = request.FILES.dict()['photo']
         product = Product.objects.get(id=data, user=request.User)
         product.images.append(upload_file(request, image, PRODUCTCONTAINER))
+        product.preview_images.append(convert_to_base64(image))
         product.save()
         return dict(product=product.detail())
 
@@ -82,9 +87,11 @@ class DeleteImageFromProductView(View):
     def post(self, request):
         data = request.json
         product = Product.objects.get(id=data['product_id'], user=request.User)
+        image_ind = product.images.index(data['image'])
         delete_file(data['image'])
         try:
-            product.images.remove(data['image'])
+            del product.images[image_ind]
+            del product.preview_images[image_ind]
             product.save()
         except ValueError:
             pass
