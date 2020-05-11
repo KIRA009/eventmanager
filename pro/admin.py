@@ -17,7 +17,7 @@ class ProductAdmin(BaseAdmin):
     list_filter = ['cod_available']
 
     def delete_queryset(self, request, queryset):
-        content_type = ContentType.objects.get_for_model(DeletedButUsedProducts)
+        content_type = ContentType.objects.get_for_model(DeletedButUsedProduct)
         for i in queryset:
             i.delete(content_type=content_type)
 
@@ -29,4 +29,4 @@ class ProModeFeatureAdmin(BaseAdmin):
 
 admin.site.register(ProModeFeature, ProModeFeatureAdmin)
 admin.site.register(ProPack, ProPackAdmin)
-admin.site.register([Product, DeletedButUsedProducts], ProductAdmin)
+admin.site.register([Product, DeletedButUsedProduct], ProductAdmin)

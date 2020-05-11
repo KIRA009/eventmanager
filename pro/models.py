@@ -63,7 +63,7 @@ class Product(AutoCreatedUpdatedMixin):
     preview_images = ArrayField(models.TextField(default='', blank=True), default=list, blank=True)
     cod_available = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='products')
-    order = GenericRelation("payments.OrderItem")
+    order = GenericRelation("payments.OrderItem", related_query_name='product')
 
     process_fields = AutoCreatedUpdatedMixin.get_process_fields_copy()
     process_fields.update(**dict(
@@ -74,12 +74,12 @@ class Product(AutoCreatedUpdatedMixin):
     def delete(self, using=None, keep_parents=False, content_type=None):
         if self.order.count() > 0:
             if content_type is None:
-                content_type = ContentType.objects.get_for_model(DeletedButUsedProducts)
-            _del = DeletedButUsedProducts.objects.create(name=self.name, description=self.description,
-                                                         disc_price=self.disc_price, price=self.price,
-                                                         images=self.images, estimated_delivery=self.estimated_delivery,
-                                                         meta_data=self.meta_data, preview_images=self.preview_images,
-                                                         cod_available=self.cod_available, user=self.user)
+                content_type = ContentType.objects.get_for_model(DeletedButUsedProduct)
+            _del = DeletedButUsedProduct.objects.create(name=self.name, description=self.description,
+                                                        disc_price=self.disc_price, price=self.price,
+                                                        images=self.images, estimated_delivery=self.estimated_delivery,
+                                                        meta_data=self.meta_data, preview_images=self.preview_images,
+                                                        cod_available=self.cod_available, user=self.user)
             self.order.all().update(content_type=content_type, object_id=_del.id)
         super().delete(using, keep_parents=True)
 
@@ -87,7 +87,7 @@ class Product(AutoCreatedUpdatedMixin):
         return f'{self.name} -> {self.user}'
 
 
-class DeletedButUsedProducts(AutoCreatedUpdatedMixin):
+class DeletedButUsedProduct(AutoCreatedUpdatedMixin):
     name = models.TextField(blank=False, default='Product')
     description = models.TextField(blank=True, default='Description')
     disc_price = models.IntegerField(default=0)
@@ -98,11 +98,12 @@ class DeletedButUsedProducts(AutoCreatedUpdatedMixin):
     preview_images = ArrayField(models.TextField(default='', blank=True), default=list, blank=True)
     cod_available = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='deleted_products')
-    order = GenericRelation("payments.OrderItem")
+    order = GenericRelation("payments.OrderItem", related_query_name='deleted_product')
 
     process_fields = AutoCreatedUpdatedMixin.get_process_fields_copy()
     process_fields.update(**dict(
-        images=lambda x: loads(x)
+        images=lambda x: loads(x),
+        preview_images=lambda x: loads(x)
     ))
 
     def __str__(self):

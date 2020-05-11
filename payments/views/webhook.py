@@ -2,7 +2,7 @@ from django.views import View
 import json
 
 from payments.utils import renew_subscription, update_subscription
-from payments.models import Subscription, Order, OrderItem
+from payments.models import Subscription, Order, Seller
 
 
 class PaymentWebhookView(View):
@@ -37,4 +37,7 @@ class PaymentWebhookView(View):
                     item.meta_data = items[item.index]['meta_data']
                     item.save()
                 order.save()
+                seller = Seller.objects.get_or_create(user=order.items.first().order.user)[0]
+                seller.amount += order.amount
+                seller.save()
         return dict()

@@ -6,6 +6,7 @@ from event_manager.settings import ICONCONTAINER, PROFILECONTAINER, PRODUCTCONTA
 from pro.validators import *
 from event_app.utils import upload_file
 from pro.utils import convert_to_base64
+from payments.models import OrderItem
 
 
 class ProModeHeaderView(View):
@@ -112,3 +113,18 @@ class DeleteProductView(View):
         data = request.json
         Product.objects.filter(id=data['product_id'], user=request.User).delete()
         return dict(message="Deleted")
+
+
+class GetSoldProductsView(View):
+    def get(self, request):
+        return dict(orders=OrderItem.objects.get_sold_products(request.User).detail())
+
+
+class UpdateSoldProductsView(View):
+    @update_order_schema
+    def post(self, request):
+        data = request.json
+        item = OrderItem.objects.get(id=data['item_id'], product__user=request.User)
+        item.status = data['status']
+        item.save()
+        return dict(item=item.detail())

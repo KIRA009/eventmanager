@@ -22,7 +22,7 @@ class OrderView(View):
             if item['type'] == 'product':
                 product = Product.objects.get(id=item['id'])
                 items.append(product)
-                amount += product.disc_price
+                amount += int(item['meta_data']['quantity']) * product.disc_price
         user_details = data['user_details']
         _User = namedtuple('_User', ['name', 'email', 'phone'])
         user = User.objects.filter(email=user_details['email']).first()

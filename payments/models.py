@@ -7,6 +7,7 @@ from django.utils.timezone import localdate, now
 import json
 
 from utils.base_model_mixin import AutoCreatedUpdatedMixin
+from payments.managers import OrderItemManager
 
 
 User = get_user_model()
@@ -43,11 +44,18 @@ class Subscription(AutoCreatedUpdatedMixin):
 
 
 class OrderItem(AutoCreatedUpdatedMixin):
+    STATUS_CHOICES = (
+        ('Order Processed', 'Order Processed'),
+        ('Order Confirmed', 'Order Confirmed'),
+        ('Shipped', 'Shipped'),
+        ('Delivered', 'Delivered')
+    )
     order = GenericForeignKey()
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     index = models.IntegerField(default=0)
     meta_data = JSONField(default=dict, blank=True)
+    status = models.TextField(default='Order Processed', choices=STATUS_CHOICES)
     order_id = models.ForeignKey(
         "Order", on_delete=models.CASCADE, related_name="items"
     )
@@ -59,6 +67,8 @@ class OrderItem(AutoCreatedUpdatedMixin):
         order=lambda x: x.order.detail(),
         order_type=lambda x: x.content_type.model
     ))
+
+    objects = OrderItemManager()
 
 
 class Order(AutoCreatedUpdatedMixin):
@@ -82,3 +92,11 @@ class Order(AutoCreatedUpdatedMixin):
         meta_data=lambda x: Order.process_meta(x),
         items=lambda x: x.items.all().detail()
     ))
+
+
+class Seller(AutoCreatedUpdatedMixin):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='seller')
+    amount = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.user} -> {self.amount}'

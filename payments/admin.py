@@ -25,9 +25,9 @@ class OrderItemAdmin(BaseAdmin):
 				return queryset
 			return queryset.filter(content_type__model=self.value())
 
-	list_display = ['get_model_name', 'order', 'order_id']
+	list_display = ['get_model_name', 'order', 'order_id', 'status']
 	search_fields = ['order_id__user__username']
-	list_filter = [ContentListFilter]
+	list_filter = [ContentListFilter, 'status']
 
 
 class OrderAdmin(BaseAdmin):
@@ -67,6 +67,21 @@ class SubscriptionAdmin(BaseAdmin):
 	list_filter = ['is_unsubscribed', 'test', ActiveListFilter]
 
 
+class SellerAdmin(BaseAdmin):
+	def get_queryset(self, request):
+		return Seller.objects.filter(amount__gt=0)
+
+	def pay_outstanding(self, request, queryset):
+		queryset.update(amount=0)
+		self.message_user(request, 'The selected sellers have been paid')
+
+	pay_outstanding.short_description = "Pay outstanding debt"
+
+	list_display = ['user', 'amount']
+	actions = ['pay_outstanding']
+
+
 admin.site.register(Subscription, SubscriptionAdmin)
 admin.site.register(OrderItem, OrderItemAdmin)
 admin.site.register(Order, OrderAdmin)
+admin.site.register(Seller, SellerAdmin)

@@ -40,3 +40,8 @@ update_product_schema = validate(
 delete_product_schema = validate(
     make_number_object("product_id")
 )
+
+update_order_schema = validate(
+    make_string_object("status"),
+    make_number_object("item_id")
+)
