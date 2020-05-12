@@ -45,3 +45,13 @@ update_order_schema = validate(
     make_string_object("status"),
     make_number_object("item_id")
 )
+
+retrieve_amount_schema = validate(
+    make_number_object("amount")
+)
+
+update_bank_details = validate(
+    make_string_object("account_holder_name"),
+    make_string_object("account_number"),
+    make_string_object("ifsc_code")
+)

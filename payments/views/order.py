@@ -36,11 +36,13 @@ class OrderView(View):
             order_id = create_order(amount)
         order = Order.objects.create(
             order_id=order_id, amount=amount, user=user if not isinstance(user, _User) else None,
-            meta_data=dict(user_details=user_details)
+            meta_data=dict(user_details=user_details), cod=data['cod']
         )
         items = [OrderItem(order=item, order_id=order, index=i, meta_data=data['items'][i])
                  for i, item in enumerate(items)]
         OrderItem.objects.bulk_create(items)
+        if order.cod:
+            return dict(message="Order received")
         return dict(
             form=create_order_form(order_id, data, user)
         )

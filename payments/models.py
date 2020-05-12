@@ -7,7 +7,7 @@ from django.utils.timezone import localdate, now
 import json
 
 from utils.base_model_mixin import AutoCreatedUpdatedMixin
-from payments.managers import OrderItemManager
+from payments.managers import OrderManager
 
 
 User = get_user_model()
@@ -68,14 +68,13 @@ class OrderItem(AutoCreatedUpdatedMixin):
         order_type=lambda x: x.content_type.model
     ))
 
-    objects = OrderItemManager()
-
 
 class Order(AutoCreatedUpdatedMixin):
     order_id = models.TextField(default="")
     amount = models.BigIntegerField(default=0)
     meta_data = JSONField(default=dict, blank=True)
     paid = models.BooleanField(default=False)
+    cod = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders", null=True, blank=True)
 
     @staticmethod
@@ -93,10 +92,28 @@ class Order(AutoCreatedUpdatedMixin):
         items=lambda x: x.items.all().detail()
     ))
 
+    objects = OrderManager()
+
 
 class Seller(AutoCreatedUpdatedMixin):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='seller')
     amount = models.IntegerField(default=0)
+    account_holder_name = models.TextField(default='', blank=True)
+    account_number = models.TextField(default='', blank=True)
+    ifsc_code = models.TextField(default='', blank=True)
 
     def __str__(self):
         return f'{self.user} -> {self.amount}'
+
+
+class RetrieveAmount(AutoCreatedUpdatedMixin):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='retrieved')
+    amount = models.IntegerField(default=0)
+    paid = models.BooleanField(default=False)
+
+    def __str__(self):
+        if self.paid:
+            return f'{self.user} wash paid {self.amount}'
+        return f'{self.user} asked for {self.amount}'
+
+    exclude_fields = ['updated_at']

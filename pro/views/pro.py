@@ -1,12 +1,15 @@
 from django.views import View
+from django.db.transaction import atomic
 
 from pro.models import ProModeFeature, Product
 from utils.tasks import delete_file
 from event_manager.settings import ICONCONTAINER, PROFILECONTAINER, PRODUCTCONTAINER
+from event_app.models import User
 from pro.validators import *
 from event_app.utils import upload_file
 from pro.utils import convert_to_base64
-from payments.models import OrderItem
+from payments.models import OrderItem, Order, Seller, RetrieveAmount
+from utils.exceptions import AccessDenied
 
 
 class ProModeHeaderView(View):
@@ -117,7 +120,7 @@ class DeleteProductView(View):
 
 class GetSoldProductsView(View):
     def get(self, request):
-        return dict(orders=OrderItem.objects.get_sold_products(request.User).detail())
+        return dict(orders=Order.objects.get_sold_products(request.User).detail())
 
 
 class UpdateSoldProductsView(View):
@@ -128,3 +131,48 @@ class UpdateSoldProductsView(View):
         item.status = data['status']
         item.save()
         return dict(item=item.detail())
+
+
+class GetPendingAmountView(View):
+    def get(self, request):
+        return dict(amount=Seller.objects.get_or_create(user=request.User)[0].amount)
+
+
+class RetrieveAmountView(View):
+    @retrieve_amount_schema
+    def post(self, request):
+        data = request.json
+        seller = Seller.objects.get_or_create(user=request.User)[0]
+        if seller.amount >= data['amount']:
+            with atomic():
+                RetrieveAmount.objects.create(user=request.User, amount=data['amount'])
+                seller.amount -= data['amount']
+                seller.save()
+        else:
+            raise AccessDenied("Cannot retrieve more than owed amount")
+        return dict(message='Done')
+
+
+class UpdateBankView(View):
+    @update_bank_details
+    def post(self, request):
+        data = request.json
+        seller = Seller.objects.get_or_create(user=request.User)[0]
+        seller.account_number = data['account_number']
+        seller.account_holder_name = data['account_holder_name']
+        seller.ifsc_code = data['ifsc_code']
+        seller.save()
+        return dict(seller=seller.detail())
+
+
+class GetBankView(View):
+    @get_user_schema
+    def post(self, request):
+        data = request.json
+        seller = Seller.objects.get_or_create(user=User.objects.get(username=data['username']))[0]
+        return dict(seller=seller.detail())
+
+
+class GetRedeemHistoryView(View):
+    def get(self, request):
+        return dict(history=RetrieveAmount.objects.filter(user=request.User).detail())

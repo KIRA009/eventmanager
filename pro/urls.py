@@ -10,7 +10,8 @@ unauth_urls = list(
         [
             ("feature/", ProModeView),
             ("background/get/", GetBgView),
-            ("products/get/", GetProductsView)
+            ("products/get/", GetProductsView),
+            ("banking/get/", GetBankView)
         ],
     )
 )
@@ -27,7 +28,11 @@ pro_urls = list(
             ("product/update/", UpdateProductView),
             ("product/delete/", DeleteProductView),
             ("products/sold/get/", GetSoldProductsView),
-            ("products/sold/update/", UpdateSoldProductsView)
+            ("products/sold/update/", UpdateSoldProductsView),
+            ("pending/get/", GetPendingAmountView),
+            ("pending/retrieve/", RetrieveAmountView),
+            ("banking/set/", UpdateBankView),
+            ("pending/history/", GetRedeemHistoryView)
         ],
     )
 )

@@ -81,7 +81,18 @@ class SellerAdmin(BaseAdmin):
 	actions = ['pay_outstanding']
 
 
+class RetrievedAdmin(BaseAdmin):
+	def mark_as_paid(self, request, queryset):
+		queryset.update(paid=True)
+		self.message_user(request, 'The selected requests were successfully marked as paid')
+	mark_as_paid.short_description = 'Mark requests as paid'
+	list_display = ['user', 'amount', 'paid']
+	list_filter = ['paid']
+	actions = ['mark_as_paid']
+
+
 admin.site.register(Subscription, SubscriptionAdmin)
 admin.site.register(OrderItem, OrderItemAdmin)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(Seller, SellerAdmin)
+admin.site.register(RetrieveAmount, RetrievedAdmin)

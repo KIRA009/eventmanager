@@ -33,11 +33,11 @@ class PaymentWebhookView(View):
                     order=data['payload']['order']['entity'],
                     user_details=user_details
                 )
+                seller = Seller.objects.get_or_create(user=order.items.first().order.user)[0]
                 for item in order.items.all():
                     item.meta_data = items[item.index]['meta_data']
                     item.save()
-                order.save()
-                seller = Seller.objects.get_or_create(user=order.items.first().order.user)[0]
-                seller.amount += order.amount
+                    seller.amount += int(0.97 * item.order.disc_price) - 5
                 seller.save()
+                order.save()
         return dict()
