@@ -44,18 +44,11 @@ class Subscription(AutoCreatedUpdatedMixin):
 
 
 class OrderItem(AutoCreatedUpdatedMixin):
-    STATUS_CHOICES = (
-        ('Order Processed', 'Order Processed'),
-        ('Order Confirmed', 'Order Confirmed'),
-        ('Shipped', 'Shipped'),
-        ('Delivered', 'Delivered')
-    )
     order = GenericForeignKey()
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     index = models.IntegerField(default=0)
     meta_data = JSONField(default=dict, blank=True)
-    status = models.TextField(default='Order Processed', choices=STATUS_CHOICES)
     order_id = models.ForeignKey(
         "Order", on_delete=models.CASCADE, related_name="items"
     )
@@ -70,11 +63,18 @@ class OrderItem(AutoCreatedUpdatedMixin):
 
 
 class Order(AutoCreatedUpdatedMixin):
+    STATUS_CHOICES = (
+        ('Order Processed', 'Order Processed'),
+        ('Order Confirmed', 'Order Confirmed'),
+        ('Shipped', 'Shipped'),
+        ('Delivered', 'Delivered')
+    )
     order_id = models.TextField(default="")
     amount = models.BigIntegerField(default=0)
     meta_data = JSONField(default=dict, blank=True)
     paid = models.BooleanField(default=False)
     cod = models.BooleanField(default=False)
+    status = models.TextField(default='Order Processed', choices=STATUS_CHOICES)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders", null=True, blank=True)
 
     @staticmethod
@@ -86,6 +86,7 @@ class Order(AutoCreatedUpdatedMixin):
     def __str__(self):
         return f'{self.user.username if self.user else self.meta_data["user_details"]["name"]} -> {self.order_id}'
 
+    exclude_fields = ['updated_at']
     process_fields = AutoCreatedUpdatedMixin.process_fields.copy()
     process_fields.update(**dict(
         meta_data=lambda x: Order.process_meta(x),

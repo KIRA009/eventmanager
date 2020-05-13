@@ -27,8 +27,6 @@ pro_urls = list(
             ("product/image/del/", DeleteImageFromProductView),
             ("product/update/", UpdateProductView),
             ("product/delete/", DeleteProductView),
-            ("products/sold/get/", GetSoldProductsView),
-            ("products/sold/update/", UpdateSoldProductsView),
             ("pending/get/", GetPendingAmountView),
             ("pending/retrieve/", RetrieveAmountView),
             ("banking/set/", UpdateBankView),

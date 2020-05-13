@@ -25,18 +25,18 @@ class OrderItemAdmin(BaseAdmin):
 				return queryset
 			return queryset.filter(content_type__model=self.value())
 
-	list_display = ['get_model_name', 'order', 'order_id', 'status']
+	list_display = ['get_model_name', 'order', 'order_id']
 	search_fields = ['order_id__user__username']
-	list_filter = [ContentListFilter, 'status']
+	list_filter = [ContentListFilter]
 
 
 class OrderAdmin(BaseAdmin):
 	def item_count(self, obj):
 		return obj.items.count()
 
-	list_display = ['user', 'amount', 'paid', 'item_count']
+	list_display = ['user', 'amount', 'paid', 'item_count', 'status']
 	search_fields = ['user']
-	list_filter = ['paid']
+	list_filter = ['paid', 'status']
 
 
 class SubscriptionAdmin(BaseAdmin):

@@ -118,21 +118,6 @@ class DeleteProductView(View):
         return dict(message="Deleted")
 
 
-class GetSoldProductsView(View):
-    def get(self, request):
-        return dict(orders=Order.objects.get_sold_products(request.User).detail())
-
-
-class UpdateSoldProductsView(View):
-    @update_order_schema
-    def post(self, request):
-        data = request.json
-        item = OrderItem.objects.get(id=data['item_id'], product__user=request.User)
-        item.status = data['status']
-        item.save()
-        return dict(item=item.detail())
-
-
 class GetPendingAmountView(View):
     def get(self, request):
         return dict(amount=Seller.objects.get_or_create(user=request.User)[0].amount)

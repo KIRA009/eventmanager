@@ -7,6 +7,8 @@ from payments.models import Order, OrderItem
 from event_app.models import User
 from pro.models import Product
 from payments.utils import create_order_form, create_order
+from payments.validators import update_order_schema
+from utils.exceptions import AccessDenied
 
 
 class OrderView(View):
@@ -64,3 +66,20 @@ class OrderCancelView(View):
         scheme = request.META["wsgi.url_scheme"]
         server = request.META["HTTP_HOST"]
         return redirect(f"{scheme}://{server}")
+
+
+class UpdateSoldProductsView(View):
+    @update_order_schema
+    def post(self, request):
+        data = request.json
+        item = Order.objects.get(id=data['item_id'])
+        if item.items.first().order.user != request.User:
+            raise AccessDenied()
+        item.status = data['status']
+        item.save()
+        return dict(item=item.detail())
+
+
+class GetSoldProductsView(View):
+    def get(self, request):
+        return dict(orders=Order.objects.get_sold_products(request.User).detail())
