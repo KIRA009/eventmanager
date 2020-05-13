@@ -36,7 +36,7 @@ class OrderView(View):
             order_id = create_order(amount)
         order = Order.objects.create(
             order_id=order_id, amount=amount, user=user if not isinstance(user, _User) else None,
-            meta_data=dict(user_details=user_details), cod=data['cod']
+            meta_data=dict(user_details=user_details, items=data['items']), cod=data['cod']
         )
         items = [OrderItem(order=item, order_id=order, index=i, meta_data=data['items'][i])
                  for i, item in enumerate(items)]

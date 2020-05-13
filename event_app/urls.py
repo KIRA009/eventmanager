@@ -5,16 +5,16 @@ from .views import *
 
 unauth_urls = list(
     map(
-        lambda x: path(x[0], x[1].as_view()),
+        lambda x: path(x[0], x[1].as_view(), name=x[2]),
         [
-            ("register/", RegisterView),
-            ("colleges/", CollegeView),
-            ("login/", LoginView),
-            ("validate-email/", SendValidateEmailView),
-            ("validate/<int:user_id>/<uuid:secret>/", CompleteValidateEmailView),
-            ("user/", GetUserView),
-            ('packs/', GetPacksView),
-            ("check/", CheckAuthView)
+            ("register/", RegisterView, 'register'),
+            ("colleges/", CollegeView, 'college'),
+            ("login/", LoginView, 'login'),
+            ("validate-email/", SendValidateEmailView, 'send-validate-email'),
+            ("validate/<int:user_id>/<uuid:secret>/", CompleteValidateEmailView, 'complete-valdiate-email'),
+            ("user/", GetUserView, 'user'),
+            ('packs/', GetPacksView, 'packs'),
+            ("check/", CheckAuthView, 'auth')
         ],
     )
 )

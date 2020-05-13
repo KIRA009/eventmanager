@@ -25,9 +25,8 @@ class PaymentWebhookView(View):
                 return dict()
             if not order.paid:
                 order.paid = True
-                items = json.loads(data['payload']['payment']['entity']['notes']['items'])
-                user_details = json.loads(data['payload']['payment']['entity']['notes']['user'])
-                del data['payload']['payment']['entity']['notes']
+                items = order.meta_data['items']
+                user_details = order.meta_data['user_details']
                 order.meta_data = dict(
                     payment=data['payload']['payment']['entity'],
                     order=data['payload']['order']['entity'],

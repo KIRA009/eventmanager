@@ -157,8 +157,6 @@ def create_order_form(order_id, items, user):
             "prefill[name]": user.name,
             "prefill[contact]": user.phone,
             "prefill[email]": user.email,
-            "notes[items]": json.dumps(items['items']),
-            "notes[user]": json.dumps(items['user_details']),
             "callback_url": PAYMENT_CALLBACK_URL,
             "cancel_url": PAYMENT_CANCEL_URL
         },
