@@ -1,42 +1,49 @@
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+import stripe
 import json
 
-from payments.utils import renew_subscription, update_subscription
-from payments.models import Subscription, Order, Seller
+from payments.models import Order, Seller
+from payments.utils import get_payment_intent
+from event_manager.settings import STRIPE_KEY, STRIPE_WEBHOOK_SECRET
+from utils.exceptions import NotFound
 
 
+webhook_secret = STRIPE_WEBHOOK_SECRET
+stripe.api_key = STRIPE_KEY
+
+
+@method_decorator(csrf_exempt, name="dispatch")
 class PaymentWebhookView(View):
     def post(self, request):
-        data = request.json
-        if data['event'] == 'subscription.charged':
-            sub = data['payload']['subscription']['entity']
-            order = data['payload']['payment']['entity']
-            if sub['paid_count'] > 1:
-                renew_subscription(sub['id'], sub['notes']['sub_type'], sub['current_start'], sub['current_end'], order)
-            else:
-                subscription = Subscription.objects.get(sub_type=sub['notes']['sub_type'], sub_id=sub['id'],
-                                                        start_date=None, end_date=None)
-                update_subscription(subscription, order, sub['current_start'], sub['current_end'])
-        elif data['event'] == 'order.paid':
-            order = Order.objects.filter(order_id=data['payload']['order']['entity']['id']).first()
-            if not order:
-                return dict()
-            if order.items.filter(content_type__model='subscription').exists():
-                return dict()
-            if not order.paid:
+        payload = request.body
+        sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
+        event = None
+
+        try:
+            event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+        except ValueError as e:
+            return dict()
+        except stripe.error.SignatureVerificationError as e:
+            return dict()
+        if event.type == "checkout.session.completed":
+            session = event.data.object
+            try:
+                order = Order.objects.get(order_id=session.id)
                 order.paid = True
-                items = order.meta_data['items']
-                user_details = order.meta_data['user_details']
-                order.meta_data = dict(
-                    payment=data['payload']['payment']['entity'],
-                    order=data['payload']['order']['entity'],
-                    user_details=user_details
+                intent = get_payment_intent(session.payment_intent)
+                charge = intent.charges.data[0]
+                order.meta_data['payment'] = dict(
+                    id=intent.id,
+                    method=json.loads(json.dumps(charge.payment_method_details)),
+                    receipt=charge.receipt_url
                 )
+                order.save()
                 seller = Seller.objects.get_or_create(user=order.items.first().order.user)[0]
                 for item in order.items.all():
-                    item.meta_data = items[item.index]['meta_data']
-                    item.save()
                     seller.amount += int(0.97 * item.order.disc_price) - 5
                 seller.save()
-                order.save()
+            except NotFound:
+                pass
         return dict()

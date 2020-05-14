@@ -37,13 +37,6 @@ class ProPack(AutoCreatedUpdatedMixin):
     features = ArrayField(models.TextField(blank=True), default=list, blank=True)
 
     def save(self, *args, **kwargs):
-        from payments.utils import get_plan, create_plan
-        if self.plan_id:
-            error, plan = get_plan(self.plan_id)
-            if error:
-                return
-            if plan['item']['amount'] != 100 * self.price or plan['period'] != self.period:
-                self.plan_id = create_plan(self)['id']
         super(ProPack, self).save()
 
     process_fields = AutoCreatedUpdatedMixin.get_process_fields_copy()

@@ -14,8 +14,6 @@ auth_urls = list(
 unauth_urls = list(
     map(lambda x: path(x[0], x[1].as_view()), [
         ("order/", OrderView),
-        ("cancel/", OrderCancelView),
-        ("callback/", OrderCallBackView),
         ('webhook/', PaymentWebhookView)
     ])
 )
