@@ -38,6 +38,5 @@ class GetProductsView(View):
     @get_user_schema
     def post(self, request):
         user = request.json['username']
-        paginator = Paginator(Product.objects.filter(user__username=user), 10)
-        batch = int(request.GET.get('pageNo', 0))
-        return dict(products=paginator.get_page(batch).object_list.detail())
+        page_no = int(request.GET.get('pageNo', 1))
+        return dict(products=Product.objects.filter(user__username=user).paginate(page_no).detail())

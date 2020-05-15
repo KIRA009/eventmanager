@@ -89,7 +89,6 @@ class UpdateUserDetailsView(View):
         if 'username' in data:
             if '@' in data:
                 raise AccessDenied('Cannot have @ in username')
-            data['username'] = data['username'].lower()
         user.name = data['name']
         user.username = data['username']
         user.email = data['email']
