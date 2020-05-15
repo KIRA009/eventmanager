@@ -1,4 +1,5 @@
 from django.views import View
+from django.core.paginator import Paginator
 
 from pro.models import ProModeFeature, Product
 from event_app.models import User
@@ -37,4 +38,6 @@ class GetProductsView(View):
     @get_user_schema
     def post(self, request):
         user = request.json['username']
-        return dict(products=Product.objects.filter(user__username=user).detail())
+        paginator = Paginator(Product.objects.filter(user__username=user), 10)
+        batch = int(request.GET.get('pageNo', 0))
+        return dict(products=paginator.get_page(batch).object_list.detail())

@@ -68,9 +68,6 @@ class SubscriptionAdmin(BaseAdmin):
 
 
 class SellerAdmin(BaseAdmin):
-	def get_queryset(self, request):
-		return Seller.objects.filter(amount__gt=0)
-
 	def pay_outstanding(self, request, queryset):
 		queryset.update(amount=0)
 		self.message_user(request, 'The selected sellers have been paid')

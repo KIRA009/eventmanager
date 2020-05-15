@@ -42,7 +42,7 @@ class PaymentWebhookView(View):
                 order.save()
                 seller = Seller.objects.get_or_create(user=order.items.first().order.user)[0]
                 for item in order.items.all():
-                    seller.amount += int(0.97 * item.order.disc_price) - 5
+                    seller.amount += max(0, int(0.97 * item.order.disc_price) - 5)
                 seller.save()
             except NotFound:
                 pass

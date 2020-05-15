@@ -46,7 +46,7 @@ class SendValidateEmailView(View):
                         <html>
                             <head></head>
                             <body style="text-align:left;">
-<header><img src="https://i.postimg.cc/Gh3gjht5/main-logo.png" height="200px" width="200px"> 
+<header><img src="https://i.postimg.cc/hPJyd5C3/instalink-logo-85014d77.png" height="200px" width="200px"> 
                                 </header><br><br>
                                 <div style="text-align:left; font-size:20px;">
                                 Hi {user.name},<br><br>

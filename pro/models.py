@@ -37,7 +37,7 @@ class ProPack(AutoCreatedUpdatedMixin):
     features = ArrayField(models.TextField(blank=True), default=list, blank=True)
 
     def save(self, *args, **kwargs):
-        super(ProPack, self).save()
+        super().save()
 
     process_fields = AutoCreatedUpdatedMixin.get_process_fields_copy()
     process_fields.update(**{
