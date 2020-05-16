@@ -8,6 +8,7 @@ from payments.models import Order, Seller
 from payments.utils import get_payment_intent
 from event_manager.settings import STRIPE_KEY, STRIPE_WEBHOOK_SECRET
 from utils.exceptions import NotFound
+from utils.tasks import create_invoice
 
 
 webhook_secret = STRIPE_WEBHOOK_SECRET
@@ -44,6 +45,7 @@ class PaymentWebhookView(View):
                 for item in order.items.all():
                     seller.amount += max(0, int(0.97 * item.order.disc_price) - 5)
                 seller.save()
+                create_invoice(order.id, seller.id)
             except NotFound:
                 pass
         return dict()

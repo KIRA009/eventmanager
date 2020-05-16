@@ -14,3 +14,7 @@ def delete_file(url):
 
 def cancel_subscription(user_id, sub_id):
     payment_utils.cancel_subscription.delay(user_id, sub_id)
+
+
+def create_invoice(order_id, seller_id):
+    payment_utils.create_invoice.delay(order_id, seller_id)

@@ -39,10 +39,10 @@ class OrderView(View):
         if amount == 0:
             raise AccessDenied("Total amount is 0")
         user_details = data['user_details']
-        _User = namedtuple('_User', ['name', 'email', 'phone'])
+        _User = namedtuple('_User', ['email'])
         user = User.objects.filter(email=user_details['email']).first()
         if not user:
-            user = _User(name=user_details['name'], phone=user_details['phone'], email=user_details['email'])
+            user = _User(email=user_details['email'])
         if data['cod']:
             order_id = str(uuid.uuid4())
         else:

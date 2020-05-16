@@ -5,10 +5,11 @@ import pytz
 from celery.task import task
 import stripe
 from stripe.error import InvalidRequestError
+import os
 
 from event_manager.settings import RAZORPAY_KEY, RAZORPAY_SECRET, TIME_ZONE, PAYMENT_TEST, PAYMENT_CALLBACK_URL, \
-    PAYMENT_CANCEL_URL, STRIPE_KEY
-from .models import Subscription, Order, OrderItem
+    PAYMENT_CANCEL_URL, STRIPE_KEY, BASE_DIR
+from .models import Subscription, Order, OrderItem, Seller
 from utils.exceptions import NotFound, AccessDenied
 
 BASE_URL = "https://api.razorpay.com/v1"
@@ -102,3 +103,35 @@ def cancel_subscription(user_id, sub_id):
         requests.post(f'{BASE_URL}/subscriptions/{sub_id}/cancel', auth=auth)
     except NotFound:
         pass
+
+
+@task(name='create_invoice')
+def create_invoice(order_id, seller_id):
+    from utils.tasks import send_email
+    order = Order.objects.get(id=order_id)
+    seller = Seller.objects.get(id=seller_id)
+    with open(os.path.join(BASE_DIR, 'payments', 'invoice_templates', 'order_invoice.html')) as f:
+        html = f.read()
+    details = dict(
+        order_id=order.id,
+        created_at=order.created_at.isoformat().split('T')[0],
+        name=order.meta_data['user_details']['name'],
+        phone=order.meta_data['user_details']['number'],
+        email=order.meta_data['user_details']['email'],
+        receipt=order.meta_data['payment']['receipt'],
+        total=order.amount
+    )
+    items = ''
+    for item in order.items.all():
+        items += f'''
+                <tr>
+                    <td>{item.order.name}</td>
+                    <td>{item.meta_data['quantity']}</td>
+                    <td>{item.meta_data['quantity'] * item.order.disc_price}</td>
+                </tr>
+                '''
+    details['items'] = items.replace('\n', '')
+    for k, v in details.items():
+        html = html.replace('{' + k + '}', str(v))
+    html = html.replace('\n', '')
+    send_email([seller.user.email, order.meta_data['user_details']['email']], 'Invoice', html)
