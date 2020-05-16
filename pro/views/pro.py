@@ -8,7 +8,7 @@ from event_app.models import User
 from pro.validators import *
 from event_app.utils import upload_file
 from pro.utils import convert_to_base64
-from payments.models import OrderItem, Order, Seller, RetrieveAmount
+from payments.models import Seller, RetrieveAmount
 from utils.exceptions import AccessDenied
 
 
@@ -25,18 +25,6 @@ class ProModeHeaderView(View):
             feature.header_icon = upload_file(request, file, ICONCONTAINER)
         feature.save()
         return dict(feature=feature.detail())
-
-
-class ProModeView(View):
-    @get_user_schema
-    def post(self, request):
-        data = request.json
-        feature = ProModeFeature.objects.filter(
-            user__username=data['username']
-        ).first()
-        if feature:
-            return dict(feature=feature.detail())
-        return dict(feature=None)
 
 
 class SetBgView(View):
@@ -150,14 +138,27 @@ class UpdateBankView(View):
         return dict(seller=seller.detail())
 
 
-class GetBankView(View):
-    @get_user_schema
-    def post(self, request):
-        data = request.json
-        seller = Seller.objects.get_or_create(user=User.objects.get(username=data['username']))[0]
-        return dict(seller=seller.detail())
-
-
 class GetRedeemHistoryView(View):
     def get(self, request):
         return dict(history=RetrieveAmount.objects.filter(user=request.User).detail())
+
+
+class SetShippingAddressView(View):
+    @update_shipping_schema
+    def post(self, request):
+        data = request.json
+        seller = Seller.objects.get_or_create(user=request.User)[0]
+        seller.shipping_area = data['address']
+        seller.save()
+        return dict(address=seller.shipping_area)
+
+
+class GetBankView(View):
+    def get(self, request):
+        seller = Seller.objects.get_or_create(user=request.User)[0]
+        return dict(seller=seller.detail())
+
+    @get_user_schema
+    def post(self, request):
+        seller = Seller.objects.get_or_create(user=request.User)[0]
+        return dict(seller=seller.detail())

@@ -102,6 +102,7 @@ class Seller(AutoCreatedUpdatedMixin):
     account_holder_name = models.TextField(default='', blank=True)
     account_number = models.TextField(default='', blank=True)
     ifsc_code = models.TextField(default='', blank=True)
+    shipping_area = models.TextField(default='World Wide shipping')
 
     def __str__(self):
         return f'{self.user} -> {self.amount}'

@@ -1,9 +1,10 @@
 from django.views import View
-from django.core.paginator import Paginator
 
 from pro.models import ProModeFeature, Product
 from event_app.models import User
 from pro.validators import *
+from payments.models import Seller
+from utils.exceptions import AccessDenied
 
 
 class GetBgView(View):
@@ -40,3 +41,26 @@ class GetProductsView(View):
         user = request.json['username']
         page_no = int(request.GET.get('pageNo', 1))
         return dict(products=Product.objects.filter(user__username=user).paginate(page_no).detail())
+
+
+class ProModeView(View):
+    @get_user_schema
+    def post(self, request):
+        data = request.json
+        feature = ProModeFeature.objects.filter(
+            user__username=data['username']
+        ).first()
+        if feature:
+            return dict(feature=feature.detail())
+        return dict(feature=None)
+
+
+class GetShippingAddressView(View):
+    @get_user_schema
+    def post(self, request):
+        data = request.json
+        user = User.objects.get(username=data['username'])
+        if user.user_type != 'pro':
+            raise AccessDenied('User is not a pro user')
+        seller = Seller.objects.get_or_create(user=user)[0]
+        return dict(address=seller.shipping_area)

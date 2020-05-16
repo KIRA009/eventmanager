@@ -55,3 +55,7 @@ update_bank_details = validate(
     make_string_object("account_number"),
     make_string_object("ifsc_code")
 )
+
+update_shipping_schema = validate(
+    make_string_object("address")
+)

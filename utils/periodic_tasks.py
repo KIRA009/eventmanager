@@ -7,8 +7,8 @@ from analytics.models import *
 
 @task(name='delete_month_old_logs')
 def delete_month_old_logs():
-    last_date = localdate(now()) - timedelta(days=30)
-    Tracker.objects.filter(updated_at__lte=last_date, resolved=False).delete()
+    last_date = localdate(now()) - timedelta(days=15)
+    Tracker.objects.filter(updated_at__date__lte=last_date).delete()
 
 
 @task(name="add_to_lifetime_analytics")
