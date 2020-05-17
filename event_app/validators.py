@@ -7,7 +7,8 @@ register_view_schema = validate(
     make_string_object("name"),
     make_email_object("email"),
     make_string_object("password"),
-    make_string_object("phone", False)
+    make_string_object("phone", False),
+    make_string_object("username"),
 )
 
 

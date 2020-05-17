@@ -21,7 +21,8 @@ class UserManager(BaseUserManager):
             raise NotFound("Email already registered")
         from .models import College
         details["college"] = College.objects.get(id=details["college"])
-        details['username'] = details['email']
+        if model.objects.filter(username=details['username']).exists():
+            raise NotFound('Username already exists')
         details["is_staff"] = details["is_superuser"] = False
         user = self.model(**details)
         user.set_password(details['password'])

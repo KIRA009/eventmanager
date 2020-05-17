@@ -5,8 +5,8 @@ from logger.models import Tracker
 from analytics.models import *
 
 
-@task(name='delete_month_old_logs')
-def delete_month_old_logs():
+@task(name='delete_old_logs')
+def delete_old_logs():
     last_date = localdate(now()) - timedelta(days=15)
     Tracker.objects.filter(updated_at__date__lte=last_date).delete()
 

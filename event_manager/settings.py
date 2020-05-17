@@ -63,8 +63,8 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULE = {
-    'delete_month_old_logs': {
-        'task': 'delete_month_old_logs',
+    'delete_old_logs': {
+        'task': 'delete_old_logs',
         'schedule': crontab(minute=0, hour=0)
     },
     "add_to_lifetime_analytics": {
