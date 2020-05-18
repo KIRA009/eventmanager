@@ -24,6 +24,8 @@ class OrderView(View):
         for item in data["items"]:
             if item["type"] == "product":
                 prod = Product.objects.get(id=item["id"])
+                if prod.stock < int(item['meta_data']['quantity']):
+                    raise AccessDenied(f'{prod.name} has less stock than requested')
                 items.append((prod, item['meta_data']))
                 amount += prod.disc_price
                 order_items.append(
@@ -73,4 +75,11 @@ class UpdateSoldProductsView(View):
 
 class GetSoldProductsView(View):
     def get(self, request):
-        return dict(orders=Order.objects.get_sold_products(request.User).detail())
+        page_no = int(request.GET.get('pageNo', 1))
+        status = str(request.GET.get('delivered', 'true'))
+        query = Order.objects.get_sold_products(request.User)
+        if status == 'true':
+            query = query.filter(status=Order.DELIVERED)
+        else:
+            query = query.exclude(status=Order.DELIVERED)
+        return dict(orders=query.paginate(page_no).detail())

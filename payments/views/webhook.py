@@ -44,6 +44,8 @@ class PaymentWebhookView(View):
                 seller = Seller.objects.get_or_create(user=order.items.first().order.user)[0]
                 for item in order.items.all():
                     seller.amount += max(0, int(0.97 * item.order.disc_price) - 5)
+                    item.order.stock -= int(item.meta_data['quantity'])
+                    item.order.save()
                 seller.save()
                 create_invoice(order.id, seller.id)
             except NotFound:

@@ -55,6 +55,8 @@ class Product(AutoCreatedUpdatedMixin):
     meta_data = JSONField(default=dict, blank=True)
     preview_images = ArrayField(models.TextField(default='', blank=True), default=list, blank=True)
     cod_available = models.BooleanField(default=False)
+    stock = models.IntegerField(default=1000)
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='products')
     order = GenericRelation("payments.OrderItem", related_query_name='product')
 

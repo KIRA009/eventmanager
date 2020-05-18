@@ -157,8 +157,3 @@ class GetBankView(View):
     def get(self, request):
         seller = Seller.objects.get_or_create(user=request.User)[0]
         return dict(seller=seller.detail())
-
-    @get_user_schema
-    def post(self, request):
-        seller = Seller.objects.get_or_create(user=request.User)[0]
-        return dict(seller=seller.detail())

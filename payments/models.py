@@ -63,11 +63,15 @@ class OrderItem(AutoCreatedUpdatedMixin):
 
 
 class Order(AutoCreatedUpdatedMixin):
+    PROCESSED = 'Order Processed'
+    CONFIRMED = 'Order Confirmed'
+    SHIPPED = 'Shipped'
+    DELIVERED = 'Delivered'
     STATUS_CHOICES = (
-        ('Order Processed', 'Order Processed'),
-        ('Order Confirmed', 'Order Confirmed'),
-        ('Shipped', 'Shipped'),
-        ('Delivered', 'Delivered')
+        (PROCESSED, 'Order Processed'),
+        (CONFIRMED, 'Order Confirmed'),
+        (SHIPPED, 'Shipped'),
+        (DELIVERED, 'Delivered')
     )
     order_id = models.TextField(default="")
     amount = models.BigIntegerField(default=0)
