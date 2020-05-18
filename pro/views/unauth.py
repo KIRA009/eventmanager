@@ -40,7 +40,8 @@ class GetProductsView(View):
     def post(self, request):
         user = request.json['username']
         page_no = int(request.GET.get('pageNo', 1))
-        return dict(products=Product.objects.filter(user__username=user).paginate(page_no).detail())
+        num_pages, page = Product.objects.filter(user__username=user).paginate(page_no)
+        return dict(products=page.detail(), num_pages=num_pages)
 
 
 class ProModeView(View):

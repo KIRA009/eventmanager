@@ -21,5 +21,5 @@ class BaseQuerySet(QuerySet):
 	def paginate(self, page_no):
 		paginator = Paginator(self._chain(), 10)
 		if page_no > paginator.num_pages:
-			return self.model.objects.none()
-		return paginator.get_page(page_no).object_list
+			return paginator.num_pages, self.model.objects.none()
+		return paginator.num_pages, paginator.get_page(page_no).object_list

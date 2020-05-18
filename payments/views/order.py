@@ -82,4 +82,5 @@ class GetSoldProductsView(View):
             query = query.filter(status=Order.DELIVERED)
         else:
             query = query.exclude(status=Order.DELIVERED)
-        return dict(orders=query.paginate(page_no).detail())
+        num_pages, page = query.paginate(page_no)
+        return dict(orders=page.detail(), num_pages=num_pages)
