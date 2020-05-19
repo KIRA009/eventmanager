@@ -56,7 +56,7 @@ class ProModeView(View):
         return dict(feature=None)
 
 
-class GetShippingAddressView(View):
+class GetShopView(View):
     @get_user_schema
     def post(self, request):
         data = request.json
@@ -64,4 +64,7 @@ class GetShippingAddressView(View):
         if user.user_type != 'pro':
             raise AccessDenied('User is not a pro user')
         seller = Seller.objects.get_or_create(user=user)[0]
-        return dict(address=seller.shipping_area)
+        return dict(
+            address=seller.shipping_area,
+            commission=seller.commission
+        )

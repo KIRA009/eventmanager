@@ -35,8 +35,10 @@ class PaymentWebhookView(View):
                 order.meta_data['order'] = data['payload']['order']['entity']
                 order.save()
                 seller = Seller.objects.get_or_create(user=order.items.first().order.user)[0]
+                percent = (100 - seller.commission['online']['percent']) * 0.01
+                extra = seller.commission['online']['extra']
                 for item in order.items.all():
-                    seller.amount += max(0, int(0.97 * item.order.disc_price) - 5)
+                    seller.amount += max(0, int(percent * item.order.disc_price) - extra)
                     item.order.stock -= int(item.meta_data['quantity'])
                     item.order.save()
                 seller.save()

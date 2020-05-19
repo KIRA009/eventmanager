@@ -79,6 +79,7 @@ class Order(AutoCreatedUpdatedMixin):
     paid = models.BooleanField(default=False)
     cod = models.BooleanField(default=False)
     status = models.TextField(default='Order Processed', choices=STATUS_CHOICES)
+    shipping_charge = models.IntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders", null=True, blank=True)
 
     @staticmethod
@@ -100,6 +101,10 @@ class Order(AutoCreatedUpdatedMixin):
     objects = OrderManager()
 
 
+def create_base_commission():
+    return dict(online=dict(percent=3, extra=5), cod=dict(percent=3, extra=5))
+
+
 class Seller(AutoCreatedUpdatedMixin):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='seller')
     amount = models.IntegerField(default=0)
@@ -107,6 +112,7 @@ class Seller(AutoCreatedUpdatedMixin):
     account_number = models.TextField(default='', blank=True)
     ifsc_code = models.TextField(default='', blank=True)
     shipping_area = models.TextField(default='World Wide shipping')
+    commission = JSONField(default=create_base_commission)
 
     def __str__(self):
         return f'{self.user} -> {self.amount}'

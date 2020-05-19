@@ -20,6 +20,7 @@ class OrderView(View):
     def post(self, request):
         data = request.json
         amount = 0
+        shipping_charges = 0
         items = []
         for item in data["items"]:
             if item["type"] == "product":
@@ -28,8 +29,10 @@ class OrderView(View):
                     raise AccessDenied(f'{prod.name} has less stock than requested')
                 items.append((prod, item['meta_data']))
                 amount += prod.disc_price
+                shipping_charges = max(shipping_charges, prod.shipping_charges)
         if amount == 0:
             raise AccessDenied("Total amount is 0")
+        amount += shipping_charges
         user_details = data['user_details']
         _User = namedtuple('_User', ['email'])
         user = User.objects.filter(email=user_details['email']).first()
@@ -41,7 +44,8 @@ class OrderView(View):
             order_id = create_order(amount)
         order = Order.objects.create(
             order_id=order_id, amount=amount, user=user if not isinstance(user, _User) else None,
-            meta_data=dict(user_details=user_details), cod=data['cod']
+            meta_data=dict(user_details=user_details), cod=data['cod'],
+            shipping_charges=shipping_charges
         )
         items = [OrderItem(order=item[0], order_id=order, index=i, meta_data=item[1])
                  for i, item in enumerate(items)]
