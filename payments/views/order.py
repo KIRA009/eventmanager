@@ -6,9 +6,10 @@ import uuid
 from payments.models import Order, OrderItem
 from event_app.models import User
 from pro.models import Product
-from payments.utils import create_order
+from payments.utils import create_order, create_order_form
 from payments.validators import update_order_schema
 from utils.exceptions import AccessDenied
+from event_manager.settings import PAYMENT_CANCEL_URL, PAYMENT_CALLBACK_URL
 
 
 class OrderView(View):
@@ -19,7 +20,6 @@ class OrderView(View):
     def post(self, request):
         data = request.json
         amount = 0
-        order_items = []
         items = []
         for item in data["items"]:
             if item["type"] == "product":
@@ -28,16 +28,6 @@ class OrderView(View):
                     raise AccessDenied(f'{prod.name} has less stock than requested')
                 items.append((prod, item['meta_data']))
                 amount += prod.disc_price
-                order_items.append(
-                    dict(
-                        name=prod.name,
-                        description=prod.description,
-                        images=prod.images,
-                        amount=prod.disc_price * 100,
-                        currency="inr",
-                        quantity=item['meta_data']['quantity'],
-                    )
-                )
         if amount == 0:
             raise AccessDenied("Total amount is 0")
         user_details = data['user_details']
@@ -48,7 +38,7 @@ class OrderView(View):
         if data['cod']:
             order_id = str(uuid.uuid4())
         else:
-            order_id = create_order(order_items, user)
+            order_id = create_order(amount)
         order = Order.objects.create(
             order_id=order_id, amount=amount, user=user if not isinstance(user, _User) else None,
             meta_data=dict(user_details=user_details), cod=data['cod']
@@ -58,7 +48,7 @@ class OrderView(View):
         OrderItem.objects.bulk_create(items)
         if order.cod:
             return dict(message="Order received")
-        return dict(id=order_id)
+        return dict(form=create_order_form(order_id, user))
 
 
 class UpdateSoldProductsView(View):
@@ -84,3 +74,13 @@ class GetSoldProductsView(View):
             query = query.exclude(status=Order.DELIVERED)
         num_pages, page = query.paginate(page_no)
         return dict(orders=page.detail(), num_pages=num_pages)
+
+
+class OrderCallBackView(View):
+    def post(self, request):
+        return redirect(PAYMENT_CALLBACK_URL)
+
+
+class OrderCancelView(View):
+    def post(self, request):
+        return redirect(PAYMENT_CANCEL_URL)

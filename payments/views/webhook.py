@@ -1,45 +1,38 @@
 from django.views import View
-from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-import stripe
+from django.views.decorators.csrf import csrf_exempt
 import json
 
-from payments.models import Order, Seller
-from payments.utils import get_payment_intent
-from event_manager.settings import STRIPE_KEY, STRIPE_WEBHOOK_SECRET
-from utils.exceptions import NotFound
+from payments.models import Order, Seller, Subscription
 from utils.tasks import create_invoice
-
-
-webhook_secret = STRIPE_WEBHOOK_SECRET
-stripe.api_key = STRIPE_KEY
+from payments.utils import renew_subscription, update_subscription, verify_webhook_signature
 
 
 @method_decorator(csrf_exempt, name="dispatch")
 class PaymentWebhookView(View):
     def post(self, request):
-        payload = request.body
-        sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
-        event = None
-
-        try:
-            event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
-        except ValueError as e:
+        data = request.json
+        if not verify_webhook_signature(request):
             return dict()
-        except stripe.error.SignatureVerificationError as e:
-            return dict()
-        if event.type == "checkout.session.completed":
-            session = event.data.object
-            try:
-                order = Order.objects.get(order_id=session.id)
+        if data['event'] == 'subscription.charged':
+            sub = data['payload']['subscription']['entity']
+            order = data['payload']['payment']['entity']
+            if sub['paid_count'] > 1:
+                renew_subscription(sub['id'], sub['notes']['sub_type'], sub['current_start'], sub['current_end'], order)
+            else:
+                subscription = Subscription.objects.get(sub_type=sub['notes']['sub_type'], sub_id=sub['id'],
+                                                        start_date=None, end_date=None)
+                update_subscription(subscription, order, sub['current_start'], sub['current_end'])
+        elif data['event'] == 'order.paid':
+            order = Order.objects.filter(order_id=data['payload']['order']['entity']['id']).first()
+            if not order:
+                return dict()
+            if order.items.filter(content_type__model='subscription').exists():
+                return dict()
+            if not order.paid:
                 order.paid = True
-                intent = get_payment_intent(session.payment_intent)
-                charge = intent.charges.data[0]
-                order.meta_data['payment'] = dict(
-                    id=intent.id,
-                    method=json.loads(json.dumps(charge.payment_method_details)),
-                    receipt=charge.receipt_url
-                )
+                order.meta_data['payment'] = data['payload']['payment']['entity']
+                order.meta_data['order'] = data['payload']['order']['entity']
                 order.save()
                 seller = Seller.objects.get_or_create(user=order.items.first().order.user)[0]
                 for item in order.items.all():
@@ -48,6 +41,4 @@ class PaymentWebhookView(View):
                     item.order.save()
                 seller.save()
                 create_invoice(order.id, seller.id)
-            except NotFound:
-                pass
         return dict()

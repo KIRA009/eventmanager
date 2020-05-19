@@ -1,4 +1,7 @@
 import requests
+import sys
+import hmac
+import hashlib
 from django.utils.timezone import now, localdate, datetime
 from datetime import timedelta
 import pytz
@@ -6,36 +9,59 @@ from celery.task import task
 import stripe
 from stripe.error import InvalidRequestError
 import os
+import json
 
 from event_manager.settings import RAZORPAY_KEY, RAZORPAY_SECRET, TIME_ZONE, PAYMENT_TEST, PAYMENT_CALLBACK_URL, \
-    PAYMENT_CANCEL_URL, STRIPE_KEY, BASE_DIR
+    PAYMENT_CANCEL_URL, BASE_DIR, RAZORPAY_WEBHOOK_SECRET
 from .models import Subscription, Order, OrderItem, Seller
 from utils.exceptions import NotFound, AccessDenied
 
 BASE_URL = "https://api.razorpay.com/v1"
 auth = (RAZORPAY_KEY, RAZORPAY_SECRET)
 tz = pytz.timezone(TIME_ZONE)
-stripe.api_key = STRIPE_KEY
 
 
-def create_order(items, user):
-    try:
-        res = stripe.checkout.Session.create(
-            payment_method_types=["card"],
-            line_items=items,
-            customer_email=user.email,
-            success_url=PAYMENT_CALLBACK_URL,
-            cancel_url=PAYMENT_CANCEL_URL,
-        )
-        return res.id
-    except InvalidRequestError as e:
-        raise NotFound(e.user_message)
+def create_order(amount):
+    res = requests.post(
+        f"{BASE_URL}/orders",
+        json={
+            "amount": amount * 100,
+            "currency": "INR",
+            "receipt": "receipt",
+            "payment_capture": 1,
+        },
+        auth=auth,
+    ).json()
+    if "error" in res:
+        raise NotFound(res["error"]["description"])
+    return res["id"]
 
 
-def get_payment_intent(payment_intent):
-    return stripe.PaymentIntent.retrieve(
-        payment_intent
-    )
+def compare_string(expected_str, actual_str):
+    if len(expected_str) != len(actual_str):
+        return False
+    result = 0
+    for x, y in zip(expected_str, actual_str):
+        result |= ord(x) ^ ord(y)
+    return result == 0
+
+
+def verify_webhook_signature(request):
+    if sys.version_info[0] == 3:  # pragma: no cover
+        key = bytes(RAZORPAY_WEBHOOK_SECRET, "utf-8")
+        body = bytes(request.body.decode(), "utf-8")
+    razorpay_signature = request.headers['x-razorpay-signature']
+    dig = hmac.new(key=key, msg=body, digestmod=hashlib.sha256)
+
+    generated_signature = dig.hexdigest()
+    if sys.version_info[0:3] < (2, 7, 7):
+        result = compare_string(generated_signature, razorpay_signature)
+    else:
+        result = hmac.compare_digest(generated_signature, razorpay_signature)
+
+    if not result:
+        return False
+    return True
 
 
 def get_order(order):
@@ -50,6 +76,30 @@ def get_order(order):
         phone=order.user.phone
     )
     return ret
+
+
+def get_plan(plan_id):
+    res = requests.get(f"{BASE_URL}/plans/{plan_id}", auth=auth).json()
+    if 'error' in res:
+        return True, res['error']
+    return False, res
+
+
+def create_plan(pack):
+    res = requests.post(f'{BASE_URL}/plans', auth=auth, json=dict(
+        period=pack.period,
+        interval=1,
+        item=dict(
+            name=f"Pro pack - {pack.period}",
+            amount=pack.price * 100,
+            currency=pack.currency,
+        )
+    )).json()
+    return res
+
+
+def handle_order(order, query):
+    pass
 
 
 def create_subscription(plan_id, total_count, user, meta_data):
@@ -92,6 +142,22 @@ def renew_subscription(sub_id, sub_type, start_date, end_date, order):
     sub = Subscription.objects.get(sub_id=sub_id, sub_type=sub_type)
     sub.pk = None
     update_subscription(sub, order, start_date, end_date)
+
+
+def create_order_form(order_id, user):
+    return {
+        "url": "https://api.razorpay.com/v1/checkout/embedded",
+        "fields": {
+            "key_id": RAZORPAY_KEY,
+            "order_id": order_id,
+            "name": "MyWebLink",
+            "prefill[name]": user.name,
+            "prefill[contact]": user.phone,
+            "prefill[email]": user.email,
+            "callback_url": 'https://myweblink.store/payment/order/callback/',
+            "cancel_url": 'https://myweblink.store/payment/order/cancel/'
+        },
+    }
 
 
 @task(name='cancel_subscription')
