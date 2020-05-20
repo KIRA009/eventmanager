@@ -79,7 +79,7 @@ class Order(AutoCreatedUpdatedMixin):
     paid = models.BooleanField(default=False)
     cod = models.BooleanField(default=False)
     status = models.TextField(default='Order Processed', choices=STATUS_CHOICES)
-    shipping_charge = models.IntegerField(default=0)
+    shipping_charges = models.IntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders", null=True, blank=True)
 
     @staticmethod

@@ -6,22 +6,23 @@ from django.utils.timezone import now, localdate, datetime
 from datetime import timedelta
 import pytz
 from celery.task import task
-import stripe
-from stripe.error import InvalidRequestError
+import uuid
 import os
-import json
+from collections import namedtuple
 
 from event_manager.settings import RAZORPAY_KEY, RAZORPAY_SECRET, TIME_ZONE, PAYMENT_TEST, PAYMENT_CALLBACK_URL, \
-    PAYMENT_CANCEL_URL, BASE_DIR, RAZORPAY_WEBHOOK_SECRET
+    BASE_DIR, RAZORPAY_WEBHOOK_SECRET
 from .models import Subscription, Order, OrderItem, Seller
 from utils.exceptions import NotFound, AccessDenied
+from pro.models import Product
+from event_app.models import User
 
 BASE_URL = "https://api.razorpay.com/v1"
 auth = (RAZORPAY_KEY, RAZORPAY_SECRET)
 tz = pytz.timezone(TIME_ZONE)
 
 
-def create_order(amount):
+def create_order_in_razorpay(amount):
     res = requests.post(
         f"{BASE_URL}/orders",
         json={
@@ -35,6 +36,40 @@ def create_order(amount):
     if "error" in res:
         raise NotFound(res["error"]["description"])
     return res["id"]
+
+
+def create_order(order_items, mode, user_details):
+    amount = 0
+    shipping_charges = 0
+    items = []
+    for item in order_items:
+        if item["type"] == "product":
+            prod = Product.objects.get(id=item["id"])
+            if prod.stock < int(item['meta_data']['quantity']):
+                raise AccessDenied(f'{prod.name} has less stock than requested')
+            items.append((prod, item['meta_data']))
+            amount += prod.disc_price
+            shipping_charges = max(shipping_charges, prod.shipping_charges)
+    if amount == 0:
+        return None
+    amount += shipping_charges
+    if mode == 'cod':
+        order_id = str(uuid.uuid4())
+    else:
+        order_id = create_order_in_razorpay(amount)
+    _User = namedtuple('_User', ['email', 'phone', 'name'])
+    user = User.objects.filter(email=user_details['email']).first()
+    if not user:
+        user = _User(email=user_details['email'], phone=user_details['number'], name=user_details['name'])
+    order = Order.objects.create(
+        order_id=order_id, amount=amount, user=user if isinstance(user, User) else None,
+        meta_data=dict(user_details=user_details), cod=(mode == 'cod'),
+        shipping_charges=shipping_charges
+    )
+    items = [OrderItem(order=item[0], order_id=order, index=i, meta_data=item[1])
+             for i, item in enumerate(items)]
+    OrderItem.objects.bulk_create(items)
+    return order_id, user
 
 
 def compare_string(expected_str, actual_str):
