@@ -51,7 +51,7 @@ def create_order(order_items, mode, user_details):
             amount += prod.disc_price
             shipping_charges = max(shipping_charges, prod.shipping_charges)
     if amount == 0:
-        return None
+        return None, None
     amount += shipping_charges
     if mode == 'cod':
         order_id = str(uuid.uuid4())
@@ -133,8 +133,28 @@ def create_plan(pack):
     return res
 
 
-def handle_order(order, query):
-    pass
+@task(name='handle_order')
+def handle_order(data):
+    order = Order.objects.filter(order_id=data['payload']['order']['entity']['id']).first()
+    if not order:
+        return
+    if order.items.filter(content_type__model='subscription').exists():
+        return
+    if not order.paid:
+        order.paid = True
+        order.meta_data['payment'] = data['payload']['payment']['entity']
+        order.meta_data['order'] = data['payload']['order']['entity']
+        order.save()
+        seller = Seller.objects.get_or_create(user=order.items.first().order.user)[0]
+        percent = (100 - seller.commission['online']['percent']) * 0.01
+        extra = seller.commission['online']['extra']
+        for item in order.items.all():
+            seller.amount += max(0, int(percent * item.order.disc_price) - extra)
+            item.order.stock -= int(item.meta_data['quantity'])
+            item.order.save()
+        seller.save()
+        send_invoice(order, seller)
+        send_text_update(order)
 
 
 def create_subscription(plan_id, total_count, user, meta_data):
@@ -206,11 +226,8 @@ def cancel_subscription(user_id, sub_id):
         pass
 
 
-@task(name='create_invoice')
-def create_invoice(order_id, seller_id):
+def send_invoice(order, seller):
     from utils.tasks import send_email
-    order = Order.objects.get(id=order_id)
-    seller = Seller.objects.get(id=seller_id)
     with open(os.path.join(BASE_DIR, 'payments', 'invoice_templates', 'order_invoice.html')) as f:
         html = f.read()
     details = dict(
@@ -219,7 +236,6 @@ def create_invoice(order_id, seller_id):
         name=order.meta_data['user_details']['name'],
         phone=order.meta_data['user_details']['number'],
         email=order.meta_data['user_details']['email'],
-        receipt=order.meta_data['payment']['receipt'],
         total=order.amount
     )
     items = ''
@@ -236,3 +252,15 @@ def create_invoice(order_id, seller_id):
         html = html.replace('{' + k + '}', str(v))
     html = html.replace('\n', '')
     send_email([seller.user.email, order.meta_data['user_details']['email']], 'Invoice', html)
+
+
+def send_text_update(order):
+    from utils.tasks import send_message
+    status = {
+        Order.PROCESSED: 'placed successfully and is being processed',
+        Order.CONFIRMED: 'confirmed by the merchant',
+        Order.SHIPPED: 'shipped',
+        Order.DELIVERED: 'delivered'
+    }
+    message = f'Hi! Your myweblink order {order.order_id} has been {status[order.status]}'
+    send_message(order.meta_data['user_details']['number'], message)

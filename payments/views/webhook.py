@@ -1,10 +1,9 @@
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-import json
 
-from payments.models import Order, Seller, Subscription
-from utils.tasks import create_invoice
+from payments.models import Subscription
+from utils.tasks import handle_order
 from payments.utils import renew_subscription, update_subscription, verify_webhook_signature
 
 
@@ -24,23 +23,5 @@ class PaymentWebhookView(View):
                                                         start_date=None, end_date=None)
                 update_subscription(subscription, order, sub['current_start'], sub['current_end'])
         elif data['event'] == 'order.paid':
-            order = Order.objects.filter(order_id=data['payload']['order']['entity']['id']).first()
-            if not order:
-                return dict()
-            if order.items.filter(content_type__model='subscription').exists():
-                return dict()
-            if not order.paid:
-                order.paid = True
-                order.meta_data['payment'] = data['payload']['payment']['entity']
-                order.meta_data['order'] = data['payload']['order']['entity']
-                order.save()
-                seller = Seller.objects.get_or_create(user=order.items.first().order.user)[0]
-                percent = (100 - seller.commission['online']['percent']) * 0.01
-                extra = seller.commission['online']['extra']
-                for item in order.items.all():
-                    seller.amount += max(0, int(percent * item.order.disc_price) - extra)
-                    item.order.stock -= int(item.meta_data['quantity'])
-                    item.order.save()
-                seller.save()
-                create_invoice(order.id, seller.id)
+            handle_order(data)
         return dict()
