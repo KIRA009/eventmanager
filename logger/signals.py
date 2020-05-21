@@ -5,8 +5,6 @@ from django.utils.timezone import localdate, now, timedelta
 from time import mktime
 
 from event_app.models import User
-from payments.models import Order
-from .utils import send_email_to_admins
 from event_manager.settings import DEBUG
 from payments.models import Subscription
 from payments.utils import update_subscription

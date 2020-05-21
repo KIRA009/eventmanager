@@ -5,3 +5,7 @@ update_order_schema = validate(
     make_string_object("status"),
     make_number_object("item_id")
 )
+
+refund_order_schema = validate(
+    make_string_object("order_id")
+)

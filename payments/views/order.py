@@ -2,11 +2,11 @@ from django.views import View
 from django.shortcuts import redirect
 
 from payments.models import Order
-from payments.utils import create_order_form, create_order, send_text_update
-from payments.validators import update_order_schema
+from payments.utils import create_order_form, create_order
+from payments.validators import *
 from utils.exceptions import AccessDenied
 from event_manager.settings import PAYMENT_CANCEL_URL, PAYMENT_CALLBACK_URL
-from utils.tasks import handle_order
+from utils.tasks import handle_order, refund_order
 
 
 class OrderView(View):
@@ -45,9 +45,7 @@ class UpdateSoldProductsView(View):
         seller = order.items.first().order.user
         if seller != request.User:
             raise AccessDenied()
-        order.status = data['status']
-        order.save()
-        send_text_update(order)
+        order.update_status(data['status'])
         if order.cod and order.status == Order.DELIVERED:
             percent = seller.commission['cod']['percent'] * 0.01
             extra = seller.commission['cod']['extra']
@@ -56,7 +54,7 @@ class UpdateSoldProductsView(View):
                 item.order.stock -= int(item.meta_data['quantity'])
                 item.order.save()
             seller.save()
-        return dict(item=item.detail())
+        return dict(item=order.detail())
 
 
 class GetSoldProductsView(View):
@@ -80,3 +78,14 @@ class OrderCallBackView(View):
 class OrderCancelView(View):
     def post(self, request):
         return redirect(PAYMENT_CANCEL_URL)
+
+
+class OrderRefundView(View):
+    @refund_order_schema
+    def post(self, request):
+        order_id = request.json['order_id']
+        order = Order.objects.get(order_id=order_id, user=request.User)
+        if order.status in [Order.REFUND_INITIATED, Order.REFUNDED]:
+            raise AccessDenied('Refund has already been initiated / processed for this order')
+        refund_order(order_id)
+        return dict(message="Refund initiated")

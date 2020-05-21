@@ -16,7 +16,7 @@ unauth_urls = list(
         ("order/", OrderView),
         ("order/callback/", OrderCallBackView),
         ('order/cancel/', OrderCancelView),
-        ('webhook/', PaymentWebhookView)
+        ('webhook/', PaymentWebhookView),
     ])
 )
 
@@ -24,6 +24,7 @@ pro_urls = list(
     map(lambda x: path(x[0], pro_required(x[1].as_view())), [
         ("products/sold/update/", UpdateSoldProductsView),
         ("products/sold/get/", GetSoldProductsView),
+        ("order/refund/", OrderRefundView)
     ])
 )
 

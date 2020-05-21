@@ -23,3 +23,7 @@ def handle_order(data):
 
 def send_message(phone, message):
     utils.messaging.send_message.delay(phone, message)
+
+
+def refund_order(order_id):
+    payment_utils.refund_order.delay(order_id)

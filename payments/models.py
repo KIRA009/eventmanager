@@ -67,11 +67,15 @@ class Order(AutoCreatedUpdatedMixin):
     CONFIRMED = 'Order Confirmed'
     SHIPPED = 'Shipped'
     DELIVERED = 'Delivered'
+    REFUND_INITIATED = 'Refund initiated'
+    REFUNDED = 'Refunded'
     STATUS_CHOICES = (
         (PROCESSED, 'Order Processed'),
         (CONFIRMED, 'Order Confirmed'),
         (SHIPPED, 'Shipped'),
-        (DELIVERED, 'Delivered')
+        (DELIVERED, 'Delivered'),
+        (REFUND_INITIATED, 'Refund initiated'),
+        (REFUNDED, 'Refunded')
     )
     order_id = models.TextField(default="")
     amount = models.BigIntegerField(default=0)
@@ -99,6 +103,12 @@ class Order(AutoCreatedUpdatedMixin):
     ))
 
     objects = OrderManager()
+
+    def update_status(self, new_status):
+        from .utils import send_text_update
+        self.status = new_status
+        self.save()
+        send_text_update(self)
 
 
 def create_base_commission():

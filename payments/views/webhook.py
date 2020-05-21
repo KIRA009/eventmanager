@@ -2,7 +2,7 @@ from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
-from payments.models import Subscription
+from payments.models import Subscription, Order
 from utils.tasks import handle_order
 from payments.utils import renew_subscription, update_subscription, verify_webhook_signature
 
@@ -24,4 +24,7 @@ class PaymentWebhookView(View):
                 update_subscription(subscription, order, sub['current_start'], sub['current_end'])
         elif data['event'] == 'order.paid':
             handle_order(data)
+        elif data['event'] == 'refund.processed':
+            order = Order.objects.get(order_id=data['payload']['refund']['entity']['notes']['order_id'])
+            order.update_status(Order.REFUNDED)
         return dict()

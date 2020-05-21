@@ -264,3 +264,14 @@ def send_text_update(order):
     }
     message = f'Hi! Your myweblink order {order.order_id} has been {status[order.status]}'
     send_message(order.meta_data['user_details']['number'], message)
+
+
+@task(name='refund_order')
+def refund_order(order_id):
+    order = Order.objects.get(order_id=order_id)
+    if 'payment' not in order.meta_data:
+        return
+    res = requests.post(f'{BASE_URL}/payments/{order.meta_data["payment"]["id"]}/refund',
+                        json={'amount': order.amount * 100, 'notes': dict(order_id=order_id)}, auth=auth).json()
+    if 'error' not in res:
+        order.update_status(Order.REFUND_INITIATED)
