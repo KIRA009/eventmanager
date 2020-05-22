@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 from payments.models import Order
 from payments.utils import create_order_form, create_order
 from payments.validators import *
-from utils.exceptions import AccessDenied
+from utils.exceptions import AccessDenied, NotFound
 from event_manager.settings import PAYMENT_CANCEL_URL, PAYMENT_CALLBACK_URL
 from utils.tasks import handle_order, refund_order
 
@@ -84,7 +84,9 @@ class OrderRefundView(View):
     @refund_order_schema
     def post(self, request):
         order_id = request.json['order_id']
-        order = Order.objects.get(order_id=order_id, user=request.User)
+        order = Order.objects.get(order_id=order_id)
+        if order.items.first().order.user != request.User:
+            raise NotFound('The requested order was not found')
         if order.status in [Order.REFUND_INITIATED, Order.REFUNDED]:
             raise AccessDenied('Refund has already been initiated / processed for this order')
         refund_order(order_id)

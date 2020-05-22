@@ -107,6 +107,12 @@ class Order(AutoCreatedUpdatedMixin):
     def update_status(self, new_status):
         from .utils import send_text_update
         self.status = new_status
+        if new_status == self.DELIVERED:
+            self.paid = True
+        elif new_status == self.REFUNDED and not self.cod:
+            seller = Seller.objects.get_or_create(user=self.items.first().order.user)[0]
+            seller.amount -= int(0.02 * self.amount)
+            seller.save()
         self.save()
         send_text_update(self)
 

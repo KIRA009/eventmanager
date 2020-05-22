@@ -34,7 +34,7 @@ def restart_server():
         pass
     cmd = 'gunicorn -b 0.0.0.0:8000 event_manager.wsgi'
     Popen(shlex.split(cmd))
-    cmd = f'celery worker -l {"info" if DEBUG else "warning"} -A event_manager -c 2 -B'
+    cmd = f'celery worker -l info -A event_manager -c 2 -B'
     Popen(shlex.split(cmd))
 
 
