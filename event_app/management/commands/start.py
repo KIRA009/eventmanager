@@ -22,6 +22,11 @@ def restart_server():
     call(shlex.split(cmd))
     cmd = 'pkill -f celery'
     call(shlex.split(cmd))
+    if not DEBUG:
+        cmd = 'sudo unlink /var/run/supervisor.sock'
+        call(shlex.split(cmd))
+        cmd = 'sudo supervisord -c /etc/supervisor/supervisord.conf'
+        call(shlex.split(cmd))
     try:
         process = check_output(["lsof", "-i", ":8000"])
         for process in str(process.decode("utf-8")).split("\n")[1:]:
@@ -33,8 +38,6 @@ def restart_server():
     except CalledProcessError:
         pass
     cmd = 'gunicorn -b 0.0.0.0:8000 event_manager.wsgi'
-    Popen(shlex.split(cmd))
-    cmd = f'celery worker -l info -A event_manager -c 2 -B'
     Popen(shlex.split(cmd))
 
 

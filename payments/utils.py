@@ -260,7 +260,9 @@ def send_text_update(order):
         Order.PROCESSED: 'placed successfully and is being processed',
         Order.CONFIRMED: 'confirmed by the merchant',
         Order.SHIPPED: 'shipped',
-        Order.DELIVERED: 'delivered'
+        Order.DELIVERED: 'delivered',
+        Order.REFUNDED: 'refunded',
+        Order.REFUND_INITIATED: 'initiated for refund'
     }
     message = f'Hi! Your myweblink order {order.order_id} has been {status[order.status]}'
     send_message(order.meta_data['user_details']['number'], message)
