@@ -1,5 +1,7 @@
 from django.db.models import QuerySet
+from django.db import reset_queries, connection
 import json
+import time
 from django.core import serializers
 from django.core.paginator import Paginator
 
@@ -23,3 +25,20 @@ class BaseQuerySet(QuerySet):
 		if page_no > paginator.num_pages:
 			return paginator.num_pages, self.model.objects.none()
 		return paginator.num_pages, paginator.get_page(page_no).object_list
+
+
+def query_debugger(func):
+	def inner(*args, **kwargs):
+		reset_queries()
+		start = time.perf_counter()
+		result = func(*args, **kwargs)
+		queries = len(connection.queries)
+		print('============================')
+		print(f"Number of Queries : {queries}")
+		for i in connection.queries:
+			print(f"============================\n{i['sql']}")
+			print(f"Time taken: {i['time']}")
+		print('============================')
+		return result
+
+	return inner

@@ -45,6 +45,12 @@ class ProPack(AutoCreatedUpdatedMixin):
     })
 
 
+class ProductCategory(AutoCreatedUpdatedMixin):
+    name = models.TextField(blank=True)
+    image = models.URLField(blank=True, default='')
+    seller = models.ForeignKey('payments.seller', on_delete=models.CASCADE, related_name='categories')
+
+
 class Product(AutoCreatedUpdatedMixin):
     name = models.TextField(blank=False, default='Product')
     description = models.TextField(blank=True, default='Description')
@@ -58,13 +64,18 @@ class Product(AutoCreatedUpdatedMixin):
     online_available = models.BooleanField(default=False)
     stock = models.IntegerField(default=1000)
     shipping_charges = models.IntegerField(default=0)
+    category = models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, related_name='products', default=None,
+                                 null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='products')
     order = GenericRelation("payments.OrderItem", related_query_name='product')
 
+    exclude_fields = AutoCreatedUpdatedMixin.get_exclude_fields_copy()
+    exclude_fields += ['category']
     process_fields = AutoCreatedUpdatedMixin.get_process_fields_copy()
     process_fields.update(**dict(
         images=lambda x: loads(x),
-        preview_images=lambda x: loads(x)
+        preview_images=lambda x: loads(x),
+        category=lambda x: x.category.detail() if x.category else None
     ))
 
     def delete(self, using=None, keep_parents=False, content_type=None):

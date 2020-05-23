@@ -14,7 +14,8 @@ create_product_schema = validate(
     make_number_object("price"),
     make_string_object("estimated_delivery"),
     make_dict_object("meta_data"),
-    # make_boolean_object("cod_available")
+    # make_string_object("category"),
+    make_boolean_object("cod_available")
 )
 
 add_image_schema = validate(
@@ -58,4 +59,8 @@ update_bank_details = validate(
 
 update_shipping_schema = validate(
     make_string_object("address")
+)
+
+delete_category_schema = validate(
+    make_number_object("category_id")
 )

@@ -18,14 +18,15 @@ def restart_server():
     call(shlex.split(cmd))
     cmd = 'python3 manage.py collectstatic'
     call(shlex.split(cmd))
-    cmd = 'pkill -f "celery worker"'
-    call(shlex.split(cmd))
-    cmd = 'pkill -f celery'
-    call(shlex.split(cmd))
     if not DEBUG:
         cmd = 'sudo unlink /var/run/supervisor.sock'
         call(shlex.split(cmd))
         cmd = 'sudo supervisord -c /etc/supervisor/supervisord.conf'
+        call(shlex.split(cmd))
+    else:
+        cmd = 'pkill -f "celery worker"'
+        call(shlex.split(cmd))
+        cmd = 'pkill -f celery'
         call(shlex.split(cmd))
     try:
         process = check_output(["lsof", "-i", ":8000"])

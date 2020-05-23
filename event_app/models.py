@@ -5,7 +5,7 @@ from django.utils.timezone import localdate, now
 from django.db.utils import IntegrityError
 
 from utils.base_model_mixin import AutoCreatedUpdatedMixin
-from .managers import UserManager, LinkManager
+from .managers import UserManager
 from utils.exceptions import AccessDenied
 
 
@@ -45,7 +45,7 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
     process_fields = AutoCreatedUpdatedMixin.get_process_fields_copy()
     process_fields.update(**dict(
         links=lambda x: x.links.all().detail(),
-        user_type=lambda x: x.user_type
+        user_type=lambda x: x.user_type,
     ))
 
     def change_secret(self):
@@ -85,7 +85,8 @@ class Link(AutoCreatedUpdatedMixin):
         User, on_delete=models.CASCADE, related_name="links"
     )
 
-    objects = LinkManager()
-
     def __str__(self):
         return self.title
+
+    class Meta:
+        ordering = ['index']

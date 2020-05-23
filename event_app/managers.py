@@ -37,8 +37,3 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         return user
-
-
-class LinkManager(BaseManager):
-    def all(self):
-        return super(LinkManager, self).order_by("index").all()

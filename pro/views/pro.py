@@ -1,10 +1,9 @@
 from django.views import View
 from django.db.transaction import atomic
 
-from pro.models import ProModeFeature, Product
+from pro.models import ProModeFeature, Product, ProductCategory
 from utils.tasks import delete_file
 from event_manager.settings import ICONCONTAINER, PROFILECONTAINER, PRODUCTCONTAINER
-from event_app.models import User
 from pro.validators import *
 from event_app.utils import upload_file
 from pro.utils import convert_to_base64
@@ -58,6 +57,9 @@ class CreateProductView(View):
     @create_product_schema
     def post(self, request):
         data = request.json
+        seller = Seller.objects.get_or_create(user=request.User)[0]
+        data['category'] = ProductCategory.objects.get_or_create(name=data['category'], seller=seller)[0] \
+            if 'category' in data else None
         product = Product.objects.create(user=request.User, **data, images=[])
         return dict(product=product.detail())
 
@@ -69,6 +71,9 @@ class AddImageToProductView(View):
         image = request.FILES.dict()['photo']
         product = Product.objects.get(id=data, user=request.User)
         product.images.append(upload_file(request, image, PRODUCTCONTAINER))
+        if product.category.image == '':
+            product.category.image = upload_file(request, image, PRODUCTCONTAINER)
+            product.category.save()
         product.preview_images.append(convert_to_base64(image))
         product.save()
         return dict(product=product.detail())
@@ -157,3 +162,10 @@ class GetBankView(View):
     def get(self, request):
         seller = Seller.objects.get_or_create(user=request.User)[0]
         return dict(seller=seller.detail())
+
+
+class DeleteProductCategoryView(View):
+    @delete_category_schema
+    def post(self, request):
+        ProductCategory.objects.filter(id=request.json['category_id'], seller__user=request.User).delete()
+        return dict(message='Deleted succesfully')

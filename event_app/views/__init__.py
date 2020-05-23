@@ -153,7 +153,7 @@ class ResetPwdView(View):
             return redirect("/forgot-password/")
         if str(user.secret) != secret:
             return redirect("/forgot-password/")
-        user.change_password(password)
+        user.change_password(password.lower())
         if not user.is_validated:
             user.is_validated = True
             user.save()
