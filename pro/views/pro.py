@@ -99,8 +99,16 @@ class UpdateProductView(View):
     @update_product_schema
     def post(self, request):
         data = request.json
+        product = Product.objects.get(id=data['id'])
+        if 'category' in data:
+            if product.category.name != data['category']:
+                data['category'] = ProductCategory.objects.get_or_create(
+                    name=data['category'], seller=Seller.objects.get_or_create(user=request.User)[0]
+                )[0]
+            else:
+                del data['category']
         Product.objects.filter(id=data['id'], user=request.User).update(**data)
-        return dict(product=Product.objects.get(id=data['id']).detail())
+        return dict(product=product.detail())
 
 
 class DeleteProductView(View):

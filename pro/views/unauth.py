@@ -66,11 +66,6 @@ class GetShopView(View):
         seller = Seller.objects.get_or_create(user=user)[0]
         return dict(
             address=seller.shipping_area,
-            commission=seller.commission
+            commission=seller.commission,
+            categories=seller.categories.all().detail()
         )
-
-
-class GetProductCategoriesView(View):
-    @get_user_schema
-    def post(self, request):
-        return dict(categories=ProductCategory.objects.filter(seller__user__username=request.json['username']).detail())
