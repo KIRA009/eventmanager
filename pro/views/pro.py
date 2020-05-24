@@ -71,7 +71,7 @@ class AddImageToProductView(View):
         image = request.FILES.dict()['photo']
         product = Product.objects.get(id=data, user=request.User)
         product.images.append(upload_file(request, image, PRODUCTCONTAINER))
-        if product.category.image == '':
+        if product.category is not None and product.category.image == '':
             product.category.image = upload_file(request, image, PRODUCTCONTAINER)
             product.category.save()
         product.preview_images.append(convert_to_base64(image))
@@ -101,7 +101,7 @@ class UpdateProductView(View):
         data = request.json
         product = Product.objects.get(id=data['id'])
         if 'category' in data:
-            if product.category.name != data['category']:
+            if product.category is not None and product.category.name != data['category']:
                 data['category'] = ProductCategory.objects.get_or_create(
                     name=data['category'], seller=Seller.objects.get_or_create(user=request.User)[0]
                 )[0]

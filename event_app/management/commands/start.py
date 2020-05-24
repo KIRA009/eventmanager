@@ -29,7 +29,7 @@ def restart_server():
         cmd = 'pkill -f celery'
         call(shlex.split(cmd))
     try:
-        process = check_output(["lsof", "-i", ":8000"])
+        process = check_output(["lsof", "-i", f":{os.getenv('DJANGO_PORT')}"])
         for process in str(process.decode("utf-8")).split("\n")[1:]:
             data = [x for x in process.split(" ") if x != '']
             if len(data) <= 1:
@@ -38,7 +38,7 @@ def restart_server():
             os.kill(int(data[1]), signal.SIGKILL)
     except CalledProcessError:
         pass
-    cmd = 'gunicorn -b 0.0.0.0:8000 event_manager.wsgi'
+    cmd = f'gunicorn -b 0.0.0.0:{os.getenv("DJANGO_PORT")} event_manager.wsgi'
     Popen(shlex.split(cmd))
 
 
