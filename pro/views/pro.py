@@ -101,7 +101,7 @@ class UpdateProductView(View):
         data = request.json
         product = Product.objects.get(id=data['id'])
         if 'category' in data:
-            if product.category is not None and product.category.name != data['category']:
+            if product.category is None or product.category.name != data['category']:
                 data['category'] = ProductCategory.objects.get_or_create(
                     name=data['category'], seller=Seller.objects.get_or_create(user=request.User)[0]
                 )[0]
@@ -115,7 +115,8 @@ class DeleteProductView(View):
     @delete_product_schema
     def post(self, request):
         data = request.json
-        Product.objects.filter(id=data['product_id'], user=request.User).delete()
+        product = Product.objects.filter(id=data['product_id'], user=request.User).first()
+        product.delete()
         return dict(message="Deleted")
 
 
