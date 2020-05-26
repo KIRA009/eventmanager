@@ -25,10 +25,12 @@ if DEBUG:
     PROFILECONTAINER = "eventmanagerprofiledebug"
     ICONCONTAINER = "eventmanagericondebug"
     PRODUCTCONTAINER = "eventmanagerproductdebug"
+    CATEGORYCONTAINER = "eventmanagercategorydebug"
 else:
     PROFILECONTAINER = "eventmanagerprofile"
     ICONCONTAINER = "eventmanagericon"
     PRODUCTCONTAINER = "eventmanagerproduct"
+    CATEGORYCONTAINER = "eventmanagercategory"
 
 STORAGE_CLIENT = BlobServiceClient.from_connection_string(
     os.getenv("CONNECTION_STRING")

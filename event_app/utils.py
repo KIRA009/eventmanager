@@ -30,6 +30,18 @@ def delete_file(url):
             pass
 
 
+def copy_file(url, container):
+    if not url:
+        return
+    resolved, res = get_container_and_name(url)
+    if resolved:
+        file_name = res[1]
+        blob_client = STORAGE_CLIENT.get_blob_client(container=container, blob=file_name)
+        blob_client.start_copy_from_url(url)
+        return f"https://storageeventmanager.blob.core.windows.net/{container}/{file_name}"
+    return None
+
+
 def get_container_and_name(url):
     pat = re.compile(r"https://storageeventmanager\.blob\.core\.windows\.net/(.*)/(.*)")
     try:

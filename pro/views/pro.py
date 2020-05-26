@@ -3,9 +3,9 @@ from django.db.transaction import atomic
 
 from pro.models import ProModeFeature, Product, ProductCategory
 from utils.tasks import delete_file
-from event_manager.settings import ICONCONTAINER, PROFILECONTAINER, PRODUCTCONTAINER
+from event_manager.settings import ICONCONTAINER, PROFILECONTAINER, PRODUCTCONTAINER, CATEGORYCONTAINER
 from pro.validators import *
-from event_app.utils import upload_file
+from event_app.utils import upload_file, copy_file
 from pro.utils import convert_to_base64
 from payments.models import Seller, RetrieveAmount
 from utils.exceptions import AccessDenied
@@ -72,7 +72,7 @@ class AddImageToProductView(View):
         product = Product.objects.get(id=data, user=request.User)
         product.images.append(upload_file(request, image, PRODUCTCONTAINER))
         if product.category is not None and product.category.image == '':
-            product.category.image = upload_file(request, image, PRODUCTCONTAINER)
+            product.category.image = copy_file(product.images[-1], CATEGORYCONTAINER)
             product.category.save()
         product.preview_images.append(convert_to_base64(image))
         product.save()
