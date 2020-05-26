@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.contrib.postgres.fields import JSONField
 
 from utils.base_model_mixin import AutoCreatedUpdatedMixin
 
@@ -11,6 +12,7 @@ class Tracker(AutoCreatedUpdatedMixin):
     trace = models.TextField(blank=True)
     url = models.TextField(blank=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+    request_body = JSONField(default=dict, blank=True)
     resolved = models.BooleanField(default=False)
 
     def __str__(self):

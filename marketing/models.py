@@ -4,7 +4,7 @@ from utils.base_model_mixin import AutoCreatedUpdatedMixin
 from event_app.models import User
 
 
-class Marketeer(AutoCreatedUpdatedMixin):
+class ContactedAccount(AutoCreatedUpdatedMixin):
     STATUS_CHOICES = (
         ('INTERESTED', 'Interested'),
         ('MAILED', 'Mailed'),
@@ -19,3 +19,11 @@ class Marketeer(AutoCreatedUpdatedMixin):
     followed_myweblink_on_insta = models.BooleanField(default=False)
     status = models.TextField(blank=True, choices=STATUS_CHOICES)
     marketeer = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
+class Onboard(AutoCreatedUpdatedMixin):
+    marketeer = models.OneToOneField(User, on_delete=models.CASCADE, related_name='onboarded')
+    onboarder = models.OneToOneField(User, on_delete=models.CASCADE, related_name='onboarding', unique=True)
+
+    def __str__(self):
+        return f'{self.marketeer} -> {self.onboarder}'

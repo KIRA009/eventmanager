@@ -4,7 +4,7 @@ from pro.models import ProModeFeature, Product, ProductCategory
 from event_app.models import User
 from pro.validators import *
 from payments.models import Seller
-from utils.exceptions import AccessDenied
+from utils.exceptions import AccessDenied, NotFound
 
 
 class GetBgView(View):
@@ -60,7 +60,10 @@ class GetShopView(View):
     @get_user_schema
     def post(self, request):
         data = request.json
-        user = User.objects.get(username=data['username'])
+        try:
+            user = User.objects.get(username=data['username'])
+        except User.DoesNotExist:
+            raise NotFound()
         if user.user_type != 'pro':
             raise AccessDenied('User is not a pro user')
         seller = Seller.objects.get_or_create(user=user)[0]

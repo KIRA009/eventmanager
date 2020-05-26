@@ -1,10 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.admin import Group, GroupAdmin
+from django.utils.translation import gettext_lazy as _
+from django.db.models import Count
 
 from .models import *
 from payments.models import Subscription
 from payments.utils import update_subscription
 from utils.base_admin import CustomAdmin, BaseAdmin
+from marketing.models import Onboard
 
 
 admin.site = CustomAdmin()
@@ -19,10 +22,36 @@ class UserAdmin(BaseAdmin):
         self.message_user(request, 'The selected users were made pro users for a month')
     create_pro.short_description = 'Create a monthly pro pack for selected users'
 
-    actions = ['create_pro']
+    def onboard_user(self, request, queryset):
+        if request.user.groups.filter(name='Marketeer').exists():
+            queryset = queryset.exclude(username=request.user.username)
+            queryset = queryset.annotate(board=Count('onboarding')).filter(board=0)
+            onboarders = [Onboard(onboarder=i, marketeer=request.user) for i in queryset]
+            Onboard.objects.bulk_create(onboarders)
+
+    def is_onboarded(self, instance):
+        return Onboard.objects.filter(onboarder=instance).exists()
+    is_onboarded.boolean = True
+
+    class OnBoardFilter(admin.SimpleListFilter):
+        title = _('Onboarded')
+        parameter_name = 'onboarded'
+
+        def lookups(self, request, model_admin):
+            return (
+                (1, 'Yes'),
+                (0, 'No')
+            )
+
+        def queryset(self, request, queryset):
+            if self.value() is None:
+                return queryset
+            return queryset.annotate(board=Count('onboarding')).filter(board=self.value())
+
+    actions = ['create_pro', 'onboard_user']
     search_fields = ['username', 'email']
-    list_display = ['username', 'email', 'phone', 'is_validated']
-    list_filter = ['is_validated']
+    list_display = ['username', 'email', 'phone', 'is_validated', 'is_onboarded']
+    list_filter = ['is_validated', OnBoardFilter]
 
 
 class LinkAdmin(BaseAdmin):

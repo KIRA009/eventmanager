@@ -27,7 +27,14 @@ class ExceptionHandlerMiddleware(CommonMiddleware):
         if DEBUG:
             # pass
             print(traceback.format_exc())
+            try:
+                print(request.json)
+            except AttributeError:
+                pass
         else:
-            Tracker.objects.create(trace=traceback.format_exc(), msg=exception, user=user, url=request.path_info)
+            log = Tracker(trace=traceback.format_exc(), msg=exception, user=user, url=request.path_info)
+            if 'json' in request.__dict__ and request.method not in 'GET':
+                log.request_body = request.json
+            log.save()
             send_email_to_admins('error', 'Error', **_vars)
         return dict(error="Server error", status_code=500)
