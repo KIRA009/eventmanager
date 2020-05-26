@@ -14,7 +14,6 @@ create_product_schema = validate(
     make_number_object("price"),
     make_string_object("estimated_delivery"),
     make_dict_object("meta_data"),
-    make_string_object("category"),
     make_boolean_object("cod_available")
 )
 
@@ -35,7 +34,6 @@ update_product_schema = validate(
     make_number_object("price"),
     make_string_object("estimated_delivery"),
     make_dict_object("meta_data"),
-    make_string_object("category"),
     make_boolean_object("cod_available")
 )
 

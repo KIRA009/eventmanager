@@ -40,7 +40,10 @@ class GetProductsView(View):
     def post(self, request):
         user = request.json['username']
         page_no = int(request.GET.get('pageNo', 1))
-        num_pages, page = Product.objects.select_related('category').filter(user__username=user).paginate(page_no)
+        query = Product.objects.select_related('category').filter(user__username=user)
+        if 'category' in request.GET.dict():
+            query = query.filter(category__name=request.GET.dict()['category'])
+        num_pages, page = query.paginate(page_no)
         return dict(products=page.detail(), num_pages=num_pages)
 
 

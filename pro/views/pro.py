@@ -58,8 +58,9 @@ class CreateProductView(View):
     def post(self, request):
         data = request.json
         seller = Seller.objects.get_or_create(user=request.User)[0]
-        data['category'] = ProductCategory.objects.get_or_create(name=data['category'], seller=seller)[0] \
-            if 'category' in data else None
+        if 'category' not in data:
+            data['category'] = 'Others'
+        data['category'] = ProductCategory.objects.get_or_create(name=data['category'], seller=seller)[0]
         product = Product.objects.create(user=request.User, **data, images=[])
         return dict(product=product.detail())
 
