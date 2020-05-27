@@ -128,6 +128,7 @@ class Seller(AutoCreatedUpdatedMixin):
     account_number = models.TextField(default='', blank=True)
     ifsc_code = models.TextField(default='', blank=True)
     shipping_area = models.TextField(default='World Wide shipping')
+    is_category_view_enabled = models.BooleanField(default=False)
     commission = JSONField(default=create_base_commission)
 
     def __str__(self):

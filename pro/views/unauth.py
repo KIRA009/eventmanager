@@ -73,5 +73,6 @@ class GetShopView(View):
         return dict(
             address=seller.shipping_area,
             commission=seller.commission,
-            categories=seller.categories.all().detail()
+            categories=seller.categories.all().detail(),
+            is_category_view_enabled=seller.is_category_view_enabled
         )

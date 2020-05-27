@@ -158,14 +158,17 @@ class GetRedeemHistoryView(View):
         return dict(history=RetrieveAmount.objects.filter(user=request.User).detail())
 
 
-class SetShippingAddressView(View):
+class SetShopView(View):
     @update_shipping_schema
     def post(self, request):
         data = request.json
         seller = Seller.objects.get_or_create(user=request.User)[0]
-        seller.shipping_area = data['address']
+        if 'address' in data:
+            seller.shipping_area = data['address']
+        if 'is_category_view_enabled' in data:
+            seller.is_category_view_enabled = data['is_category_view_enabled']
         seller.save()
-        return dict(address=seller.shipping_area)
+        return dict(address=seller.shipping_area, is_category_view_enabled=seller.is_category_view_enabled)
 
 
 class GetBankView(View):

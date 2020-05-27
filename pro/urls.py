@@ -32,7 +32,7 @@ pro_urls = list(
             ("banking/set/", UpdateBankView),
             ("pending/history/", GetRedeemHistoryView),
             ("banking/get/", GetBankView),
-            ("shipping/set/", SetShippingAddressView),
+            ("shop/set/", SetShopView),
             ("category/del/", DeleteProductCategoryView)
         ],
     )
