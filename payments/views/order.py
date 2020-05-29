@@ -1,7 +1,7 @@
 from django.views import View
 from django.shortcuts import redirect
 
-from payments.models import Order
+from payments.models import Order, Seller
 from payments.utils import create_order_form, create_order
 from payments.validators import *
 from utils.exceptions import AccessDenied, NotFound
@@ -17,20 +17,7 @@ class OrderView(View):
     def post(self, request):
         data = request.json
         user_details = data['user_details']
-        order_id, user = create_order(data['cod_items'], 'cod', user_details)
-        if order_id:
-            handle_order(dict(
-                payload=dict(
-                    order=dict(
-                        entity=dict(id=order_id)
-                    ),
-                    payment=dict(
-                        entity=dict(
-                            order_id=order_id
-                        )
-                    )
-                )
-            ))
+        create_order(data['cod_items'], 'cod', user_details)
         order_id, user = create_order(data['online_items'], 'online', user_details)
         if order_id:
             return dict(form=create_order_form(order_id, user))
@@ -42,18 +29,23 @@ class UpdateSoldProductsView(View):
     def post(self, request):
         data = request.json
         order = Order.objects.get(id=data['item_id'])
-        seller = order.items.first().order.user
-        if seller != request.User:
+        seller = Seller.objects.get_or_create(user=order.items.first().order.user)[0]
+        if seller.user != request.User:
             raise AccessDenied()
         order.update_status(data['status'])
         if order.cod and order.status == Order.DELIVERED:
-            percent = seller.commission['cod']['percent'] * 0.01
-            extra = seller.commission['cod']['extra']
-            for item in order.items.all():
-                seller.amount -= int(percent * item.order.disc_price) + extra
-                item.order.stock -= int(item.meta_data['quantity'])
-                item.order.save()
-            seller.save()
+            handle_order(dict(
+                payload=dict(
+                    order=dict(
+                        entity=dict(id=order.order_id)
+                    ),
+                    payment=dict(
+                        entity=dict(
+                            order_id=order.order_id
+                        )
+                    )
+                )
+            ))
         return dict(item=order.detail())
 
 

@@ -109,6 +109,7 @@ class UpdateProductView(View):
             else:
                 del data['category']
         Product.objects.filter(id=data['id'], user=request.User).update(**data)
+        product = Product.objects.get(id=data['id'])
         return dict(product=product.detail())
 
 

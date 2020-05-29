@@ -15,6 +15,8 @@ admin.site = CustomAdmin()
 
 class UserAdmin(BaseAdmin):
     def create_pro(self, request, queryset):
+        if not request.user.is_superuser:
+            return
         for user in queryset:
             if user.user_type == 'normal':
                 sub = Subscription(sub_id=str(uuid4()), sub_type=Subscription.PROPACK, user=user)

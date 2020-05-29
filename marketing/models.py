@@ -24,6 +24,7 @@ class ContactedAccount(AutoCreatedUpdatedMixin):
 class Onboard(AutoCreatedUpdatedMixin):
     marketeer = models.OneToOneField(User, on_delete=models.CASCADE, related_name='onboarded')
     onboarder = models.OneToOneField(User, on_delete=models.CASCADE, related_name='onboarding', unique=True)
+    amount = models.FloatField(default=0)
 
     def __str__(self):
-        return f'{self.marketeer} -> {self.onboarder}'
+        return f'{self.marketeer} -> {self.onboarder} ({self.amount})'

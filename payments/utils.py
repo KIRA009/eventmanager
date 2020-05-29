@@ -16,6 +16,7 @@ from .models import Subscription, Order, OrderItem, Seller
 from utils.exceptions import NotFound, AccessDenied
 from pro.models import Product
 from event_app.models import User
+from marketing.models import Onboard
 
 BASE_URL = "https://api.razorpay.com/v1"
 auth = (RAZORPAY_KEY, RAZORPAY_SECRET)
@@ -149,12 +150,24 @@ def handle_order(data):
         percent = (100 - seller.commission['online']['percent']) * 0.01
         extra = seller.commission['online']['extra']
         for item in order.items.all():
-            seller.amount += max(0, int(percent * item.order.disc_price) - extra)
             item.order.stock -= int(item.meta_data['quantity'])
             item.order.save()
+        seller.amount += max(0, int(percent * order.amount) - extra)
         seller.save()
         send_invoice(order, seller)
         send_text_update(order)
+        distribute_money_to_managers(seller, order.amount)
+
+
+def distribute_money_to_managers(seller, amount):
+    onboard = Onboard.objects.filter(onboarder=seller.user).first()
+    amount = (seller.commission['online']['percent'] - 2) * 0.01 * amount + seller.commission['online']['extra']
+    i = 0
+    while onboard and i < 6:
+        onboard.amount += 0.2 * amount / (2 ** i)
+        onboard.save()
+        onboard = Onboard.objects.filter(onboarder=onboard.marketeer).first()
+        i += 1
 
 
 def create_subscription(plan_id, total_count, user, meta_data):
