@@ -17,7 +17,19 @@ class OrderView(View):
     def post(self, request):
         data = request.json
         user_details = data['user_details']
-        create_order(data['cod_items'], 'cod', user_details)
+        order_id, user = create_order(data['cod_items'], 'cod', user_details)
+        handle_order(dict(
+                payload=dict(
+                    order=dict(
+                        entity=dict(id=order_id)
+                    ),
+                    payment=dict(
+                        entity=dict(
+                            order_id=order_id
+                        )
+                    )
+                )
+            ))
         order_id, user = create_order(data['online_items'], 'online', user_details)
         if order_id:
             return dict(form=create_order_form(order_id, user))
