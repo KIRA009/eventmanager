@@ -63,6 +63,7 @@ class OrderItem(AutoCreatedUpdatedMixin):
 
 
 class Order(AutoCreatedUpdatedMixin):
+    INITIATED = "Order Initiated"
     PROCESSED = 'Order Processed'
     CONFIRMED = 'Order Confirmed'
     SHIPPED = 'Shipped'
@@ -70,6 +71,7 @@ class Order(AutoCreatedUpdatedMixin):
     REFUND_INITIATED = 'Refund initiated'
     REFUNDED = 'Refunded'
     STATUS_CHOICES = (
+        (INITIATED, "Order Initiated"),
         (PROCESSED, 'Order Processed'),
         (CONFIRMED, 'Order Confirmed'),
         (SHIPPED, 'Shipped'),
@@ -82,7 +84,7 @@ class Order(AutoCreatedUpdatedMixin):
     meta_data = JSONField(default=dict, blank=True)
     paid = models.BooleanField(default=False)
     cod = models.BooleanField(default=False)
-    status = models.TextField(default='Order Processed', choices=STATUS_CHOICES)
+    status = models.TextField(default=INITIATED, choices=STATUS_CHOICES)
     shipping_charges = models.IntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders", null=True, blank=True)
 

@@ -143,6 +143,7 @@ def handle_order(data):
         return
     if not order.paid:
         order.paid = True
+        order.status = Order.PROCESSED
         order.meta_data['payment'] = data['payload']['payment']['entity']
         order.meta_data['order'] = data['payload']['order']['entity']
         order.save()

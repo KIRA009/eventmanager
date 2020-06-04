@@ -14,9 +14,7 @@ def restart_server():
         call(shlex.split(cmd))
         cmd = 'python3 manage.py migrate'
         call(shlex.split(cmd))
-    cmd = 'rm -rf static_root'
-    call(shlex.split(cmd))
-    cmd = 'python3 manage.py collectstatic'
+    cmd = 'python3 manage.py collectstatic --no-input --clear'
     call(shlex.split(cmd))
     if not DEBUG:
         cmd = 'sudo unlink /var/run/supervisor.sock'
@@ -38,6 +36,8 @@ def restart_server():
             os.kill(int(data[1]), signal.SIGKILL)
     except CalledProcessError:
         pass
+    if DEBUG:
+        Popen(shlex.split("celery worker -l info -A event_manager -c 2 -B"))
     cmd = f'gunicorn -b 0.0.0.0:{os.getenv("DJANGO_PORT")} event_manager.wsgi'
     Popen(shlex.split(cmd))
 
