@@ -1,10 +1,11 @@
 from django.views import View
 
-from pro.models import ProModeFeature, Product, ProductCategory
+from pro.models import ProModeFeature, Product
 from event_app.models import User
 from pro.validators import *
 from payments.models import Seller
 from utils.exceptions import AccessDenied, NotFound
+from pro.documents import ProductDocument
 
 
 class GetBgView(View):
@@ -76,3 +77,40 @@ class GetShopView(View):
             categories=seller.categories.all().detail(),
             is_category_view_enabled=seller.is_category_view_enabled
         )
+
+
+class SearchProductView(View):
+    @search_products_schema
+    def post(self, request):
+        data = request.json
+        query = f"*{data['query']}*"
+        products = ProductDocument.search().filter({
+            "bool": {
+                "should": [
+                    {
+                        "wildcard": {
+                            "category.name": {
+                                "value": query
+                            }
+                        }
+                    },
+                    {
+                        "wildcard": {
+                            "name": {
+                                "value": query
+                            }
+                        }
+                    },
+                    {
+                        "wildcard": {
+                            "description": {
+                                "value": query
+                            }
+                        }
+                    }
+                ]
+            }
+        }).to_queryset()
+        page_no = int(request.GET.get('pageNo', 1))
+        num_pages, products = products.filter(user__username=data['seller']).paginate(page_no)
+        return dict(products=products.detail(), num_pages=num_pages)

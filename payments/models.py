@@ -108,6 +108,8 @@ class Order(AutoCreatedUpdatedMixin):
 
     def update_status(self, new_status):
         from .utils import send_text_update
+        if not self.paid:
+            return
         self.status = new_status
         if new_status == self.DELIVERED:
             self.paid = True

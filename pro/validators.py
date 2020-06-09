@@ -63,3 +63,8 @@ update_shipping_schema = validate(
 delete_category_schema = validate(
     make_number_object("category_id")
 )
+
+search_products_schema = validate(
+    make_string_object("query"),
+    make_string_object("seller")
+)

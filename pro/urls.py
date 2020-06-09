@@ -12,6 +12,7 @@ unauth_urls = list(
             ("background/get/", GetBgView),
             ("products/get/", GetProductsView),
             ("shop/get/", GetShopView),
+            ("product/search/", SearchProductView)
         ],
     )
 )
