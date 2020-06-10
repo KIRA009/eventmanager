@@ -33,11 +33,11 @@ def query_debugger(func):
 		start = time.perf_counter()
 		result = func(*args, **kwargs)
 		queries = len(connection.queries)
-		print('============================')
-		print(f"Number of Queries : {queries}")
 		for i in connection.queries:
 			print(f"============================\n{i['sql']}")
 			print(f"Time taken: {i['time']}")
+		print('============================')
+		print(f"Number of Queries : {queries}")
 		print('============================')
 		return result
 

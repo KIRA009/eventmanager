@@ -12,7 +12,8 @@ class ProPackAdmin(BaseAdmin):
 
 
 class ProductAdmin(BaseAdmin):
-    list_display = ['name', 'description', 'price', 'disc_price', 'estimated_delivery', 'user', 'cod_available']
+    list_display = ['name', 'description', 'price', 'disc_price', 'estimated_delivery', 'user', 'cod_available',
+                    'opt_for_reselling']
     search_fields = ['user']
     list_filter = ['cod_available']
 
@@ -27,6 +28,14 @@ class ProModeFeatureAdmin(BaseAdmin):
     list_display = ['header_icon', 'header_text', 'user']
 
 
+class ResellProductAdmin(BaseAdmin):
+    def seller_count(self, obj):
+        return obj.sellers.count()
+
+    list_display = ['product', 'seller_count']
+
+
 admin.site.register(ProModeFeature, ProModeFeatureAdmin)
 admin.site.register(ProPack, ProPackAdmin)
 admin.site.register([Product, DeletedButUsedProduct], ProductAdmin)
+admin.site.register(ResellProduct, ResellProductAdmin)

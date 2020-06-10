@@ -40,8 +40,7 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
                                                   end_date__gte=today).exists() else 'normal'
 
     exclude_fields = AutoCreatedUpdatedMixin.get_exclude_fields_copy()
-    for i in ["password", "last_login", "is_superuser", "is_staff", "secret"]:
-        exclude_fields.append(i)
+    exclude_fields += ["password", "last_login", "is_superuser", "is_staff", "secret"]
     process_fields = AutoCreatedUpdatedMixin.get_process_fields_copy()
     process_fields.update(**dict(
         links=lambda x: x.links.all().detail(),

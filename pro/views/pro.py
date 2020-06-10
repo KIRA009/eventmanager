@@ -1,7 +1,7 @@
 from django.views import View
 from django.db.transaction import atomic
 
-from pro.models import ProModeFeature, Product, ProductCategory
+from pro.models import ProModeFeature, Product, ProductCategory, ResellProduct
 from utils.tasks import delete_file
 from event_manager.settings import ICONCONTAINER, PROFILECONTAINER, PRODUCTCONTAINER, CATEGORYCONTAINER
 from pro.validators import *
@@ -62,6 +62,9 @@ class CreateProductView(View):
             data['category'] = 'Others'
         data['category'] = ProductCategory.objects.get_or_create(name=data['category'], seller=seller)[0]
         product = Product.objects.create(user=request.User, **data, images=[])
+        product = Product.objects.first()
+        if product.opt_for_reselling:
+            ResellProduct.objects.create(product=product)
         return dict(product=product.detail())
 
 
@@ -183,3 +186,13 @@ class DeleteProductCategoryView(View):
     def post(self, request):
         ProductCategory.objects.filter(id=request.json['category_id'], seller__user=request.User).delete()
         return dict(message='Deleted succesfully')
+
+
+class GetResellProductsView(View):
+
+    def get(self, request):
+        page_no = int(request.GET.get('pageNo', 1))
+        num_pages, products = ResellProduct.objects.select_related(
+            'product', 'product__category', 'product__user__feature'
+        ).exclude(product__user=request.User).paginate(page_no)
+        return dict(products=products.detail(), num_pages=num_pages)

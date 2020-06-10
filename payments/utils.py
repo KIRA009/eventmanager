@@ -148,12 +148,17 @@ def handle_order(data):
         order.meta_data['order'] = data['payload']['order']['entity']
         order.save()
         seller = Seller.objects.get_or_create(user=order.items.first().order.user)[0]
-        percent = (100 - seller.commission['online']['percent']) * 0.01
-        extra = seller.commission['online']['extra']
         for item in order.items.all():
             item.order.stock -= int(item.meta_data['quantity'])
             item.order.save()
-        seller.amount += max(0, int(percent * order.amount) - extra)
+        if order.cod:
+            percent = seller.commission['online']['percent'] * 0.01
+            extra = seller.commission['online']['extra']
+            seller.amount -= max(0, int(percent * order.amount) + extra)
+        else:
+            percent = (100 - seller.commission['online']['percent']) * 0.01
+            extra = seller.commission['online']['extra']
+            seller.amount += max(0, int(percent * order.amount) - extra)
         seller.save()
         send_invoice(order, seller)
         send_text_update(order)
@@ -275,10 +280,19 @@ def send_text_update(order):
         Order.CONFIRMED: 'confirmed by the merchant',
         Order.SHIPPED: 'shipped',
         Order.DELIVERED: 'delivered',
+        Order.REFUND_INITIATED: 'initiated for refund',
         Order.REFUNDED: 'refunded',
-        Order.REFUND_INITIATED: 'initiated for refund'
     }
-    message = f'Hi! Your myweblink order {order.order_id} has been {status[order.status]}'
+    statuses = [
+        Order.PROCESSED, Order.CONFIRMED, Order.SHIPPED, Order.DELIVERED, Order.REFUND_INITIATED, Order.REFUNDED
+    ]
+    item = order.items.first().order
+    item_nums = order.items.count() - 1
+    message = f'Hi! Your myweblink order for {item.name} ' \
+              f'{"+ " + str(item_nums) + " others" if item_nums > 0 else ""} has been {status[order.status]}.'
+    if order.status not in [Order.DELIVERED, Order.REFUNDED]:
+        message += f" We will send you an update when your order is " \
+                   f"{status[statuses[statuses.index(order.status) + 1]]}"
     send_message(order.meta_data['user_details']['number'], message)
 
 

@@ -14,7 +14,9 @@ create_product_schema = validate(
     make_number_object("price"),
     make_string_object("estimated_delivery"),
     make_dict_object("meta_data"),
-    make_boolean_object("cod_available")
+    make_boolean_object("cod_available"),
+    make_boolean_object("opt_for_reselling"),
+    make_number_object("resell_margin")
 )
 
 add_image_schema = validate(
