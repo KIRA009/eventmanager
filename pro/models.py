@@ -5,6 +5,7 @@ from django.contrib.contenttypes.fields import GenericRelation, ContentType
 
 from utils.base_model_mixin import AutoCreatedUpdatedMixin
 from event_app.models import User
+from .managers import ProductManager
 
 
 class ProModeFeature(AutoCreatedUpdatedMixin):
@@ -70,6 +71,8 @@ class Product(AutoCreatedUpdatedMixin):
     category = models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, related_name='products', default=None,
                                  null=True)
     order = GenericRelation("payments.OrderItem", related_query_name='product')
+
+    objects = ProductManager()
 
     exclude_fields = AutoCreatedUpdatedMixin.get_exclude_fields_copy()
     exclude_fields += ['category']

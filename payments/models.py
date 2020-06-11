@@ -126,7 +126,7 @@ def create_base_commission():
 
 
 class Seller(AutoCreatedUpdatedMixin):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='seller')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='seller')
     amount = models.IntegerField(default=0)
     account_holder_name = models.TextField(default='', blank=True)
     account_number = models.TextField(default='', blank=True)

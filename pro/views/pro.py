@@ -189,10 +189,27 @@ class DeleteProductCategoryView(View):
 
 
 class GetResellProductsView(View):
-
     def get(self, request):
         page_no = int(request.GET.get('pageNo', 1))
         num_pages, products = ResellProduct.objects.select_related(
             'product', 'product__category', 'product__user__feature'
         ).exclude(product__user=request.User).paginate(page_no)
         return dict(products=products.detail(), num_pages=num_pages)
+
+
+class AddResellProductView(View):
+    @delete_product_schema
+    def post(self, request):
+        resell_product = ResellProduct.objects.get_or_create(product_id=request.json['product_id'])[0]
+        if resell_product.product.user_id != request.User.id:
+            resell_product.sellers.add(request.User.seller.id)
+        return dict(message="Product added")
+
+
+class RemoveResellProductView(View):
+    @delete_product_schema
+    def post(self, request):
+        resell_product = ResellProduct.objects.get_or_create(product_id=request.json['product_id'])[0]
+        if resell_product.product.user_id != request.User.id:
+            resell_product.sellers.remove(request.User.seller.id)
+        return dict(message="Product removed")

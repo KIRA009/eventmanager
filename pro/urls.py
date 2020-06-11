@@ -36,6 +36,8 @@ pro_urls = list(
             ("shop/set/", SetShopView),
             ("category/del/", DeleteProductCategoryView),
             ("product/resell/", GetResellProductsView),
+            ("product/resell/add/", AddResellProductView),
+            ("product/resell/remove/", RemoveResellProductView),
         ],
     )
 )
