@@ -45,19 +45,6 @@ class UpdateSoldProductsView(View):
         if seller.user != request.User:
             raise AccessDenied()
         order.update_status(data['status'])
-        if order.cod and order.status == Order.DELIVERED:
-            handle_order(dict(
-                payload=dict(
-                    order=dict(
-                        entity=dict(id=order.order_id)
-                    ),
-                    payment=dict(
-                        entity=dict(
-                            order_id=order.order_id
-                        )
-                    )
-                )
-            ))
         return dict(item=order.detail())
 
 

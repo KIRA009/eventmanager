@@ -1,17 +1,20 @@
 from django_elasticsearch_dsl import (
 	Index, fields, Document
 )
+from django_elasticsearch_dsl.registries import registry
 
 from .models import Product, ProductCategory
+from event_manager.settings import DEBUG
 
 
-product_index = Index('products')
+product_index = Index('products' if DEBUG else 'products_prod')
 product_index.settings(
 	number_of_shards=1,
 	number_of_replicas=0
 )
 
 
+@registry.register_document
 @product_index.doc_type
 class ProductDocument(Document):
 	name = fields.TextField(

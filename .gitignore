@@ -8,12 +8,7 @@ pyvenv.cfg
 __pycache__
 .idea
 
-event_app/migrations
-analytics/migrations
-payments/migrations
-logger/migrations
-marketing/migrations
-pro/migrations
+**/migrations
 *.bashrc
 temp
 static_root

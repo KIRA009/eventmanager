@@ -17,6 +17,7 @@ from utils.exceptions import NotFound, AccessDenied
 from pro.models import Product
 from event_app.models import User
 from marketing.models import Onboard
+from notifications.utils import create_notification
 
 BASE_URL = "https://api.razorpay.com/v1"
 auth = (RAZORPAY_KEY, RAZORPAY_SECRET)
@@ -163,6 +164,15 @@ def handle_order(data):
         send_invoice(order, seller)
         send_text_update(order)
         distribute_money_to_managers(seller, order.amount)
+        item_nums = order.items.count() - 1
+        create_notification(
+            seller.user, f'New order placed on {order.created_at.isoformat().split("T")[1][:8]}, '
+                         f'{order.created_at.isoformat().split("T")[0]}',
+            f'An order for {order.items.first().order.name}'
+            f' {"+ " + str(item_nums) + " others" if item_nums > 0 else ""} has been placed successfully. The total'
+            f' amount is Rs. {order.amount}',
+            dict(order_id=order.order_idc)
+        )
 
 
 def distribute_money_to_managers(seller, amount):

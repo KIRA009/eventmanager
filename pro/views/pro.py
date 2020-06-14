@@ -1,5 +1,6 @@
 from django.views import View
 from django.db.transaction import atomic
+from django.db.models import Count, Q
 
 from pro.models import ProModeFeature, Product, ProductCategory, ResellProduct
 from utils.tasks import delete_file
@@ -193,8 +194,15 @@ class GetResellProductsView(View):
         page_no = int(request.GET.get('pageNo', 1))
         num_pages, products = ResellProduct.objects.select_related(
             'product', 'product__category', 'product__user__feature'
-        ).exclude(product__user=request.User).paginate(page_no)
-        return dict(products=products.detail(), num_pages=num_pages)
+        ).paginate(page_no)
+        products = products.detail()
+        product_ids = [_['id'] for _ in products]
+        added_products = ResellProduct.objects.filter(
+            id__in=product_ids, sellers__user_id=request.User.id
+        ).values_list('id', flat=True)
+        for product in products:
+            product['added'] = product['id'] in added_products
+        return dict(products=products, num_pages=num_pages)
 
 
 class AddResellProductView(View):
