@@ -50,9 +50,13 @@ class UserAdmin(BaseAdmin):
                 return queryset
             return queryset.annotate(board=Count('onboarding')).filter(board=self.value())
 
+    def pro(self, instance):
+        return instance.user_type == 'pro'
+    pro.boolean = True
+
     actions = ['create_pro', 'onboard_user']
     search_fields = ['username', 'email']
-    list_display = ['username', 'email', 'phone', 'is_validated', 'is_onboarded']
+    list_display = ['username', 'email', 'phone', 'is_validated', 'is_onboarded', 'pro']
     list_filter = ['is_validated', OnBoardFilter]
 
 

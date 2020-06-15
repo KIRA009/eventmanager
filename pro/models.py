@@ -51,6 +51,10 @@ class ProductCategory(AutoCreatedUpdatedMixin):
     image = models.URLField(blank=True, default='')
     seller = models.ForeignKey('payments.Seller', on_delete=models.CASCADE, related_name='categories')
 
+    def delete(self, using=None, keep_parents=False):
+        self.products.update(category=ProductCategory.objects.get_or_create(name='Others', seller=self.seller)[0])
+        super().delete(using, keep_parents)
+
 
 class Product(AutoCreatedUpdatedMixin):
     name = models.TextField(blank=False, default='Product')

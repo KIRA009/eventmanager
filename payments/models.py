@@ -87,6 +87,7 @@ class Order(AutoCreatedUpdatedMixin):
     status = models.TextField(default=INITIATED, choices=STATUS_CHOICES)
     shipping_charges = models.IntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders", null=True, blank=True)
+    seller = models.ForeignKey('payments.Seller', on_delete=models.CASCADE, related_name="orders", null=True)
 
     @staticmethod
     def process_meta(meta):

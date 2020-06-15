@@ -40,7 +40,7 @@ def create_order_in_razorpay(amount):
     return res["id"]
 
 
-def create_order(order_items, mode, user_details):
+def create_order(order_items, mode, user_details, seller):
     amount = 0
     shipping_charges = 0
     items = []
@@ -66,7 +66,8 @@ def create_order(order_items, mode, user_details):
     order = Order.objects.create(
         order_id=order_id, amount=amount, user=user if isinstance(user, User) else None,
         meta_data=dict(user_details=user_details), cod=(mode == 'cod'),
-        shipping_charges=shipping_charges
+        shipping_charges=shipping_charges,
+        seller=seller
     )
     items = [OrderItem(order=item[0], order_id=order, index=i, meta_data=item[1])
              for i, item in enumerate(items)]
@@ -148,22 +149,28 @@ def handle_order(data):
         order.meta_data['payment'] = data['payload']['payment']['entity']
         order.meta_data['order'] = data['payload']['order']['entity']
         order.save()
-        seller = Seller.objects.get_or_create(user=order.items.first().order.user)[0]
+        seller = order.seller
+        resell_margin = 0
         for item in order.items.all():
             item.order.stock -= int(item.meta_data['quantity'])
             item.order.save()
+            if item.order.user != seller.user:
+                original_seller = Seller.objects.get(user=item.order.user)
+                resell_margin += item.order.disc_price - item.order.resell_margin
+                original_seller.amount += item.order.disc_price - item.order.resell_margin
+                original_seller.save()
         if order.cod:
             percent = seller.commission['online']['percent'] * 0.01
             extra = seller.commission['online']['extra']
-            seller.amount -= max(0, int(percent * order.amount) + extra)
+            seller.amount -= max(0, int(percent * (order.amount - resell_margin)) + extra)
         else:
             percent = (100 - seller.commission['online']['percent']) * 0.01
             extra = seller.commission['online']['extra']
-            seller.amount += max(0, int(percent * order.amount) - extra)
+            seller.amount += max(0, int(percent * (order.amount - resell_margin)) - extra)
         seller.save()
         send_invoice(order, seller)
         send_text_update(order)
-        distribute_money_to_managers(seller, order.amount)
+        distribute_money_to_managers(seller, order.amount - resell_margin)
         item_nums = order.items.count() - 1
         create_notification(
             seller.user, f'New order placed on {order.created_at.isoformat().split("T")[1][:8]}, '

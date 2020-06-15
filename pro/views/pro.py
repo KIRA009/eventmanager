@@ -1,6 +1,5 @@
 from django.views import View
 from django.db.transaction import atomic
-from django.db.models import Count, Q
 
 from pro.models import ProModeFeature, Product, ProductCategory, ResellProduct
 from utils.tasks import delete_file
@@ -113,6 +112,8 @@ class UpdateProductView(View):
             else:
                 del data['category']
         Product.objects.filter(id=data['id'], user=request.User).update(**data)
+        if product.opt_for_reselling:
+            ResellProduct.objects.get_or_create(product=product)
         product = Product.objects.get(id=data['id'])
         return dict(product=product.detail())
 
@@ -185,7 +186,7 @@ class GetBankView(View):
 class DeleteProductCategoryView(View):
     @delete_category_schema
     def post(self, request):
-        ProductCategory.objects.filter(id=request.json['category_id'], seller__user=request.User).delete()
+        ProductCategory.objects.get(id=request.json['category_id'], seller__user=request.User).delete()
         return dict(message='Deleted succesfully')
 
 
@@ -194,7 +195,7 @@ class GetResellProductsView(View):
         page_no = int(request.GET.get('pageNo', 1))
         num_pages, products = ResellProduct.objects.select_related(
             'product', 'product__category', 'product__user__feature'
-        ).paginate(page_no)
+        ).filter(product__opt_for_reselling=True).paginate(page_no)
         products = products.detail()
         product_ids = [_['id'] for _ in products]
         added_products = ResellProduct.objects.filter(

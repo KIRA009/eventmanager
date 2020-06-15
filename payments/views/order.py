@@ -17,7 +17,8 @@ class OrderView(View):
     def post(self, request):
         data = request.json
         user_details = data['user_details']
-        order_id, user = create_order(data['cod_items'], 'cod', user_details)
+        seller = Seller.objects.get(user__username=data['seller'])
+        order_id, user = create_order(data['cod_items'], 'cod', user_details, seller)
         handle_order(dict(
                 payload=dict(
                     order=dict(
@@ -30,7 +31,7 @@ class OrderView(View):
                     )
                 )
             ))
-        order_id, user = create_order(data['online_items'], 'online', user_details)
+        order_id, user = create_order(data['online_items'], 'online', user_details, seller)
         if order_id:
             return dict(form=create_order_form(order_id, user))
         return dict(message="Order created")
@@ -40,10 +41,7 @@ class UpdateSoldProductsView(View):
     @update_order_schema
     def post(self, request):
         data = request.json
-        order = Order.objects.get(id=data['item_id'])
-        seller = Seller.objects.get_or_create(user=order.items.first().order.user)[0]
-        if seller.user != request.User:
-            raise AccessDenied()
+        order = Order.objects.get(id=data['item_id'], seller__user=request.User)
         order.update_status(data['status'])
         return dict(item=order.detail())
 
@@ -75,9 +73,7 @@ class OrderRefundView(View):
     @refund_order_schema
     def post(self, request):
         order_id = request.json['order_id']
-        order = Order.objects.get(order_id=order_id)
-        if order.items.first().order.user != request.User:
-            raise NotFound('The requested order was not found')
+        order = Order.objects.get(order_id=order_id, seller__user=request.User)
         if order.status in [Order.REFUND_INITIATED, Order.REFUNDED]:
             raise AccessDenied('Refund has already been initiated / processed for this order')
         refund_order(order_id)
