@@ -27,18 +27,23 @@ class BaseQuerySet(QuerySet):
 		return paginator.num_pages, paginator.get_page(page_no).object_list
 
 
-def query_debugger(func):
-	def inner(*args, **kwargs):
-		reset_queries()
-		start = time.perf_counter()
-		result = func(*args, **kwargs)
-		queries = len(connection.queries)
-		for i in connection.queries:
-			print(f"============================\n{i['sql']}")
-			print(f"Time taken: {i['time']}")
-		print('============================')
-		print(f"Number of Queries : {queries}")
-		print('============================')
-		return result
+def query_debugger(show_queries=False, show_times=True):
+	def inner(func):
+		def inner2(*args, **kwargs):
+			reset_queries()
+			start = time.perf_counter()
+			result = func(*args, **kwargs)
+			queries = len(connection.queries)
+			if show_times or show_queries:
+				for i in connection.queries:
+					if show_queries:
+						print(f"============================\n{i['sql']}")
+					if show_times:
+						print(f"Time taken: {i['time']}")
+			print('============================')
+			print(f"Number of Queries : {queries}")
+			print('============================')
+			return result
 
+		return inner2
 	return inner

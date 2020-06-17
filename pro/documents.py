@@ -46,6 +46,5 @@ class ProductDocument(Document):
 		related_models = [ProductCategory]
 
 	def get_instances_from_related(self, related_instance):
-		"""If related_models is set, define how to retrieve the book instance(s) from the related model."""
 		if isinstance(related_instance, ProductCategory):
 			return related_instance.products.all()

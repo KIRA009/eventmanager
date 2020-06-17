@@ -67,6 +67,7 @@ class Product(AutoCreatedUpdatedMixin):
     preview_images = ArrayField(models.TextField(default='', blank=True), default=list, blank=True)
     cod_available = models.BooleanField(default=False)
     online_available = models.BooleanField(default=False)
+    sizes_available = models.BooleanField(default=False)
     stock = models.IntegerField(default=1000)
     shipping_charges = models.IntegerField(default=0)
     opt_for_reselling = models.BooleanField(default=False)
@@ -84,7 +85,10 @@ class Product(AutoCreatedUpdatedMixin):
     process_fields.update(**dict(
         images=lambda x: loads(x),
         preview_images=lambda x: loads(x),
-        category=lambda x: x.category.detail() if x.category else None
+        category=lambda x: x.category.detail() if x.category else None,
+        sizes=lambda x: (
+            x._prefetched_objects_cache['sizes'] if hasattr(x,  '_prefetched_objects_cache') else x.sizes
+        ).detail() if x.sizes_available else []
     ))
 
     def delete(self, using=None, keep_parents=False, content_type=None):
@@ -154,3 +158,15 @@ class ResellProduct(AutoCreatedUpdatedMixin):
             **x.product.user.feature.detail()
         )
     ))
+
+
+class ProductSize(AutoCreatedUpdatedMixin):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='sizes')
+    size = models.TextField(blank=True)
+    stock = models.IntegerField(default=1000)
+    disc_price = models.IntegerField(default=0)
+    price = models.IntegerField(default=0)
+    resell_margin = models.IntegerField(default=0)
+
+    exclude_fields = AutoCreatedUpdatedMixin.get_exclude_fields_copy()
+    exclude_fields += ['product']

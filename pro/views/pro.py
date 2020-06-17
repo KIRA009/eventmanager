@@ -1,12 +1,12 @@
 from django.views import View
 from django.db.transaction import atomic
 
-from pro.models import ProModeFeature, Product, ProductCategory, ResellProduct
+from pro.models import ProModeFeature, Product, ProductCategory, ResellProduct, ProductSize
 from utils.tasks import delete_file
 from event_manager.settings import ICONCONTAINER, PROFILECONTAINER, PRODUCTCONTAINER, CATEGORYCONTAINER
 from pro.validators import *
 from event_app.utils import upload_file, copy_file
-from pro.utils import convert_to_base64
+from pro.utils import convert_to_base64, mark_products_as_added
 from payments.models import Seller, RetrieveAmount
 from utils.exceptions import AccessDenied
 
@@ -57,14 +57,20 @@ class CreateProductView(View):
     @create_product_schema
     def post(self, request):
         data = request.json
-        seller = Seller.objects.get_or_create(user=request.User)[0]
         if 'category' not in data:
             data['category'] = 'Others'
-        data['category'] = ProductCategory.objects.get_or_create(name=data['category'], seller=seller)[0]
+        if data['category'] == 'Reselling Products':
+            raise AccessDenied("The category name is reserved")
+        data['category'] = ProductCategory.objects.get_or_create(name=data['category'], seller=request.User.seller)[0]
+        if data['sizes_available']:
+            sizes = data['sizes']
+            del data['sizes']
         product = Product.objects.create(user=request.User, **data, images=[])
-        product = Product.objects.first()
         if product.opt_for_reselling:
             ResellProduct.objects.create(product=product)
+        if product.sizes_available:
+            sizes = [ProductSize(product=product, **size) for size in sizes]
+            ProductSize.objects.bulk_create(sizes)
         return dict(product=product.detail())
 
 
@@ -111,9 +117,20 @@ class UpdateProductView(View):
                 )[0]
             else:
                 del data['category']
+        if not data['sizes_available'] and product.sizes_available:
+            product.sizes.all().delete()
+        if data['sizes_available']:
+            sizes = data['sizes']
+            del data['sizes']
         Product.objects.filter(id=data['id'], user=request.User).update(**data)
         if product.opt_for_reselling:
             ResellProduct.objects.get_or_create(product=product)
+        if product.sizes_available:
+            product_sizes = ProductSize.objects.filter(product=product).values_list('id', flat=True)
+            new_sizes = [ProductSize(product=product, **size) for size in sizes if 'id' not in size]
+            deleted_sizes = set(product_sizes).difference(set([_['id'] for _ in sizes if 'id' in _]))
+            ProductSize.objects.filter(id__in=deleted_sizes).delete()
+            ProductSize.objects.bulk_create(new_sizes)
         product = Product.objects.get(id=data['id'])
         return dict(product=product.detail())
 
@@ -196,13 +213,7 @@ class GetResellProductsView(View):
         num_pages, products = ResellProduct.objects.select_related(
             'product', 'product__category', 'product__user__feature'
         ).filter(product__opt_for_reselling=True).paginate(page_no)
-        products = products.detail()
-        product_ids = [_['id'] for _ in products]
-        added_products = ResellProduct.objects.filter(
-            id__in=product_ids, sellers__user_id=request.User.id
-        ).values_list('id', flat=True)
-        for product in products:
-            product['added'] = product['id'] in added_products
+        products = mark_products_as_added(request.User, products.detail())
         return dict(products=products, num_pages=num_pages)
 
 
