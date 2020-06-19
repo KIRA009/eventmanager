@@ -152,7 +152,7 @@ class DeleteProductView(View):
     @delete_product_schema
     def post(self, request):
         data = request.json
-        product = Product.objects.filter(id=data['product_id'], user=request.User).first()
+        product = Product.objects.get(id=data['product_id'], user=request.User)
         product.delete()
         return dict(message="Deleted")
 

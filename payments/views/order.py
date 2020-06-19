@@ -19,7 +19,8 @@ class OrderView(View):
         user_details = data['user_details']
         seller = Seller.objects.get(user__username=data['seller'])
         order_id, user = create_order(data['cod_items'], 'cod', user_details, seller)
-        handle_order(dict(
+        handle_order(
+            dict(
                 payload=dict(
                     order=dict(
                         entity=dict(id=order_id)
@@ -30,7 +31,8 @@ class OrderView(View):
                         )
                     )
                 )
-            ))
+            )
+        )
         order_id, user = create_order(data['online_items'], 'online', user_details, seller)
         if order_id:
             return dict(form=create_order_form(order_id, user))
