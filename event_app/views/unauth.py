@@ -121,7 +121,7 @@ class GetUserView(View):
         username = request.json["username"]
         if username is not None:
             username = username.lower()
-        user = User.objects.filter(username=username).first()
+        user = User.objects.select_related('feature', 'seller').filter(username=username).first()
         if user:
             return dict(user=user.detail())
         raise NotFound("User not found")

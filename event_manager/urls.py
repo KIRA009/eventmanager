@@ -21,6 +21,7 @@ import analytics.urls
 import payments.urls
 import pro.urls
 import notifications.urls
+import shipping.urls
 from event_app.views import *
 
 urlpatterns = [
@@ -30,6 +31,7 @@ urlpatterns = [
     path("analytics/", include(analytics.urls)),
     path("payment/", include(payments.urls)),
     path("notifications/", include(notifications.urls)),
+    path("shipping/", include(shipping.urls)),
     re_path(
         r"^forgot-password/?$",
         ForgotPwdView.as_view(),

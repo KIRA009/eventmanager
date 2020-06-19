@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'logger',
     'marketing',
     'notifications',
+    'shipping'
 ]
 
 MIDDLEWARE = [
