@@ -44,13 +44,25 @@ def create_order(order_items, mode, user_details, seller):
     amount = 0
     shipping_charges = 0
     items = []
+    resell_margin = dict()
     for item in order_items:
         if item["type"] == "product":
-            prod = Product.objects.get(id=item["id"])
-            if prod.stock < int(item['meta_data']['quantity']):
-                raise AccessDenied(f'{prod.name} has less stock than requested')
+            prod = Product.objects.select_related('user__seller').get(id=item["id"])
+            original_seller_id = prod.user.seller.id
+            if prod.sizes_available:
+                it = prod.sizes.get(size=item['meta_data']['size'])
+            else:
+                it = prod
+            if it.stock < int(item['meta_data']['quantity']):
+                if isinstance(it, Product):
+                    raise AccessDenied(f'{it.name} has less stock than requested')
+                raise AccessDenied(f'Size {it.size} of {prod.name} has less stock than requested')
             items.append((prod, item['meta_data']))
-            amount += prod.disc_price
+            amount += it.disc_price
+            if original_seller_id != seller.id:
+                seller.resell_product.get(product=prod)
+                resell_margin.setdefault(original_seller_id, 0)
+                resell_margin[original_seller_id] += it.disc_price - it.resell_margin
             shipping_charges = max(shipping_charges, prod.shipping_charges)
     if amount == 0:
         return None, None
@@ -67,7 +79,7 @@ def create_order(order_items, mode, user_details, seller):
         order_id=order_id, amount=amount, user=user if isinstance(user, User) else None,
         meta_data=dict(user_details=user_details), cod=(mode == 'cod'),
         shipping_charges=shipping_charges,
-        seller=seller
+        seller=seller, resell_margin=resell_margin
     )
     items = [OrderItem(order=item[0], order_id=order, index=i, meta_data=item[1])
              for i, item in enumerate(items)]
@@ -154,20 +166,19 @@ def handle_order(data):
         for item in order.items.all():
             item.order.stock -= int(item.meta_data['quantity'])
             item.order.save()
-            if item.order.user != seller.user:
-                original_seller = Seller.objects.get(user=item.order.user)
-                resell_margin += item.order.disc_price - item.order.resell_margin
-                original_seller.amount += item.order.disc_price - item.order.resell_margin
-                original_seller.save()
+        resell_margin = sum(order.resell_margin.values())
         if order.cod:
             percent = seller.commission['online']['percent'] * 0.01
             extra = seller.commission['online']['extra']
-            seller.amount -= max(0, int(percent * (order.amount - resell_margin)) + extra)
+            seller.amount -= int(percent * (order.amount - resell_margin)) + extra
         else:
             percent = (100 - seller.commission['online']['percent']) * 0.01
             extra = seller.commission['online']['extra']
-            seller.amount += max(0, int(percent * (order.amount - resell_margin)) - extra)
+            seller.amount += int(percent * (order.amount - resell_margin)) - extra
         seller.save()
+        for original_seller in Seller.objects.filter(id__in=list(order.resell_margin.keys())):
+            original_seller.amount += order.resell_margin[str(original_seller.id)]
+            original_seller.save()
         send_invoice(order, seller)
         send_text_update(order)
         distribute_money_to_managers(seller, order.amount - resell_margin)
