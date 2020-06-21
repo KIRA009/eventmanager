@@ -10,9 +10,9 @@ import uuid
 import os
 from collections import namedtuple
 
-from event_manager.settings import RAZORPAY_KEY, RAZORPAY_SECRET, TIME_ZONE, PAYMENT_TEST, PAYMENT_CALLBACK_URL, \
-    BASE_DIR, RAZORPAY_WEBHOOK_SECRET
-from .models import Subscription, Order, OrderItem, Seller
+from event_manager.settings import RAZORPAY_KEY, RAZORPAY_SECRET, TIME_ZONE, PAYMENT_TEST, BASE_DIR,\
+    RAZORPAY_WEBHOOK_SECRET
+from .models import Subscription, Order, OrderItem
 from utils.exceptions import NotFound, AccessDenied
 from pro.models import Product
 from event_app.models import User
@@ -78,7 +78,8 @@ def create_order(order_items, mode, user_details, seller):
     if mode == 'cod':
         order_id = str(uuid.uuid4())
     else:
-        order_id = create_order_in_razorpay(seller_orders['amount'] + sum(i['amount'] for i in reseller_orders.values()))
+        order_id = create_order_in_razorpay(seller_orders['amount'] +
+                                            sum(i['amount'] for i in reseller_orders.values()))
     if seller_orders['items']:
         order = Order.objects.create(
             order_id=order_id, amount=seller_orders['amount'], user=user if isinstance(user, User) else None,

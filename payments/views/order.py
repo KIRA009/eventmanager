@@ -13,7 +13,7 @@ class OrderView(View):
     def get(self, request):
         return dict(orders=request.User.orders.all().detail())
 
-    # @create_order_schema
+    @create_order_schema
     def post(self, request):
         data = request.json
         user_details = data['user_details']
