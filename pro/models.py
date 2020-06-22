@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
+from django.utils.timezone import now
 from json import loads
 from django.contrib.contenttypes.fields import GenericRelation, ContentType
 
@@ -86,6 +87,12 @@ class Product(AutoCreatedUpdatedMixin):
         preview_images=lambda x: loads(x),
         category=lambda x: x.category.detail() if x.category else None
     ))
+
+    def update_last_interaction(self, save=True):
+        if save:
+            self.save()
+        else:
+            self.updated_at = now()
 
     def delete(self, using=None, keep_parents=False, content_type=None):
         if self.order.count() > 0:
