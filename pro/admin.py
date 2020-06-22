@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.contrib.contenttypes.fields import ContentType
 
 from .models import *
 from utils.base_admin import BaseAdmin
@@ -35,7 +34,12 @@ class ResellProductAdmin(BaseAdmin):
     list_display = ['product', 'seller_count']
 
 
+class ProductSizeAdmin(BaseAdmin):
+    list_display = ['size', 'price', 'disc_price', 'stock']
+
+
 admin.site.register(ProModeFeature, ProModeFeatureAdmin)
 admin.site.register(ProPack, ProPackAdmin)
 admin.site.register([Product, DeletedButUsedProduct], ProductAdmin)
 admin.site.register(ResellProduct, ResellProductAdmin)
+admin.site.register(ProductSize, ProductSizeAdmin)

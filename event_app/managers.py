@@ -1,7 +1,6 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth import get_user_model
 
-from utils.base_manager import BaseManager
 from utils.exceptions import NotFound
 
 
@@ -9,6 +8,8 @@ class UserManager(BaseUserManager):
 
     def create_user(self, details):
         model = get_user_model()
+        from pro.models import ProModeFeature
+        from payments.models import Seller
         if details.get('phone'):
             phone = details.get('phone')
             if model.objects.filter(phone=phone).exists():
@@ -28,6 +29,8 @@ class UserManager(BaseUserManager):
         user.set_password(details['password'])
         try:
             user.save(using=self._db)
+            ProModeFeature.objects.create(user=user)
+            Seller.objects.create(user=user)
             return user
         except Exception as e:
             raise NotFound(str(e))

@@ -5,6 +5,8 @@ import time
 from django.core import serializers
 from django.core.paginator import Paginator
 
+from .exceptions import NotFound
+
 
 class BaseQuerySet(QuerySet):
 	def detail(self):
@@ -25,6 +27,12 @@ class BaseQuerySet(QuerySet):
 		if page_no > paginator.num_pages:
 			return paginator.num_pages, self.model.objects.none()
 		return paginator.num_pages, paginator.get_page(page_no).object_list
+
+	def get(self, **kwargs):
+		try:
+			return super().get(**kwargs)
+		except self.model.DoesNotExist:
+			raise NotFound(f'The {self.model._meta.model_name} requested for does not exist')
 
 
 def query_debugger(show_queries=False, show_times=True):

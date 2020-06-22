@@ -109,7 +109,12 @@ class UpdateProductView(View):
     @update_product_schema
     def post(self, request):
         data = request.json
-        product = Product.objects.get(id=data['id'])
+        product = Product.objects.select_related('category').get(id=data['id'], user=request.User)
+        changed_vals = dict()
+        for k, v in data.items():
+            if v != getattr(product, k):
+                changed_vals[k] = v
+        data = changed_vals
         if 'category' in data:
             if product.category is None or product.category.name != data['category']:
                 data['category'] = ProductCategory.objects.get_or_create(
@@ -117,12 +122,22 @@ class UpdateProductView(View):
                 )[0]
             else:
                 del data['category']
-        if not data['sizes_available'] and product.sizes_available:
-            product.sizes.all().delete()
-        if data['sizes_available']:
-            sizes = data['sizes']
-            del data['sizes']
-        Product.objects.filter(id=data['id'], user=request.User).update(**data)
+        sizes = data['sizes']
+        del data['sizes']
+        if 'sizes_available' in data:
+            if product.sizes_available:
+                product.sizes.all().delete()
+            else:
+                for i in ['stock', 'resell_margin', 'price', 'disc_price']:
+                    if getattr(product, i) != 0:
+                        data[i] = 0
+                    else:
+                        if i in data:
+                            del data[i]
+        if data:
+            for k, v in data.items():
+                setattr(product, k, v)
+            product.save()
         if product.opt_for_reselling:
             ResellProduct.objects.get_or_create(product=product)
         if product.sizes_available:
@@ -131,7 +146,6 @@ class UpdateProductView(View):
             deleted_sizes = set(product_sizes).difference(set([_['id'] for _ in sizes if 'id' in _]))
             ProductSize.objects.filter(id__in=deleted_sizes).delete()
             ProductSize.objects.bulk_create(new_sizes)
-        product = Product.objects.get(id=data['id'])
         return dict(product=product.detail())
 
 
@@ -223,6 +237,7 @@ class AddResellProductView(View):
         resell_product = ResellProduct.objects.get_or_create(product_id=request.json['product_id'])[0]
         if resell_product.product.user_id != request.User.id:
             resell_product.sellers.add(request.User.seller.id)
+        resell_product.product.update_last_interaction()
         return dict(message="Product added")
 
 
@@ -233,3 +248,17 @@ class RemoveResellProductView(View):
         if resell_product.product.user_id != request.User.id:
             resell_product.sellers.remove(request.User.seller.id)
         return dict(message="Product removed")
+
+
+class UpdateCategoryView(View):
+    @update_category_schema
+    def post(self, request):
+        data = request.POST.dict()
+        files = request.FILES.dict()
+        category = ProductCategory.objects.get(id=data['category_id'], seller__user=request.User)
+        if 'photo' in files:
+            file = files['photo']
+            category.image = upload_file(request, file, CATEGORYCONTAINER)
+        category.name = data['name']
+        category.save()
+        return dict(category=category.detail())

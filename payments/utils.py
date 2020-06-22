@@ -164,8 +164,12 @@ def handle_order(data):
         seller = order.seller
         resell_margin = 0
         for item in order.items.all():
-            item.order.stock -= int(item.meta_data['quantity'])
-            item.order.save()
+            prod = item.order
+            prod.update_last_interaction()
+            if prod.sizes_available:
+                prod = prod.sizes.get(size=item.meta_data['size'])
+            prod.stock -= int(item.meta_data['quantity'])
+            prod.save()
         resell_margin = sum(order.resell_margin.values())
         if order.cod:
             percent = seller.commission['online']['percent'] * 0.01

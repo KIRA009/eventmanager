@@ -34,10 +34,11 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
 
     @property
     def user_type(self):
-        from payments.models import Subscription
-        today = localdate(now())
-        return 'pro' if self.subscriptions.filter(sub_type=Subscription.PROPACK, start_date__lte=today,
-                                                  end_date__gte=today).exists() else 'normal'
+        return 'pro'
+        # from payments.models import Subscription
+        # today = localdate(now())
+        # return 'pro' if self.subscriptions.filter(sub_type=Subscription.PROPACK, start_date__lte=today,
+        #                                           end_date__gte=today).exists() else 'normal'
 
     exclude_fields = AutoCreatedUpdatedMixin.get_exclude_fields_copy()
     exclude_fields += ["password", "last_login", "is_superuser", "is_staff", "secret"]
@@ -45,6 +46,11 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
     process_fields.update(**dict(
         links=lambda x: x.links.all().detail(),
         user_type=lambda x: x.user_type,
+        is_profile_complete=lambda x: (
+                x.feature.header_text not in ['', None] and
+                x.feature.header_icon not in ['', None] and
+                x.seller.shipping_area not in ['', None]
+        )
     ))
 
     def change_secret(self):

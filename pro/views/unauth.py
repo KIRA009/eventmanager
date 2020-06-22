@@ -1,4 +1,5 @@
 from django.views import View
+from django.db.models import F
 
 from pro.models import ProModeFeature, Product
 from event_app.models import User
@@ -46,7 +47,7 @@ class GetProductsView(View):
             if category == 'Reselling Products':
                 query = Product.objects.get_resell_products(user)
             else:
-                query = Product.objects.get_products(user).filter(category__name=category)
+                query = Product.objects.get_products(user, category__name=category)
         else:
             query = Product.objects.get_products(user)
         num_pages, page = query.paginate(page_no)
