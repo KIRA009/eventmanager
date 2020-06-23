@@ -1,7 +1,7 @@
 from django.views import View
 from django.db.transaction import atomic
 
-from pro.models import ProModeFeature, Product, ProductCategory, ResellProduct
+from pro.models import ProModeFeature, Product, ProductCategory, ResellProduct, ProductSize
 from utils.tasks import delete_file
 from event_manager.settings import ICONCONTAINER, PROFILECONTAINER, PRODUCTCONTAINER, CATEGORYCONTAINER
 from pro.validators import *
@@ -60,7 +60,11 @@ class CreateProductView(View):
         seller = Seller.objects.get_or_create(user=request.User)[0]
         if 'category' not in data:
             data['category'] = 'Others'
-        data['category'] = ProductCategory.objects.get_or_create(name=data['category'], seller=seller)[0]
+        if data['category'] == 'Reselling Products':
+            raise AccessDenied("The category name is reserved")
+        data['category'] = ProductCategory.objects.get_or_create(name=data['category'], seller=request.User.seller)[0]
+        sizes = data['sizes']
+        del data['sizes']
         product = Product.objects.create(user=request.User, **data, images=[])
         product = Product.objects.first()
         if product.opt_for_reselling:

@@ -12,7 +12,7 @@ class ProPackAdmin(BaseAdmin):
 
 class ProductAdmin(BaseAdmin):
     list_display = ['name', 'description', 'price', 'disc_price', 'estimated_delivery', 'user', 'cod_available',
-                    'opt_for_reselling']
+                    'opt_for_reselling', 'slug']
     search_fields = ['user']
     list_filter = ['cod_available']
 
