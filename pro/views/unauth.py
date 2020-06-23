@@ -70,19 +70,10 @@ class GetShopView(View):
     @get_user_schema
     def post(self, request):
         data = request.json
-        try:
-            user = User.objects.get(username=data['username'])
-        except User.DoesNotExist:
-            raise NotFound()
-        if user.user_type != 'pro':
-            raise AccessDenied('User is not a pro user')
-        seller = Seller.objects.get_or_create(user=user)[0]
-        return dict(
-            address=seller.shipping_area,
-            commission=seller.commission,
-            categories=seller.categories.all().detail(),
-            is_category_view_enabled=seller.is_category_view_enabled
-        )
+        seller = Seller.objects.get(user__username=data['username'])
+        cols = ['shipping_area', 'shop_address', 'city', 'state', 'country', 'pincode', 'is_category_view_enabled',
+                'commission']
+        return {"categories": seller.categories.all().detail(), **{k: getattr(seller, k) for k in cols}}
 
 
 class SearchProductView(View):

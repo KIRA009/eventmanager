@@ -85,7 +85,13 @@ update_bank_details = validate(
 )
 
 update_shipping_schema = validate(
-    make_string_object("address")
+    make_string_object("shipping_area"),
+    make_string_object("shop_address"),
+    make_string_object("city"),
+    make_string_object("state"),
+    make_string_object("country"),
+    make_string_object("pincode"),
+    make_boolean_object("is_category_view_enabled")
 )
 
 delete_category_schema = validate(

@@ -198,13 +198,12 @@ class SetShopView(View):
     @update_shipping_schema
     def post(self, request):
         data = request.json
-        seller = Seller.objects.get_or_create(user=request.User)[0]
-        if 'address' in data:
-            seller.shipping_area = data['address']
-        if 'is_category_view_enabled' in data:
-            seller.is_category_view_enabled = data['is_category_view_enabled']
+        seller = request.User.seller
+        cols = ['shipping_area', 'shop_address', 'city', 'state', 'country', 'pincode', 'is_category_view_enabled']
+        for column in cols:
+            setattr(seller, column, data[column])
         seller.save()
-        return dict(address=seller.shipping_area, is_category_view_enabled=seller.is_category_view_enabled)
+        return {k: getattr(seller, k) for k in cols}
 
 
 class GetBankView(View):
