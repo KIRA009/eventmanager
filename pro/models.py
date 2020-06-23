@@ -3,6 +3,7 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.utils.timezone import now
 from json import loads
 from django.contrib.contenttypes.fields import GenericRelation, ContentType
+from slugify import slugify
 
 from utils.base_model_mixin import AutoCreatedUpdatedMixin
 from event_app.models import User
@@ -73,6 +74,7 @@ class Product(AutoCreatedUpdatedMixin):
     shipping_charges = models.IntegerField(default=0)
     opt_for_reselling = models.BooleanField(default=False)
     resell_margin = models.IntegerField(default=0)
+    slug = models.SlugField(max_length=40, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='products')
     category = models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, related_name='products', default=None,
                                  null=True)
@@ -92,6 +94,23 @@ class Product(AutoCreatedUpdatedMixin):
         ).detail() if x.sizes_available else []
     ))
 
+    def _get_unique_slug(self):
+        ini = slugify(self.name, max_length=30)
+        slug = ini
+        if self.slug == slug:
+            return slug
+        start = 0
+        while Product.objects.filter(slug=slug).exists():
+            slug = f'{ini}-{start}'
+            start += 1
+        return slug
+
+    def save(self, *args, **kwargs):
+        slug = self._get_unique_slug()
+        if self.slug != slug:
+            self.slug = slug
+        super().save()
+
     def update_last_interaction(self, save=True):
         if save:
             self.save()
@@ -107,12 +126,20 @@ class Product(AutoCreatedUpdatedMixin):
                                                         images=self.images, estimated_delivery=self.estimated_delivery,
                                                         meta_data=self.meta_data, preview_images=self.preview_images,
                                                         cod_available=self.cod_available,
-                                                        online_available=self.online_available, stock=self.stock,
+                                                        online_available=self.online_available,
+                                                        sizes_available=self.sizes_available, stock=self.stock,
                                                         shipping_charges=self.shipping_charges,
                                                         opt_for_reselling=self.opt_for_reselling,
-                                                        resell_margin=self.resell_margin, user=self.user,
-                                                        category=self.category)
+                                                        resell_margin=self.resell_margin, slug=self.slug,
+                                                        user=self.user, category=self.category)
             self.order.all().update(content_type=content_type, object_id=_del.id)
+            if self.sizes_available:
+                DeletedProductSize.objects.bulk_create(**[
+                    DeletedProductSize(
+                        product=_del, size=i.size, stock=i.stock, price=i.price, disc_price=i.disc_price,
+                        resell_margin=i.resell_margin
+                    ) for i in self.sizes.all()
+                ])
         super().delete(using, keep_parents=True)
 
     def __str__(self):
@@ -130,10 +157,12 @@ class DeletedButUsedProduct(AutoCreatedUpdatedMixin):
     preview_images = ArrayField(models.TextField(default='', blank=True), default=list, blank=True)
     cod_available = models.BooleanField(default=False)
     online_available = models.BooleanField(default=False)
+    sizes_available = models.BooleanField(default=False)
     stock = models.IntegerField(default=1000)
     shipping_charges = models.IntegerField(default=0)
     opt_for_reselling = models.BooleanField(default=False)
     resell_margin = models.IntegerField(default=0)
+    slug = models.SlugField(max_length=40, blank=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, related_name='deleted_products',
                                  default=None, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='deleted_products')
@@ -145,7 +174,10 @@ class DeletedButUsedProduct(AutoCreatedUpdatedMixin):
     process_fields.update(**dict(
         images=lambda x: loads(x),
         preview_images=lambda x: loads(x),
-        category=lambda x: x.category.detail() if x.category else None
+        category=lambda x: x.category.detail() if x.category else None,
+        sizes=lambda x: (
+            x._prefetched_objects_cache['sizes'] if hasattr(x, '_prefetched_objects_cache') else x.sizes
+        ).detail() if x.sizes_available else []
     ))
 
     def __str__(self):
@@ -169,6 +201,18 @@ class ResellProduct(AutoCreatedUpdatedMixin):
 
 class ProductSize(AutoCreatedUpdatedMixin):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='sizes')
+    size = models.TextField(blank=True)
+    stock = models.IntegerField(default=1000)
+    disc_price = models.IntegerField(default=0)
+    price = models.IntegerField(default=0)
+    resell_margin = models.IntegerField(default=0)
+
+    exclude_fields = AutoCreatedUpdatedMixin.get_exclude_fields_copy()
+    exclude_fields += ['product']
+
+
+class DeletedProductSize(AutoCreatedUpdatedMixin):
+    product = models.ForeignKey(DeletedButUsedProduct, on_delete=models.CASCADE, related_name='sizes')
     size = models.TextField(blank=True)
     stock = models.IntegerField(default=1000)
     disc_price = models.IntegerField(default=0)

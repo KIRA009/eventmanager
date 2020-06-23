@@ -120,3 +120,8 @@ class SearchProductView(View):
         page_no = int(request.GET.get('pageNo', 1))
         num_pages, products = products.filter(user__username=data['seller']).paginate(page_no)
         return dict(products=products.detail(), num_pages=num_pages)
+
+
+class GetProductView(View):
+    def get(self, request, slug):
+        return dict(product=Product.objects.get(slug=slug).detail())

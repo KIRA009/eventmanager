@@ -62,9 +62,8 @@ class CreateProductView(View):
         if data['category'] == 'Reselling Products':
             raise AccessDenied("The category name is reserved")
         data['category'] = ProductCategory.objects.get_or_create(name=data['category'], seller=request.User.seller)[0]
-        if data['sizes_available']:
-            sizes = data['sizes']
-            del data['sizes']
+        sizes = data['sizes']
+        del data['sizes']
         product = Product.objects.create(user=request.User, **data, images=[])
         if product.opt_for_reselling:
             ResellProduct.objects.create(product=product)
