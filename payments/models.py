@@ -138,6 +138,11 @@ class Seller(AutoCreatedUpdatedMixin):
     account_number = models.TextField(default='', blank=True)
     ifsc_code = models.TextField(default='', blank=True)
     shipping_area = models.TextField(default='World Wide shipping')
+    shop_address = models.TextField(blank=True, default='')
+    city = models.TextField(default='', blank=True)
+    state = models.TextField(default='', blank=True)
+    country = models.TextField(default='', blank=True)
+    pincode = models.TextField(default='', blank=True)
     is_category_view_enabled = models.BooleanField(default=False)
     commission = JSONField(default=create_base_commission)
 
