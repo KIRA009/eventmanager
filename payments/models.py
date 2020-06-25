@@ -5,6 +5,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.postgres.fields import JSONField
 from django.utils.timezone import localdate, now
 import json
+import secrets
 
 from utils.base_model_mixin import AutoCreatedUpdatedMixin
 from payments.managers import OrderManager
@@ -140,7 +141,13 @@ class Seller(AutoCreatedUpdatedMixin):
     country = models.TextField(default='', blank=True)
     pincode = models.TextField(default='', blank=True)
     is_category_view_enabled = models.BooleanField(default=False)
+    pickup_location = models.TextField(max_length=8, default='')
     commission = JSONField(default=create_base_commission)
+
+    def save(self, *args, **kwargs):
+        if not self.pickup_location:
+            self.pickup_location = secrets.token_hex(4)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.user} -> {self.amount}'

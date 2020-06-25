@@ -51,7 +51,7 @@ class UpdateSoldProductsView(View):
 class GetSoldProductsView(View):
     def get(self, request):
         page_no = int(request.GET.get('pageNo', 1))
-        status = str(request.GET.get('delivered', 'true'))
+        status = str(request.GET.get('delivered', 'false'))
         query = Order.objects.get_sold_products(request.User)
         if status == 'true':
             query = query.filter(status=Order.DELIVERED)
