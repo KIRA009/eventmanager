@@ -198,6 +198,10 @@ class SetShopView(View):
     def post(self, request):
         data = request.json
         seller = request.User.seller
+        if not any(i.isdigit() for i in data['shop_address']):
+            raise AccessDenied(
+                "Shop Address must contain something resembling a house number / flat number / road number"
+            )
         cols = ['shipping_area', 'shop_address', 'city', 'state', 'country', 'pincode', 'is_category_view_enabled']
         for column in cols:
             setattr(seller, column, data[column])
