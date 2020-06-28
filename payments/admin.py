@@ -34,7 +34,7 @@ class OrderAdmin(BaseAdmin):
 	def item_count(self, obj):
 		return obj.items.count()
 
-	list_display = ['user', 'amount', 'paid', 'item_count', 'status']
+	list_display = ['user', 'amount', 'paid', 'item_count', 'status', 'seller']
 	search_fields = ['user']
 	list_filter = ['paid', 'status']
 

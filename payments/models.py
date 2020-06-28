@@ -9,6 +9,7 @@ import secrets
 
 from utils.base_model_mixin import AutoCreatedUpdatedMixin
 from payments.managers import OrderManager
+from notifications.utils import create_notification
 
 
 User = get_user_model()
@@ -105,7 +106,8 @@ class Order(AutoCreatedUpdatedMixin):
     process_fields = AutoCreatedUpdatedMixin.process_fields.copy()
     process_fields.update(**dict(
         meta_data=lambda x: Order.process_meta(x),
-        items=lambda x: x.items.all().detail()
+        items=lambda x: x.items.all().detail(),
+        tracking_number=lambda x: x.shipment.awb_code if hasattr(x, 'shipment') else None
     ))
 
     objects = OrderManager()

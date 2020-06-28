@@ -47,8 +47,14 @@ def create_order(order_items, mode, user_details, seller):
         if item["type"] == "product":
             prod = Product.objects.select_related('user__seller').get(id=item["id"])
             original_seller_id = prod.user.seller.id
-            if prod.stock < int(item['meta_data']['quantity']):
-                raise AccessDenied(f'{prod.name} has less stock than requested')
+            if prod.sizes_available:
+                it = prod.sizes.get(size=item['meta_data']['size'])
+            else:
+                it = prod
+            if it.stock < int(item['meta_data']['quantity']):
+                if isinstance(it, Product):
+                    raise AccessDenied(f'{it.name} has less stock than requested')
+                raise AccessDenied(f'Size {it.size} of {prod.name} has less stock than requested')
             if original_seller_id != seller.id:
                 seller.resell_product.get(product=prod)
                 if original_seller_id not in reseller_orders:
@@ -58,16 +64,16 @@ def create_order(order_items, mode, user_details, seller):
                 reseller_orders[original_seller_id]['items'].append(
                     (prod, item['meta_data'])
                 )
-                reseller_orders[original_seller_id]['amount'] += prod.disc_price
+                reseller_orders[original_seller_id]['amount'] += it.disc_price
                 reseller_orders[original_seller_id]['shipping_charges'] = max(
                     reseller_orders[original_seller_id]['shipping_charges'], prod.shipping_charges
                 )
-                reseller_orders[original_seller_id]['resell_margin'] += prod.resell_margin
+                reseller_orders[original_seller_id]['resell_margin'] += it.resell_margin
             else:
                 seller_orders['items'].append(
                     (prod, item['meta_data'])
                 )
-                seller_orders['amount'] += prod.disc_price
+                seller_orders['amount'] += it.disc_price
                 seller_orders['shipping_charges'] = max(seller_orders['shipping_charges'], prod.shipping_charges)
     if seller_orders['amount'] == 0 and not reseller_orders:
         return None, None
@@ -184,6 +190,8 @@ def handle_order(data):
             for item in order.items.all():
                 prod = item.order
                 prod.update_last_interaction()
+                if prod.sizes_available:
+                    prod = prod.sizes.get(size=item.meta_data['size'])
                 prod.stock -= int(item.meta_data['quantity'])
                 prod.save()
             if order.cod:

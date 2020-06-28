@@ -4,15 +4,12 @@ from django.shortcuts import redirect
 from payments.models import Order, Seller
 from payments.utils import create_order_form, create_order
 from payments.validators import *
-from utils.exceptions import AccessDenied, NotFound
+from utils.exceptions import AccessDenied
 from event_manager.settings import PAYMENT_CANCEL_URL, PAYMENT_CALLBACK_URL
 from utils.tasks import handle_order, refund_order
 
 
 class OrderView(View):
-    def get(self, request):
-        return dict(orders=request.User.orders.all().detail())
-
     @create_order_schema
     def post(self, request):
         data = request.json
@@ -51,7 +48,7 @@ class UpdateSoldProductsView(View):
 class GetSoldProductsView(View):
     def get(self, request):
         page_no = int(request.GET.get('pageNo', 1))
-        status = str(request.GET.get('delivered', 'false'))
+        status = str(request.GET.get('delivered', 'true'))
         query = Order.objects.get_sold_products(request.User)
         if status == 'true':
             query = query.filter(status=Order.DELIVERED)
