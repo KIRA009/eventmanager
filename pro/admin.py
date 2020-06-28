@@ -12,9 +12,9 @@ class ProPackAdmin(BaseAdmin):
 
 class ProductAdmin(BaseAdmin):
     list_display = ['name', 'description', 'price', 'disc_price', 'estimated_delivery', 'user', 'cod_available',
-                    'opt_for_reselling', 'slug']
+                    'opt_for_reselling', 'slug', 'sizes_available', 'online_available']
     search_fields = ['user']
-    list_filter = ['cod_available']
+    list_filter = ['cod_available', 'sizes_available', 'online_available']
 
     def delete_queryset(self, request, queryset):
         content_type = ContentType.objects.get_for_model(DeletedButUsedProduct)

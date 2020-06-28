@@ -1,5 +1,5 @@
 from utils.decorators import validate
-from utils.validator_helpers import make_number_object, make_string_object, make_dict_object, make_email_object
+from utils.validator_helpers import make_number_object, make_string_object, make_array_object
 
 
 get_shipping_expense_schema = validate(

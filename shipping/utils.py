@@ -42,6 +42,11 @@ def create_shipment(data, user):
 		order_id=data['order_id'],
 		weight=data['weight']
 	), user)
+	order = Order.objects.select_related('seller', 'seller__user').get(order_id=data['order_id'], seller__user=user)
+	if order.status not in [Order.PROCESSED, Order.CONFIRMED]:
+		raise AccessDenied("Order has already been upgraded from processing")
+	if hasattr(order, 'shipment'):
+		raise AccessDenied("Shipment for order has already been created")
 	rate = list(
 		filter(lambda x: x['courier_company_id'] == expense['recommended_courier_id'], expense['couriers'])
 	)[0]['rate']
@@ -70,7 +75,7 @@ def create_shipment(data, user):
 		"order_items": [
 			dict(
 				name=item.order.name,
-				sku=item.order.name,
+				sku=item.order.slug,
 				units=item.meta_data['quantity'],
 				selling_price=item.order.price
 			) for item in order.items.all()
@@ -101,10 +106,14 @@ def create_shipment(data, user):
 		json=json,
 		headers=headers
 	).json()
+	if 'errors' in res:
+		raise AccessDenied("Some error occurred")
 	payload = res['payload']
 	order.update_status(Order.CONFIRMED)
 	order.seller.amount -= rate
 	order.seller.save()
+	del data['courier_id']
+	del data['order_id']
 	return Shipment.objects.create(
 		courier_company_id=payload['courier_company_id'],
 		courier_name=payload['courier_name'],
@@ -119,5 +128,14 @@ def create_shipment(data, user):
 		pickup_scheduled_date=datetime.strptime(
 			payload['pickup_scheduled_date'], '%Y-%m-%dT%H:%M:%S'
 		) if not DEBUG else order.created_at,
-		order=order
+		order=order,
+		**data
 	)
+
+
+def get_tracking_status(awb):
+	res = requests.get(
+		f'{BASE_URL}/courier/track/awb/{awb}',
+		headers=headers
+	).json()
+	print(res)

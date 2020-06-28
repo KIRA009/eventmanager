@@ -9,6 +9,7 @@ from event_app.utils import upload_file, copy_file
 from pro.utils import convert_to_base64
 from payments.models import Seller, RetrieveAmount
 from utils.exceptions import AccessDenied
+from notifications.utils import create_notification
 
 
 class ProModeHeaderView(View):
@@ -245,6 +246,10 @@ class AddResellProductView(View):
         if resell_product.product.user_id != request.User.id:
             resell_product.sellers.add(request.User.seller.id)
         resell_product.product.update_last_interaction()
+        create_notification(
+            resell_product.product.user, 'Product added for reselling',
+            f'{resell_product.product.name} added for reselling by {request.User.username}'
+        )
         return dict(message="Product added")
 
 

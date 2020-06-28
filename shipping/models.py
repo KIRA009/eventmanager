@@ -15,4 +15,8 @@ class Shipment(AutoCreatedUpdatedMixin):
 	routing_code = models.TextField()
 	applied_weight = models.FloatField()
 	pickup_scheduled_date = models.DateTimeField()
+	length = models.FloatField(default=0)
+	height = models.FloatField(default=0)
+	breadth = models.FloatField(default=0)
+	weight = models.FloatField(default=0)
 	order = models.OneToOneField('payments.Order', on_delete=models.CASCADE, related_name='shipment')

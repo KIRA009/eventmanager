@@ -93,10 +93,10 @@ class Product(AutoCreatedUpdatedMixin):
 
     def _get_unique_slug(self):
         ini = slugify(self.name, max_length=30)
-        slug = ini
+        slug = f'{ini}-0'
         if self.slug == slug:
             return slug
-        start = 0
+        start = 1
         while Product.objects.filter(slug=slug).exists():
             slug = f'{ini}-{start}'
             start += 1
