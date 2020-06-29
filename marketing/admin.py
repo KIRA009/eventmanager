@@ -58,7 +58,13 @@ class OnboardAdmin(BaseAdmin):
     def has_delete_permission(self, request, obj=None):
         return self.has_change_permission(request, obj)
 
-    list_display = ['marketeer', 'onboarder', 'amount']
+    def onboarder__username(self, inst):
+        return inst.onboarder.username
+
+    def onboarder__products__count(self, inst):
+        return inst.onboarder.products.count()
+
+    list_display = ['marketeer', 'onboarder', 'onboarder__username', 'onboarder__products__count', 'amount']
     fields = ['onboarder']
 
 

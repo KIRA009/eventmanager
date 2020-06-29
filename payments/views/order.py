@@ -76,5 +76,5 @@ class OrderRefundView(View):
         order = Order.objects.get(order_id=order_id, seller__user=request.User)
         if order.status in [Order.REFUND_INITIATED, Order.REFUNDED]:
             raise AccessDenied('Refund has already been initiated / processed for this order')
-        refund_order(order_id)
+        refund_order(order_id, request.User.seller.id)
         return dict(message="Refund initiated")

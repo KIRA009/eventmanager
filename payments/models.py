@@ -86,8 +86,10 @@ class Order(AutoCreatedUpdatedMixin):
     cod = models.BooleanField(default=False)
     status = models.TextField(default=INITIATED, choices=STATUS_CHOICES)
     shipping_charges = models.IntegerField(default=0)
+    resell_margin = models.IntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders", null=True, blank=True)
     seller = models.ForeignKey('payments.Seller', on_delete=models.CASCADE, related_name="orders", null=True)
+    reseller = models.ForeignKey('payments.Seller', on_delete=models.CASCADE, related_name="resold_orders", null=True)
 
     @staticmethod
     def process_meta(meta):
@@ -107,9 +109,11 @@ class Order(AutoCreatedUpdatedMixin):
 
     objects = OrderManager()
 
-    def update_status(self, new_status):
+    def update_status(self, new_status, send_update=True):
         from .utils import send_text_update
         if not self.paid:
+            return
+        if new_status == self.status:
             return
         self.status = new_status
         if new_status == self.DELIVERED:
@@ -119,7 +123,8 @@ class Order(AutoCreatedUpdatedMixin):
             seller.amount -= int(0.02 * self.amount)
             seller.save()
         self.save()
-        send_text_update(self)
+        if send_update:
+            send_text_update(self)
 
 
 def create_base_commission():
