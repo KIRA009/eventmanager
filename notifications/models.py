@@ -13,5 +13,7 @@ class Notification(AutoCreatedUpdatedMixin):
 	user = models.ForeignKey('event_app.User', on_delete=models.CASCADE, related_name='notifications')
 
 	def read(self):
+		if self.read_at:
+			return
 		self.read_at = now()
 		self.save()

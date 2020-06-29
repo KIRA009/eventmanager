@@ -8,12 +8,13 @@ auth_urls = list(
     map(lambda x: path(x[0], login_required(x[1].as_view())), [
         ("subscribe/", SubscriptionView),
         ("cancel/", CancelSubscriptionView),
+        ("order/", GetOrdersView),
     ])
 )
 
 unauth_urls = list(
     map(lambda x: path(x[0], x[1].as_view()), [
-        ("order/", OrderView),
+        ("order/", CreateOrderView),
         ("order/callback/", OrderCallBackView),
         ('order/cancel/', OrderCancelView),
         ('webhook/', PaymentWebhookView),

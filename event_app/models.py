@@ -50,7 +50,8 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
                 x.feature.header_text not in ['', None] and
                 x.feature.header_icon not in ['', None] and
                 x.seller.shipping_area not in ['', None]
-        )
+        ),
+        unread_notifs=lambda x: x.notifications.filter(read_at=None).count()
     ))
 
     def change_secret(self):

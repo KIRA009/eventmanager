@@ -9,7 +9,7 @@ from event_manager.settings import PAYMENT_CANCEL_URL, PAYMENT_CALLBACK_URL
 from utils.tasks import handle_order, refund_order
 
 
-class OrderView(View):
+class CreateOrderView(View):
     @create_order_schema
     def post(self, request):
         data = request.json
@@ -34,6 +34,11 @@ class OrderView(View):
         if order_id:
             return dict(form=create_order_form(order_id, user))
         return dict(message="Order created")
+
+
+class GetOrdersView(View):
+    def get(self, request):
+        return dict(orders=request.User.orders.detail())
 
 
 class UpdateSoldProductsView(View):
