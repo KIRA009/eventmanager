@@ -40,6 +40,7 @@ class GetProductsView(View):
     def post(self, request):
         user = request.json['username']
         page_no = int(request.GET.get('pageNo', 1))
+        category = ''
         if 'category' in request.GET.dict():
             category = request.GET.dict()['category']
             if category == 'Reselling Products':
@@ -59,7 +60,11 @@ class GetProductsView(View):
                 ).values('product_id', 'resell_margin')
             }
             for i in page:
-                i['disc_price'] += resell_products.get(i['id'], 0)
+                if i['sizes_available']:
+                    for size in i['sizes']:
+                        size['disc_price'] += resell_products.get(i['id'], 0)
+                else:
+                    i['disc_price'] += resell_products.get(i['id'], 0)
         return dict(products=page, num_pages=num_pages)
 
 

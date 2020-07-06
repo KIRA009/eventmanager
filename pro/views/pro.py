@@ -63,13 +63,20 @@ class CreateProductView(View):
             data['category'] = 'Others'
         if data['category'] == 'Reselling Products':
             raise AccessDenied("The category name is reserved")
+        if data['sizes_available']:
+            data['price'] = data['disc_price'] = 0
         data['category'] = ProductCategory.objects.get_or_create(name=data['category'], seller=request.User.seller)[0]
         sizes = data['sizes']
         del data['sizes']
         product = Product.objects.create(user=request.User, **data, images=[])
-        product = Product.objects.first()
-        if product.opt_for_reselling:
-            ResellProduct.objects.create(product=product)
+        ProductSize.objects.bulk_create(
+            [
+                ProductSize(
+                    product=product, size=size['size'], stock=size['stock'], price=size['price'],
+                    disc_price=size['disc_price']
+                ) for size in sizes
+            ]
+        )
         return dict(product=product.detail())
 
 
@@ -114,6 +121,9 @@ class UpdateProductView(View):
             if v != getattr(product, k):
                 changed_vals[k] = v
         data = changed_vals
+        for i in ['slug', 'user']:
+            if i in data:
+                del data[i]
         if 'category' in data:
             if product.category is None or product.category.name != data['category']:
                 data['category'] = ProductCategory.objects.get_or_create(
@@ -127,7 +137,7 @@ class UpdateProductView(View):
             if product.sizes_available:
                 product.sizes.all().delete()
             else:
-                for i in ['stock', 'resell_margin', 'price', 'disc_price']:
+                for i in ['stock', 'price', 'disc_price']:
                     if getattr(product, i) != 0:
                         data[i] = 0
                     else:
@@ -226,14 +236,14 @@ class DeleteProductCategoryView(View):
 class GetResellProductsView(View):
     def get(self, request):
         page_no = int(request.GET.get('pageNo', 1))
-        num_pages, products = ResellProduct.objects.select_related(
-            'product', 'product__category', 'product__user__feature'
-        ).filter(product__opt_for_reselling=True).paginate(page_no)
+        num_pages, products = Product.objects.select_related(
+            'category', 'user__feature'
+        ).filter(opt_for_reselling=True).paginate(page_no)
         products = products.detail()
         product_ids = [_['id'] for _ in products]
         added_products = ResellProduct.objects.filter(
-            id__in=product_ids, seller__user_id=request.User.id
-        ).values_list('id', flat=True)
+            product_id__in=product_ids, seller__user_id=request.User.id
+        ).values_list('product_id', flat=True)
         for product in products:
             product['added'] = product['id'] in added_products
         return dict(products=products, num_pages=num_pages)
@@ -244,8 +254,12 @@ class AddResellProductView(View):
     def post(self, request):
         data = request.json
         product = Product.objects.get(id=data['product_id'])
-        if data['resell_margin'] > product.price - product.disc_price:
-            raise AccessDenied(f"Resell margin cannot exceed {product.price - product.disc_price}")
+        if product.sizes_available:
+            min_price = min([it.price - it.disc_price for it in product.sizes.all()])
+        else:
+            min_price = product.price - product.disc_price
+        if data['resell_margin'] > min_price:
+            raise AccessDenied(f"Resell margin cannot exceed {min_price}")
         if product.user_id != request.User.id:
             if not ResellProduct.objects.filter(product=product, seller=request.User.seller).exists():
                 ResellProduct.objects.create(product=product, seller=request.User.seller,
@@ -261,9 +275,9 @@ class AddResellProductView(View):
 class RemoveResellProductView(View):
     @delete_product_schema
     def post(self, request):
-        resell_product = ResellProduct.objects.get_or_create(product_id=request.json['product_id'])[0]
+        resell_product = ResellProduct.objects.get(product_id=request.json['product_id'], seller__user=request.User)
         if resell_product.product.user_id != request.User.id:
-            resell_product.sellers.remove(request.User.seller.id)
+            resell_product.delete()
         return dict(message="Product removed")
 
 

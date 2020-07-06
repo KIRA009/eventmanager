@@ -73,7 +73,6 @@ class Product(AutoCreatedUpdatedMixin):
     stock = models.IntegerField(default=1000)
     shipping_charges = models.IntegerField(default=0)
     opt_for_reselling = models.BooleanField(default=False)
-    resell_margin = models.IntegerField(default=0)
     slug = models.SlugField(max_length=40, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='products')
     category = models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, related_name='products', default=None,
@@ -128,14 +127,12 @@ class Product(AutoCreatedUpdatedMixin):
                                                         sizes_available=self.sizes_available, stock=self.stock,
                                                         shipping_charges=self.shipping_charges,
                                                         opt_for_reselling=self.opt_for_reselling,
-                                                        resell_margin=self.resell_margin, slug=self.slug,
-                                                        user=self.user, category=self.category)
+                                                        slug=self.slug, user=self.user, category=self.category)
             self.order.all().update(content_type=content_type, object_id=_del.id)
             if self.sizes_available:
                 DeletedProductSize.objects.bulk_create(**[
                     DeletedProductSize(
-                        product=_del, size=i.size, stock=i.stock, price=i.price, disc_price=i.disc_price,
-                        resell_margin=i.resell_margin
+                        product=_del, size=i.size, stock=i.stock, price=i.price, disc_price=i.disc_price
                     ) for i in self.sizes.all()
                 ])
         super().delete(using, keep_parents=True)
@@ -159,7 +156,6 @@ class DeletedButUsedProduct(AutoCreatedUpdatedMixin):
     stock = models.IntegerField(default=1000)
     shipping_charges = models.IntegerField(default=0)
     opt_for_reselling = models.BooleanField(default=False)
-    resell_margin = models.IntegerField(default=0)
     slug = models.SlugField(max_length=40, blank=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, related_name='deleted_products',
                                  default=None, null=True)
@@ -204,7 +200,6 @@ class ProductSize(AutoCreatedUpdatedMixin):
     stock = models.IntegerField(default=1000)
     disc_price = models.IntegerField(default=0)
     price = models.IntegerField(default=0)
-    resell_margin = models.IntegerField(default=0)
 
     exclude_fields = AutoCreatedUpdatedMixin.get_exclude_fields_copy()
     exclude_fields += ['product']
@@ -216,7 +211,6 @@ class DeletedProductSize(AutoCreatedUpdatedMixin):
     stock = models.IntegerField(default=1000)
     disc_price = models.IntegerField(default=0)
     price = models.IntegerField(default=0)
-    resell_margin = models.IntegerField(default=0)
 
     exclude_fields = AutoCreatedUpdatedMixin.get_exclude_fields_copy()
     exclude_fields += ['product']
