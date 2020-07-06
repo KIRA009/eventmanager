@@ -1,11 +1,9 @@
 from django.views import View
-from django.db.models import F
 
-from pro.models import ProModeFeature, Product
+from pro.models import ProModeFeature, Product, ResellProduct
 from event_app.models import User
 from pro.validators import *
 from payments.models import Seller
-from utils.exceptions import AccessDenied, NotFound
 from pro.documents import ProductDocument
 
 
@@ -51,7 +49,18 @@ class GetProductsView(View):
         else:
             query = Product.objects.get_products(user)
         num_pages, page = query.paginate(page_no)
-        return dict(products=page.detail(), num_pages=num_pages)
+        page = page.detail()
+        if category == 'Reselling Products':
+            product_ids = [_['id'] for _ in page]
+            resell_products = {
+                _['product_id']: _['resell_margin'] for _ in
+                ResellProduct.objects.filter(
+                    product_id__in=product_ids, seller__user__username=user
+                ).values('product_id', 'resell_margin')
+            }
+            for i in page:
+                i['disc_price'] += resell_products.get(i['id'], 0)
+        return dict(products=page, num_pages=num_pages)
 
 
 class ProModeView(View):

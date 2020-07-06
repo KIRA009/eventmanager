@@ -89,6 +89,7 @@ class Order(AutoCreatedUpdatedMixin):
     status = models.TextField(default=INITIATED, choices=STATUS_CHOICES)
     shipping_charges = models.IntegerField(default=0)
     resell_margin = models.IntegerField(default=0)
+    cancel_reason = models.TextField(default='', blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders", null=True, blank=True)
     seller = models.ForeignKey('payments.Seller', on_delete=models.CASCADE, related_name="orders", null=True)
     reseller = models.ForeignKey('payments.Seller', on_delete=models.CASCADE, related_name="resold_orders", null=True)

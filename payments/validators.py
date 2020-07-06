@@ -8,7 +8,8 @@ update_order_schema = validate(
 )
 
 refund_order_schema = validate(
-    make_string_object("order_id")
+    make_string_object("order_id"),
+    make_string_object("reason")
 )
 
 

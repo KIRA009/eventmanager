@@ -29,9 +29,9 @@ class ProModeFeatureAdmin(BaseAdmin):
 
 class ResellProductAdmin(BaseAdmin):
     def seller_count(self, obj):
-        return obj.sellers.count()
+        return obj.product.resell_products.count()
 
-    list_display = ['product', 'seller_count']
+    list_display = ['product', 'seller_count', 'resell_margin']
 
 
 class ProductSizeAdmin(BaseAdmin):

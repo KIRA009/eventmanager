@@ -232,7 +232,7 @@ class GetResellProductsView(View):
         products = products.detail()
         product_ids = [_['id'] for _ in products]
         added_products = ResellProduct.objects.filter(
-            id__in=product_ids, sellers__user_id=request.User.id
+            id__in=product_ids, seller__user_id=request.User.id
         ).values_list('id', flat=True)
         for product in products:
             product['added'] = product['id'] in added_products
@@ -240,16 +240,21 @@ class GetResellProductsView(View):
 
 
 class AddResellProductView(View):
-    @delete_product_schema
+    @add_resell_product_schema
     def post(self, request):
-        resell_product = ResellProduct.objects.get_or_create(product_id=request.json['product_id'])[0]
-        if resell_product.product.user_id != request.User.id:
-            resell_product.sellers.add(request.User.seller.id)
-        resell_product.product.update_last_interaction()
-        create_notification(
-            resell_product.product.user, 'Product added for reselling',
-            f'{resell_product.product.name} added for reselling by {request.User.username}'
-        )
+        data = request.json
+        product = Product.objects.get(id=data['product_id'])
+        if data['resell_margin'] > product.price - product.disc_price:
+            raise AccessDenied(f"Resell margin cannot exceed {product.price - product.disc_price}")
+        if product.user_id != request.User.id:
+            if not ResellProduct.objects.filter(product=product, seller=request.User.seller).exists():
+                ResellProduct.objects.create(product=product, seller=request.User.seller,
+                                             resell_margin=data['resell_margin'])
+                product.update_last_interaction()
+                create_notification(
+                    product.user, 'Product added for reselling',
+                    f'{product.name} added for reselling by {request.User.username}'
+                )
         return dict(message="Product added")
 
 

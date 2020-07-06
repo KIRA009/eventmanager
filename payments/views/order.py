@@ -10,6 +10,9 @@ from utils.tasks import handle_order, refund_order
 
 
 class CreateOrderView(View):
+    def get(self, request):
+        return dict(orders=request.User.orders.detail() if request.User.is_authenticated else [])
+
     @create_order_schema
     def post(self, request):
         data = request.json
@@ -34,11 +37,6 @@ class CreateOrderView(View):
         if order_id:
             return dict(form=create_order_form(order_id, user))
         return dict(message="Order created")
-
-
-class GetOrdersView(View):
-    def get(self, request):
-        return dict(orders=request.User.orders.detail())
 
 
 class UpdateSoldProductsView(View):
@@ -76,9 +74,12 @@ class OrderCancelView(View):
 class OrderRefundView(View):
     @refund_order_schema
     def post(self, request):
-        order_id = request.json['order_id']
+        data = request.json
+        order_id = data['order_id']
         order = Order.objects.get(order_id=order_id, seller__user=request.User)
         if order.status in [Order.REFUND_INITIATED, Order.REFUNDED]:
             raise AccessDenied('Refund has already been initiated / processed for this order')
+        order.cancel_reason = data['reason']
+        order.save()
         refund_order(order_id, request.User.seller.id)
         return dict(message="Refund initiated")

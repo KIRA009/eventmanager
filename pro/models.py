@@ -88,7 +88,8 @@ class Product(AutoCreatedUpdatedMixin):
     process_fields.update(**dict(
         images=lambda x: loads(x),
         preview_images=lambda x: loads(x),
-        category=lambda x: x.category.detail() if x.category else None
+        category=lambda x: x.category.detail() if x.category else None,
+        sizes=lambda x: x.sizes.detail()
     ))
 
     def _get_unique_slug(self):
@@ -182,17 +183,18 @@ class DeletedButUsedProduct(AutoCreatedUpdatedMixin):
 
 
 class ResellProduct(AutoCreatedUpdatedMixin):
-    product = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='resell_product', null=True)
-    sellers = models.ManyToManyField('payments.Seller', related_name='resell_product')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='resell_products', null=True)
+    seller = models.ForeignKey('payments.Seller', related_name='resell_products', on_delete=models.CASCADE, null=True)
+    resell_margin = models.IntegerField(default=0)
 
     exclude_fields = AutoCreatedUpdatedMixin.get_exclude_fields_copy()
-    exclude_fields += ["product", "sellers"]
+    exclude_fields += ["product", "seller"]
     process_fields = AutoCreatedUpdatedMixin.get_process_fields_copy()
     process_fields.update(**dict(
         product=lambda x: x.product.detail(),
         seller=lambda x: dict(
             **x.product.user.feature.detail()
-        )
+        ),
     ))
 
 

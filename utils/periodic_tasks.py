@@ -1,14 +1,15 @@
 from celery.task import task
 from django.utils.timezone import timedelta, now, localdate
 
-from logger.models import Tracker
+from logger.models import ServerTracker, ClientTracker
 from analytics.models import *
 
 
 @task(name='delete_old_logs')
 def delete_old_logs():
     last_date = localdate(now()) - timedelta(days=15)
-    Tracker.objects.filter(updated_at__date__lte=last_date).delete()
+    ServerTracker.objects.filter(updated_at__date__lte=last_date).delete()
+    ClientTracker.objects.filter(updated_at__date__lte=last_date).delete()
 
 
 @task(name="add_to_lifetime_analytics")

@@ -1,7 +1,7 @@
 from django.middleware.common import CommonMiddleware
 import traceback
 
-from .models import Tracker
+from .models import ServerTracker
 from event_manager.settings import DEBUG
 from .utils import send_email_to_admins
 
@@ -24,7 +24,7 @@ class ExceptionHandlerMiddleware(CommonMiddleware):
             _vars['phone'] = 'nil'
         if 'status_code' in exception.__dict__:
             return dict(error=exception.message, status_code=exception.status_code)
-        log = Tracker(trace=traceback.format_exc(), msg=exception, user=user, url=request.path_info)
+        log = ServerTracker(trace=traceback.format_exc(), msg=exception, user=user, url=request.path_info)
         if 'json' in request.__dict__ and request.method not in 'GET':
             log.request_body = request.json
         log.save()

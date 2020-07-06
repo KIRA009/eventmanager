@@ -83,6 +83,3 @@ ELASTICSEARCH_DSL={
         'hosts': 'localhost:9200'
     },
 }
-
-
-SHIPPING_TOKEN = os.getenv('SHIPPING_TOKEN')

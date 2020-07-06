@@ -48,7 +48,7 @@ def create_order(order_items, mode, user_details, seller):
             prod = Product.objects.select_related('user__seller').get(id=item["id"])
             original_seller_id = prod.user.seller.id
             if prod.sizes_available:
-                it = prod.sizes.get(size=item['meta_data']['size'])
+                it = prod.sizes.get(id=item['meta_data']['size'])
             else:
                 it = prod
             if it.stock < int(item['meta_data']['quantity']):
@@ -56,7 +56,7 @@ def create_order(order_items, mode, user_details, seller):
                     raise AccessDenied(f'{it.name} has less stock than requested')
                 raise AccessDenied(f'Size {it.size} of {prod.name} has less stock than requested')
             if original_seller_id != seller.id:
-                seller.resell_product.get(product=prod)
+                resell_product = seller.resell_products.get(product=prod)
                 if original_seller_id not in reseller_orders:
                     reseller_orders[original_seller_id] = dict(
                         items=[], amount=0, shipping_charges=0, resell_margin=0
@@ -64,11 +64,11 @@ def create_order(order_items, mode, user_details, seller):
                 reseller_orders[original_seller_id]['items'].append(
                     (prod, item['meta_data'])
                 )
-                reseller_orders[original_seller_id]['amount'] += it.disc_price
+                reseller_orders[original_seller_id]['amount'] += it.disc_price + resell_product.resell_margin
                 reseller_orders[original_seller_id]['shipping_charges'] = max(
                     reseller_orders[original_seller_id]['shipping_charges'], prod.shipping_charges
                 )
-                reseller_orders[original_seller_id]['resell_margin'] += it.resell_margin
+                reseller_orders[original_seller_id]['resell_margin'] += resell_product.resell_margin
             else:
                 seller_orders['items'].append(
                     (prod, item['meta_data'])
@@ -191,7 +191,7 @@ def handle_order(data):
                 prod = item.order
                 prod.update_last_interaction()
                 if prod.sizes_available:
-                    prod = prod.sizes.get(size=item.meta_data['size'])
+                    prod = prod.sizes.get(id=item.meta_data['size'])
                 prod.stock -= int(item.meta_data['quantity'])
                 prod.save()
             if order.cod:
@@ -348,6 +348,8 @@ def send_text_update(order):
     if order.status not in [Order.DELIVERED, Order.REFUNDED]:
         message += f" We will send you an update when your order is " \
                    f"{status[statuses[statuses.index(order.status) + 1]]}"
+    if order.status == Order.REFUND_INITIATED:
+        message += f' This was due to the following reason: {order.cancel_reason}'
     send_message(order.meta_data['user_details']['number'], message)
 
 
@@ -356,7 +358,10 @@ def refund_order(order_id, seller_id):
     order = Order.objects.get(order_id=order_id, seller_id=seller_id)
     if 'payment' not in order.meta_data:
         return
-    res = requests.post(f'{BASE_URL}/payments/{order.meta_data["payment"]["id"]}/refund',
-                        json={'amount': order.amount * 100, 'notes': dict(order_id=order_id)}, auth=auth).json()
-    if 'error' not in res:
-        order.update_status(Order.REFUND_INITIATED)
+    if order.paid:
+        res = dict(error='')
+        if not order.cod:
+            res = requests.post(f'{BASE_URL}/payments/{order.meta_data["payment"]["id"]}/refund',
+                                json={'amount': order.amount * 100, 'notes': dict(order_id=order_id)}, auth=auth).json()
+        if 'error' not in res or order.cod:
+            order.update_status(Order.REFUND_INITIATED)

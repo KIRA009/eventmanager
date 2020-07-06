@@ -106,3 +106,8 @@ search_products_schema = validate(
     make_string_object("query"),
     make_string_object("seller")
 )
+
+add_resell_product_schema = validate(
+    make_number_object("product_id"),
+    make_number_object("resell_margin")
+)

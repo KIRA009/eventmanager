@@ -1,7 +1,7 @@
 import requests
 from django.utils.timezone import datetime
 
-from event_manager.settings import SHIPPING_TOKEN, DEBUG
+from event_manager.settings import DEBUG, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
 from utils.exceptions import AccessDenied
 from payments.models import Order
 from shipping.models import Shipment
@@ -9,9 +9,17 @@ from shipping.models import Shipment
 
 BASE_URL = "https://apiv2.shiprocket.in/v1/external"
 
-headers = {
-	'Authorization': f'Bearer {SHIPPING_TOKEN}'
-}
+
+def get_headers():
+	token = requests.post(f'{BASE_URL}/auth/login', json=dict(
+		email=EMAIL_HOST_USER,
+		password=EMAIL_HOST_PASSWORD
+	)).json()
+	if 'token' not in token:
+		raise AccessDenied("Please contact support")
+	return {
+		'Authorization': f'Bearer {token["token"]}'
+	}
 
 
 def get_shipment_expense(data, user):
@@ -25,9 +33,9 @@ def get_shipment_expense(data, user):
 	res = requests.get(
 		f'{BASE_URL}/courier/serviceability/',
 		json=data,
-		headers=headers
+		headers=get_headers()
 	).json()
-	if res['status'] != 200:
+	if 'status' not in res or res['status'] != 200:
 		if 'message' in res:
 			raise AccessDenied(res['message'])
 		raise AccessDenied('Some error happened')
@@ -104,7 +112,7 @@ def create_shipment(data, user):
 	res = requests.post(
 		f'{BASE_URL}/shipments/create/forward-shipment',
 		json=json,
-		headers=headers
+		headers=get_headers()
 	).json()
 	if 'errors' in res:
 		raise AccessDenied("Some error occurred")
@@ -136,6 +144,6 @@ def create_shipment(data, user):
 def get_tracking_status(awb):
 	res = requests.get(
 		f'{BASE_URL}/courier/track/awb/{awb}',
-		headers=headers
+		headers=get_headers()
 	).json()
 	print(res)
