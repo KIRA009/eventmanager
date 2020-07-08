@@ -72,6 +72,7 @@ class Order(AutoCreatedUpdatedMixin):
     DELIVERED = 'Delivered'
     REFUND_INITIATED = 'Refund initiated'
     REFUNDED = 'Refunded'
+    CANCELLED = 'Cancelled'
     STATUS_CHOICES = (
         (INITIATED, "Order Initiated"),
         (PROCESSED, 'Order Processed'),
@@ -79,7 +80,8 @@ class Order(AutoCreatedUpdatedMixin):
         (SHIPPED, 'Shipped'),
         (DELIVERED, 'Delivered'),
         (REFUND_INITIATED, 'Refund initiated'),
-        (REFUNDED, 'Refunded')
+        (REFUNDED, 'Refunded'),
+        (CANCELLED, 'Cancelled')
     )
     order_id = models.TextField(default="")
     amount = models.BigIntegerField(default=0)
@@ -129,6 +131,9 @@ class Order(AutoCreatedUpdatedMixin):
         self.save()
         if send_update:
             send_text_update(self)
+
+    class Meta:
+        ordering = ['-created_at']
 
 
 def create_base_commission():

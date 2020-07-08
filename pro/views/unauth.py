@@ -40,7 +40,6 @@ class GetProductsView(View):
     def post(self, request):
         user = request.json['username']
         page_no = int(request.GET.get('pageNo', 1))
-        category = ''
         if 'category' in request.GET.dict():
             category = request.GET.dict()['category']
             if category == 'Reselling Products':
@@ -51,20 +50,22 @@ class GetProductsView(View):
             query = Product.objects.get_products(user)
         num_pages, page = query.paginate(page_no)
         page = page.detail()
-        if category == 'Reselling Products':
-            product_ids = [_['id'] for _ in page]
-            resell_products = {
-                _['product_id']: _['resell_margin'] for _ in
-                ResellProduct.objects.filter(
-                    product_id__in=product_ids, seller__user__username=user
-                ).values('product_id', 'resell_margin')
-            }
-            for i in page:
-                if i['sizes_available']:
-                    for size in i['sizes']:
-                        size['disc_price'] += resell_products.get(i['id'], 0)
-                else:
-                    i['disc_price'] += resell_products.get(i['id'], 0)
+        product_ids = [_['id'] for _ in page]
+        resell_products = {
+            _['product_id']: _['resell_margin'] for _ in
+            ResellProduct.objects.filter(
+                product_id__in=product_ids, seller__user__username=user, product__opt_for_reselling=True
+            ).values('product_id', 'resell_margin')
+        }
+        for i in page:
+            if i['id'] not in resell_products:
+                continue
+            i['resell_margin'] = resell_products.get(i['id'], 0)
+            if i['sizes_available']:
+                for size in i['sizes']:
+                    size['disc_price'] += resell_products.get(i['id'], 0)
+            else:
+                i['disc_price'] += resell_products.get(i['id'], 0)
         return dict(products=page, num_pages=num_pages)
 
 

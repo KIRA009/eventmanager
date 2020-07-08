@@ -77,7 +77,7 @@ class OrderRefundView(View):
         data = request.json
         order_id = data['order_id']
         order = Order.objects.get(order_id=order_id, seller__user=request.User)
-        if order.status in [Order.REFUND_INITIATED, Order.REFUNDED]:
+        if order.status in [Order.REFUND_INITIATED, Order.REFUNDED, Order.CANCELLED]:
             raise AccessDenied('Refund has already been initiated / processed for this order')
         order.cancel_reason = data['reason']
         order.save()

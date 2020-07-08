@@ -84,8 +84,9 @@ def create_order(order_items, mode, user_details, seller):
     if mode == 'cod':
         order_id = str(uuid.uuid4())
     else:
-        order_id = create_order_in_razorpay(seller_orders['amount'] +
-                                            sum(i['amount'] for i in reseller_orders.values()))
+        total_amount = seller_orders['amount'] + seller_orders['shipping_charges'] + \
+                        sum(i['amount'] + i['shipping_charges'] for i in reseller_orders.values())
+        order_id = create_order_in_razorpay(total_amount)
     if seller_orders['items']:
         order = Order.objects.create(
             order_id=order_id, amount=seller_orders['amount'], user=user if isinstance(user, User) else None,
@@ -337,6 +338,7 @@ def send_text_update(order):
         Order.DELIVERED: 'delivered',
         Order.REFUND_INITIATED: 'initiated for refund',
         Order.REFUNDED: 'refunded',
+        Order.CANCELLED: 'cancelled',
     }
     statuses = [
         Order.PROCESSED, Order.CONFIRMED, Order.SHIPPED, Order.DELIVERED, Order.REFUND_INITIATED, Order.REFUNDED
@@ -345,10 +347,10 @@ def send_text_update(order):
     item_nums = order.items.count() - 1
     message = f'Hi! Your myweblink order for {item.name} ' \
               f'{"+ " + str(item_nums) + " others" if item_nums > 0 else ""} has been {status[order.status]}.'
-    if order.status not in [Order.DELIVERED, Order.REFUNDED]:
+    if order.status not in [Order.DELIVERED, Order.REFUNDED, Order.CANCELLED]:
         message += f" We will send you an update when your order is " \
                    f"{status[statuses[statuses.index(order.status) + 1]]}"
-    if order.status == Order.REFUND_INITIATED:
+    if order.status in [Order.CANCELLED, Order.REFUND_INITIATED]:
         message += f' This was due to the following reason: {order.cancel_reason}'
     send_message(order.meta_data['user_details']['number'], message)
 
@@ -359,9 +361,10 @@ def refund_order(order_id, seller_id):
     if 'payment' not in order.meta_data:
         return
     if order.paid:
-        res = dict(error='')
         if not order.cod:
             res = requests.post(f'{BASE_URL}/payments/{order.meta_data["payment"]["id"]}/refund',
                                 json={'amount': order.amount * 100, 'notes': dict(order_id=order_id)}, auth=auth).json()
-        if 'error' not in res or order.cod:
-            order.update_status(Order.REFUND_INITIATED)
+            if 'error' not in res:
+                order.update_status(Order.REFUND_INITIATED)
+        else:
+            order.update_status(Order.CANCELLED)

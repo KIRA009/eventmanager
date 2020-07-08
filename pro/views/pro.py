@@ -241,11 +241,21 @@ class GetResellProductsView(View):
         ).filter(opt_for_reselling=True).paginate(page_no)
         products = products.detail()
         product_ids = [_['id'] for _ in products]
-        added_products = ResellProduct.objects.filter(
-            product_id__in=product_ids, seller__user_id=request.User.id
-        ).values_list('product_id', flat=True)
+        user_ids = list(set([_['user'] for _ in products]))
+        added_products = {
+            _['product_id']: _['resell_margin'] for _ in ResellProduct.objects.filter(
+                product_id__in=product_ids, seller__user_id=request.User.id, product__opt_for_reselling=True
+            ).values('product_id', 'resell_margin')
+        }
+        sellers = {
+            _.user.id: _.detail() for _ in
+            ProModeFeature.objects.filter(user_id__in=user_ids)
+        }
         for product in products:
             product['added'] = product['id'] in added_products
+            product['seller'] = sellers[product['user']]
+            if product['added']:
+                product['resell_margin'] = added_products[product['id']]
         return dict(products=products, num_pages=num_pages)
 
 
