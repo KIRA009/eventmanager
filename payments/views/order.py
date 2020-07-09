@@ -4,22 +4,23 @@ from django.shortcuts import redirect
 from payments.models import Order, Seller
 from payments.utils import create_order_form, create_order
 from payments.validators import *
-from utils.exceptions import AccessDenied, NotFound
+from utils.exceptions import AccessDenied
 from event_manager.settings import PAYMENT_CANCEL_URL, PAYMENT_CALLBACK_URL
 from utils.tasks import handle_order, refund_order
 
 
-class OrderView(View):
+class CreateOrderView(View):
     def get(self, request):
-        return dict(orders=request.User.orders.all().detail())
+        return dict(orders=request.User.orders.detail() if request.User.is_authenticated else [])
 
-    # @create_order_schema
+    @create_order_schema
     def post(self, request):
         data = request.json
         user_details = data['user_details']
         seller = Seller.objects.get(user__username=data['seller'])
         order_id, user = create_order(data['cod_items'], 'cod', user_details, seller)
-        handle_order(dict(
+        handle_order(
+            dict(
                 payload=dict(
                     order=dict(
                         entity=dict(id=order_id)
@@ -30,7 +31,8 @@ class OrderView(View):
                         )
                     )
                 )
-            ))
+            )
+        )
         order_id, user = create_order(data['online_items'], 'online', user_details, seller)
         if order_id:
             return dict(form=create_order_form(order_id, user))
@@ -72,9 +74,12 @@ class OrderCancelView(View):
 class OrderRefundView(View):
     @refund_order_schema
     def post(self, request):
-        order_id = request.json['order_id']
+        data = request.json
+        order_id = data['order_id']
         order = Order.objects.get(order_id=order_id, seller__user=request.User)
-        if order.status in [Order.REFUND_INITIATED, Order.REFUNDED]:
+        if order.status in [Order.REFUND_INITIATED, Order.REFUNDED, Order.CANCELLED]:
             raise AccessDenied('Refund has already been initiated / processed for this order')
-        refund_order(order_id)
+        order.cancel_reason = data['reason']
+        order.save()
+        refund_order(order_id, request.User.seller.id)
         return dict(message="Refund initiated")

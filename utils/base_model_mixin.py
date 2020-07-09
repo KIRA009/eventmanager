@@ -25,7 +25,8 @@ class AutoCreatedUpdatedMixin(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ['-created_at']
+        ordering = ['-updated_at']
+        get_latest_by = 'updated_at'
 
     def save(self, *args, **kwargs):
         if not self.created_at:

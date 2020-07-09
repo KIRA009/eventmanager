@@ -22,6 +22,25 @@ def login_required(func):
     return decorator(func, lambda u: u.is_authenticated)
 
 
+def create_schema(props):
+    required = []
+    reqs = []
+    for k, v in props.items():
+        if isinstance(v, dict):
+            if 'properties' in v:
+                ret = dict(type="object", properties=v['properties'])
+            if 'req' in v and v['req']:
+                required.append(k)
+            props[k], req = create_schema(v)
+            if req:
+                # print(props, req, '===============')
+                reqs += req
+    # print(props, required, '++++++++++++++')
+    if reqs:
+        props['required'] = reqs
+    return props, required
+
+
 def validate(*_properties):
     def inner(func):
         def inner2(cls, request, **kwargs):
@@ -30,11 +49,8 @@ def validate(*_properties):
             else:
                 data = request.POST.dict()
             properties = dict(ChainMap(*_properties))
-            required = []
-            for k, v in properties.items():
-                if 'req' in v:
-                    if v['req']:
-                        required.append(k)
+            properties, required = create_schema(properties)
+
             schema = dict(
                 type="object",
                 properties=properties,
@@ -44,6 +60,9 @@ def validate(*_properties):
                 jsonschema.validate(data, schema)
                 return func(cls, request, **kwargs)
             except jsonschema.exceptions.ValidationError as e:
-                raise AccessDenied(e.message)
+                path = ''
+                for i in e.path:
+                    path += f'{i}.'
+                raise AccessDenied(f'{path}{e.message}')
         return inner2
     return inner

@@ -25,6 +25,7 @@ class PaymentWebhookView(View):
         elif data['event'] == 'order.paid':
             handle_order(data)
         elif data['event'] == 'refund.processed':
-            order = Order.objects.get(order_id=data['payload']['refund']['entity']['notes']['order_id'])
-            order.update_status(Order.REFUNDED)
+            orders = Order.objects.filter(order_id=data['payload']['refund']['entity']['notes']['order_id'])
+            for ind, order in enumerate(list(orders)):
+                order.update_status(Order.REFUNDED, ind == 0)
         return dict()

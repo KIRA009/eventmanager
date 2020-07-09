@@ -10,9 +10,9 @@ import uuid
 import os
 from collections import namedtuple
 
-from event_manager.settings import RAZORPAY_KEY, RAZORPAY_SECRET, TIME_ZONE, PAYMENT_TEST, PAYMENT_CALLBACK_URL, \
-    BASE_DIR, RAZORPAY_WEBHOOK_SECRET
-from .models import Subscription, Order, OrderItem, Seller
+from event_manager.settings import RAZORPAY_KEY, RAZORPAY_SECRET, TIME_ZONE, PAYMENT_TEST, BASE_DIR,\
+    RAZORPAY_WEBHOOK_SECRET
+from .models import Subscription, Order, OrderItem
 from utils.exceptions import NotFound, AccessDenied
 from pro.models import Product
 from event_app.models import User
@@ -41,37 +41,76 @@ def create_order_in_razorpay(amount):
 
 
 def create_order(order_items, mode, user_details, seller):
-    amount = 0
-    shipping_charges = 0
-    items = []
+    seller_orders = dict(items=[], amount=0, shipping_charges=0)
+    reseller_orders = {}
     for item in order_items:
         if item["type"] == "product":
-            prod = Product.objects.get(id=item["id"])
-            if prod.stock < int(item['meta_data']['quantity']):
-                raise AccessDenied(f'{prod.name} has less stock than requested')
-            items.append((prod, item['meta_data']))
-            amount += prod.disc_price
-            shipping_charges = max(shipping_charges, prod.shipping_charges)
-    if amount == 0:
+            prod = Product.objects.select_related('user__seller').get(id=item["id"])
+            original_seller_id = prod.user.seller.id
+            if prod.sizes_available:
+                it = prod.sizes.get(id=item['meta_data']['size'])
+            else:
+                it = prod
+            if it.stock < int(item['meta_data']['quantity']):
+                if isinstance(it, Product):
+                    raise AccessDenied(f'{it.name} has less stock than requested')
+                raise AccessDenied(f'Size {it.size} of {prod.name} has less stock than requested')
+            if original_seller_id != seller.id:
+                resell_product = seller.resell_products.get(product=prod)
+                if original_seller_id not in reseller_orders:
+                    reseller_orders[original_seller_id] = dict(
+                        items=[], amount=0, shipping_charges=0, resell_margin=0
+                    )
+                reseller_orders[original_seller_id]['items'].append(
+                    (prod, item['meta_data'])
+                )
+                reseller_orders[original_seller_id]['amount'] += it.disc_price + resell_product.resell_margin
+                reseller_orders[original_seller_id]['shipping_charges'] = max(
+                    reseller_orders[original_seller_id]['shipping_charges'], prod.shipping_charges
+                )
+                reseller_orders[original_seller_id]['resell_margin'] += resell_product.resell_margin
+            else:
+                seller_orders['items'].append(
+                    (prod, item['meta_data'])
+                )
+                seller_orders['amount'] += it.disc_price
+                seller_orders['shipping_charges'] = max(seller_orders['shipping_charges'], prod.shipping_charges)
+    if seller_orders['amount'] == 0 and not reseller_orders:
         return None, None
-    amount += shipping_charges
-    if mode == 'cod':
-        order_id = str(uuid.uuid4())
-    else:
-        order_id = create_order_in_razorpay(amount)
     _User = namedtuple('_User', ['email', 'phone', 'name'])
     user = User.objects.filter(email=user_details['email']).first()
     if not user:
         user = _User(email=user_details['email'], phone=user_details['number'], name=user_details['name'])
-    order = Order.objects.create(
-        order_id=order_id, amount=amount, user=user if isinstance(user, User) else None,
-        meta_data=dict(user_details=user_details), cod=(mode == 'cod'),
-        shipping_charges=shipping_charges,
-        seller=seller
-    )
-    items = [OrderItem(order=item[0], order_id=order, index=i, meta_data=item[1])
-             for i, item in enumerate(items)]
-    OrderItem.objects.bulk_create(items)
+    if mode == 'cod':
+        order_id = str(uuid.uuid4())
+    else:
+        total_amount = seller_orders['amount'] + seller_orders['shipping_charges'] + \
+                        sum(i['amount'] + i['shipping_charges'] for i in reseller_orders.values())
+        order_id = create_order_in_razorpay(total_amount)
+    if seller_orders['items']:
+        order = Order.objects.create(
+            order_id=order_id, amount=seller_orders['amount'], user=user if isinstance(user, User) else None,
+            meta_data=dict(user_details=user_details), cod=(mode == 'cod'),
+            shipping_charges=seller_orders['shipping_charges'],
+            seller=seller, resell_margin=0
+        )
+        items = [
+            OrderItem(order=item[0], order_id=order, index=i, meta_data=item[1])
+            for i, item in enumerate(seller_orders['items'])
+        ]
+        OrderItem.objects.bulk_create(items)
+    for seller_id, order in reseller_orders.items():
+        _order = Order.objects.create(
+            order_id=order_id, amount=order['amount'], user=user if isinstance(user, User) else None,
+            meta_data=dict(user_details=user_details), cod=(mode == 'cod'),
+            shipping_charges=order['shipping_charges'],
+            seller_id=seller_id, resell_margin=order['resell_margin'], reseller=seller
+        )
+        items = [
+            OrderItem(order=item[0], order_id=_order, index=i, meta_data=item[1])
+            for i, item in enumerate(order['items'])
+        ]
+        OrderItem.objects.bulk_create(items)
     return order_id, user
 
 
@@ -138,48 +177,48 @@ def create_plan(pack):
 
 @task(name='handle_order')
 def handle_order(data):
-    order = Order.objects.filter(order_id=data['payload']['order']['entity']['id']).first()
-    if not order:
+    orders = Order.objects.filter(order_id=data['payload']['order']['entity']['id'])
+    if not orders:
         return
-    if order.items.filter(content_type__model='subscription').exists():
-        return
-    if not order.paid:
-        order.paid = True
-        order.status = Order.PROCESSED
-        order.meta_data['payment'] = data['payload']['payment']['entity']
-        order.meta_data['order'] = data['payload']['order']['entity']
-        order.save()
-        seller = order.seller
-        resell_margin = 0
-        for item in order.items.all():
-            item.order.stock -= int(item.meta_data['quantity'])
-            item.order.save()
-            if item.order.user != seller.user:
-                original_seller = Seller.objects.get(user=item.order.user)
-                resell_margin += item.order.disc_price - item.order.resell_margin
-                original_seller.amount += item.order.disc_price - item.order.resell_margin
-                original_seller.save()
-        if order.cod:
-            percent = seller.commission['online']['percent'] * 0.01
-            extra = seller.commission['online']['extra']
-            seller.amount -= max(0, int(percent * (order.amount - resell_margin)) + extra)
-        else:
-            percent = (100 - seller.commission['online']['percent']) * 0.01
-            extra = seller.commission['online']['extra']
-            seller.amount += max(0, int(percent * (order.amount - resell_margin)) - extra)
-        seller.save()
-        send_invoice(order, seller)
-        send_text_update(order)
-        distribute_money_to_managers(seller, order.amount - resell_margin)
-        item_nums = order.items.count() - 1
-        create_notification(
-            seller.user, f'New order placed on {order.created_at.isoformat().split("T")[1][:8]}, '
-                         f'{order.created_at.isoformat().split("T")[0]}',
-            f'An order for {order.items.first().order.name}'
-            f' {"+ " + str(item_nums) + " others" if item_nums > 0 else ""} has been placed successfully. The total'
-            f' amount is Rs. {order.amount}',
-            dict(order_id=order.order_idc)
-        )
+    for ind, order in enumerate(list(orders)):
+        if not order.paid:
+            order.paid = True
+            order.status = Order.PROCESSED
+            order.meta_data['payment'] = data['payload']['payment']['entity']
+            order.meta_data['order'] = data['payload']['order']['entity']
+            order.save()
+            seller = order.seller
+            for item in order.items.all():
+                prod = item.order
+                prod.update_last_interaction()
+                if prod.sizes_available:
+                    prod = prod.sizes.get(id=item.meta_data['size'])
+                prod.stock -= int(item.meta_data['quantity'])
+                prod.save()
+            if order.cod:
+                percent = seller.commission['online']['percent'] * 0.01
+                extra = seller.commission['online']['extra']
+                seller.amount -= int(percent * (order.amount - order.resell_margin)) + extra
+            else:
+                percent = (100 - seller.commission['online']['percent']) * 0.01
+                extra = seller.commission['online']['extra']
+                seller.amount += int(percent * (order.amount - order.resell_margin)) - extra
+            seller.save()
+            if order.reseller:
+                order.reseller.amount += order.resell_margin
+                order.reseller.save()
+            send_invoice(order, seller)
+            send_text_update(order)
+            distribute_money_to_managers(seller, order.amount - order.resell_margin)
+            item_nums = order.items.count() - 1
+            create_notification(
+                seller.user, f'New order placed on {order.created_at.isoformat().split("T")[1][:8]}, '
+                             f'{order.created_at.isoformat().split("T")[0]}',
+                f'An order for {order.items.first().order.name}'
+                f' {"+ " + str(item_nums) + " others" if item_nums > 0 else ""} has been placed successfully. The total'
+                f' amount is Rs. {order.amount}',
+                dict(order_id=order.order_id)
+            )
 
 
 def distribute_money_to_managers(seller, amount):
@@ -299,6 +338,7 @@ def send_text_update(order):
         Order.DELIVERED: 'delivered',
         Order.REFUND_INITIATED: 'initiated for refund',
         Order.REFUNDED: 'refunded',
+        Order.CANCELLED: 'cancelled',
     }
     statuses = [
         Order.PROCESSED, Order.CONFIRMED, Order.SHIPPED, Order.DELIVERED, Order.REFUND_INITIATED, Order.REFUNDED
@@ -307,18 +347,24 @@ def send_text_update(order):
     item_nums = order.items.count() - 1
     message = f'Hi! Your myweblink order for {item.name} ' \
               f'{"+ " + str(item_nums) + " others" if item_nums > 0 else ""} has been {status[order.status]}.'
-    if order.status not in [Order.DELIVERED, Order.REFUNDED]:
+    if order.status not in [Order.DELIVERED, Order.REFUNDED, Order.CANCELLED]:
         message += f" We will send you an update when your order is " \
                    f"{status[statuses[statuses.index(order.status) + 1]]}"
+    if order.status in [Order.CANCELLED, Order.REFUND_INITIATED]:
+        message += f' This was due to the following reason: {order.cancel_reason}'
     send_message(order.meta_data['user_details']['number'], message)
 
 
 @task(name='refund_order')
-def refund_order(order_id):
-    order = Order.objects.get(order_id=order_id)
+def refund_order(order_id, seller_id):
+    order = Order.objects.get(order_id=order_id, seller_id=seller_id)
     if 'payment' not in order.meta_data:
         return
-    res = requests.post(f'{BASE_URL}/payments/{order.meta_data["payment"]["id"]}/refund',
-                        json={'amount': order.amount * 100, 'notes': dict(order_id=order_id)}, auth=auth).json()
-    if 'error' not in res:
-        order.update_status(Order.REFUND_INITIATED)
+    if order.paid:
+        if not order.cod:
+            res = requests.post(f'{BASE_URL}/payments/{order.meta_data["payment"]["id"]}/refund',
+                                json={'amount': order.amount * 100, 'notes': dict(order_id=order_id)}, auth=auth).json()
+            if 'error' not in res:
+                order.update_status(Order.REFUND_INITIATED)
+        else:
+            order.update_status(Order.CANCELLED)

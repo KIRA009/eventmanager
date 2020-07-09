@@ -54,9 +54,13 @@ class UserAdmin(BaseAdmin):
         return instance.user_type == 'pro'
     pro.boolean = True
 
+    def onboarding__marketeer__username(self, inst):
+        return inst.onboarding.marketeer.username
+
     actions = ['create_pro', 'onboard_user']
     search_fields = ['username', 'email']
-    list_display = ['username', 'email', 'phone', 'is_validated', 'is_onboarded', 'pro']
+    list_display = ['username', 'email', 'phone', 'is_validated', 'is_onboarded', 'onboarding__marketeer__username']
+
     list_filter = ['is_validated', OnBoardFilter]
 
 

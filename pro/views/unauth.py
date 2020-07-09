@@ -1,10 +1,9 @@
 from django.views import View
 
-from pro.models import ProModeFeature, Product
+from pro.models import ProModeFeature, Product, ResellProduct
 from event_app.models import User
 from pro.validators import *
 from payments.models import Seller
-from utils.exceptions import AccessDenied, NotFound
 from pro.documents import ProductDocument
 
 
@@ -46,11 +45,28 @@ class GetProductsView(View):
             if category == 'Reselling Products':
                 query = Product.objects.get_resell_products(user)
             else:
-                query = Product.objects.get_products(user).filter(category__name=category)
+                query = Product.objects.get_products(user, category__name=category)
         else:
             query = Product.objects.get_products(user)
         num_pages, page = query.paginate(page_no)
-        return dict(products=page.detail(), num_pages=num_pages)
+        page = page.detail()
+        product_ids = [_['id'] for _ in page]
+        resell_products = {
+            _['product_id']: _['resell_margin'] for _ in
+            ResellProduct.objects.filter(
+                product_id__in=product_ids, seller__user__username=user, product__opt_for_reselling=True
+            ).values('product_id', 'resell_margin')
+        }
+        for i in page:
+            if i['id'] not in resell_products:
+                continue
+            i['resell_margin'] = resell_products.get(i['id'], 0)
+            if i['sizes_available']:
+                for size in i['sizes']:
+                    size['disc_price'] += resell_products.get(i['id'], 0)
+            else:
+                i['disc_price'] += resell_products.get(i['id'], 0)
+        return dict(products=page, num_pages=num_pages)
 
 
 class ProModeView(View):
@@ -69,19 +85,10 @@ class GetShopView(View):
     @get_user_schema
     def post(self, request):
         data = request.json
-        try:
-            user = User.objects.get(username=data['username'])
-        except User.DoesNotExist:
-            raise NotFound()
-        if user.user_type != 'pro':
-            raise AccessDenied('User is not a pro user')
-        seller = Seller.objects.get_or_create(user=user)[0]
-        return dict(
-            address=seller.shipping_area,
-            commission=seller.commission,
-            categories=seller.categories.all().detail(),
-            is_category_view_enabled=seller.is_category_view_enabled
-        )
+        seller = Seller.objects.get(user__username=data['username'])
+        cols = ['shipping_area', 'shop_address', 'city', 'state', 'country', 'pincode', 'is_category_view_enabled',
+                'commission']
+        return {"categories": seller.categories.all().detail(), **{k: getattr(seller, k) for k in cols}}
 
 
 class SearchProductView(View):
@@ -119,3 +126,8 @@ class SearchProductView(View):
         page_no = int(request.GET.get('pageNo', 1))
         num_pages, products = products.filter(user__username=data['seller']).paginate(page_no)
         return dict(products=products.detail(), num_pages=num_pages)
+
+
+class GetProductView(View):
+    def get(self, request, slug):
+        return dict(product=Product.objects.get(slug=slug).detail())

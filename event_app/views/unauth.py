@@ -106,7 +106,7 @@ class LoginView(View):
             user.save()
             return dict(
                 data="Successful",
-                user=user.detail(),
+                user=dict(**user.detail(), seller_id=user.seller.id),
                 token=create_token(
                     username=f"{user.email}$$${user.password}",
                     len_email=len(user.email),
@@ -121,9 +121,9 @@ class GetUserView(View):
         username = request.json["username"]
         if username is not None:
             username = username.lower()
-        user = User.objects.filter(username=username).first()
+        user = User.objects.select_related('feature', 'seller').filter(username=username).first()
         if user:
-            return dict(user=user.detail())
+            return dict(user=dict(**user.detail(), seller_id=user.seller.id))
         raise NotFound("User not found")
 
 

@@ -11,6 +11,7 @@ unauth_urls = list(
             ("feature/", ProModeView),
             ("background/get/", GetBgView),
             ("products/get/", GetProductsView),
+            ("product/get/<slug:slug>/", GetProductView),
             ("shop/get/", GetShopView),
             ("product/search/", SearchProductView),
         ],
@@ -38,6 +39,7 @@ pro_urls = list(
             ("product/resell/", GetResellProductsView),
             ("product/resell/add/", AddResellProductView),
             ("product/resell/remove/", RemoveResellProductView),
+            ('category/update/', UpdateCategoryView)
         ],
     )
 )
