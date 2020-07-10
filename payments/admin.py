@@ -74,7 +74,7 @@ class SellerAdmin(BaseAdmin):
 
 	pay_outstanding.short_description = "Pay outstanding debt"
 
-	list_display = ['user', 'amount']
+	list_display = ['user', 'amount', 'has_free_delivery_above_amount', 'free_delivery_above_amount']
 	actions = ['pay_outstanding']
 
 

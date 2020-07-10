@@ -153,6 +153,8 @@ class Seller(AutoCreatedUpdatedMixin):
     country = models.TextField(default='', blank=True)
     pincode = models.TextField(default='', blank=True)
     is_category_view_enabled = models.BooleanField(default=False)
+    has_free_delivery_above_amount = models.BooleanField(default=False)
+    free_delivery_above_amount = models.IntegerField(default=0)
     pickup_location = models.TextField(max_length=8, default='')
     commission = JSONField(default=create_base_commission)
 
