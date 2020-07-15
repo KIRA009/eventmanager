@@ -213,7 +213,8 @@ class SetShopView(View):
             raise AccessDenied(
                 "Shop Address must contain something resembling a house number / flat number / road number"
             )
-        cols = ['shipping_area', 'shop_address', 'city', 'state', 'country', 'pincode', 'is_category_view_enabled']
+        cols = ['shipping_area', 'shop_address', 'city', 'state', 'country', 'pincode', 'is_category_view_enabled',
+                'free_delivery_above_amount', 'has_free_delivery_above_amount']
         for column in cols:
             setattr(seller, column, data[column])
         seller.save()

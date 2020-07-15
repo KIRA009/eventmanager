@@ -86,7 +86,9 @@ update_shipping_schema = validate(
     make_string_object("state"),
     make_string_object("country"),
     make_string_object("pincode"),
-    make_boolean_object("is_category_view_enabled")
+    make_boolean_object("is_category_view_enabled"),
+    make_boolean_object("has_free_delivery_above_amount"),
+    make_number_object("free_delivery_above_amount")
 )
 
 delete_category_schema = validate(

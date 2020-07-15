@@ -87,7 +87,7 @@ class GetShopView(View):
         data = request.json
         seller = Seller.objects.get(user__username=data['username'])
         cols = ['shipping_area', 'shop_address', 'city', 'state', 'country', 'pincode', 'is_category_view_enabled',
-                'commission']
+                'commission', 'has_free_delivery_above_amount', 'free_delivery_above_amount']
         return {"categories": seller.categories.all().detail(), **{k: getattr(seller, k) for k in cols}}
 
 

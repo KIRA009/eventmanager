@@ -35,7 +35,7 @@ class ResellProductAdmin(BaseAdmin):
 
 
 class ProductSizeAdmin(BaseAdmin):
-    list_display = ['size', 'price', 'disc_price', 'stock']
+    list_display = ['size', 'price', 'disc_price', 'stock', 'product']
 
 
 admin.site.register(ProModeFeature, ProModeFeatureAdmin)

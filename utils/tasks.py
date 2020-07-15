@@ -2,28 +2,47 @@ import utils.email as email
 import utils.messaging
 import event_app.utils as event_app_utils
 import payments.utils as payment_utils
+from event_manager.settings import DEBUG
 from .periodic_tasks import *
 
 
 def send_email(emails, subject, message):
-    email.send_email.delay(emails, subject, message)
+    if DEBUG:
+        email.send_email(emails, subject, message)
+    else:
+        email.send_email.delay(emails, subject, message)
 
 
 def delete_file(url):
-    event_app_utils.delete_file.delay(url)
+    if DEBUG:
+        event_app_utils.delete_file(url)
+    else:
+        event_app_utils.delete_file.delay(url)
 
 
 def cancel_subscription(user_id, sub_id):
-    payment_utils.cancel_subscription.delay(user_id, sub_id)
+    if DEBUG:
+        payment_utils.cancel_subscription(user_id, sub_id)
+    else:
+        payment_utils.cancel_subscription.delay(user_id, sub_id)
 
 
 def handle_order(data):
-    payment_utils.handle_order.delay(data)
+    if DEBUG:
+        payment_utils.handle_order(data)
+    else:
+        payment_utils.handle_order.delay(data)
 
 
 def send_message(phone, message):
-    utils.messaging.send_message.delay(phone, message)
+    if DEBUG:
+        utils.messaging.send_message(phone, message)
+    else:
+        utils.messaging.send_message.delay(phone, message)
 
 
 def refund_order(order_id, seller_id):
-    payment_utils.refund_order.delay(order_id, seller_id)
+    if DEBUG:
+        payment_utils.refund_order(order_id, seller_id)
+    else:
+        payment_utils.refund_order.delay(order_id, seller_id)

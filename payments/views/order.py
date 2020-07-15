@@ -6,7 +6,7 @@ from payments.utils import create_order_form, create_order
 from payments.validators import *
 from utils.exceptions import AccessDenied
 from event_manager.settings import PAYMENT_CANCEL_URL, PAYMENT_CALLBACK_URL
-from utils.tasks import handle_order, refund_order
+from utils.tasks import refund_order, handle_order
 
 
 class CreateOrderView(View):
