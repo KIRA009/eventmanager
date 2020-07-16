@@ -18,8 +18,8 @@ def make_number_object(x, is_required=True):
     return make_object(x, "number", is_required)
 
 
-def make_array_object(x, _type, is_required=True):
-    return make_object(x, "array", is_required, items=dict(type=_type))
+def make_array_object(x, _type, is_required=True, **kwargs):
+    return make_object(x, "array", is_required, items=dict(type=_type, **kwargs))
 
 
 def make_email_object(x, is_required=True):
@@ -30,8 +30,8 @@ def make_uri_object(x, is_required=True):
     return make_object(x, "string", is_required, pattern="^https?://.+")
 
 
-def make_dict_object(x, is_required=True, **kwrags):
-    return make_object(x, "object", is_required, **kwrags)
+def make_dict_object(x, is_required=True, **kwargs):
+    return make_object(x, "object", is_required, **kwargs)
 
 
 def make_boolean_object(x, is_required=True, **kwargs):

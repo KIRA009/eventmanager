@@ -60,6 +60,7 @@ class UserAdmin(BaseAdmin):
     actions = ['create_pro', 'onboard_user']
     search_fields = ['username', 'email']
     list_display = ['username', 'email', 'phone', 'is_validated', 'is_onboarded', 'onboarding__marketeer__username']
+
     list_filter = ['is_validated', OnBoardFilter]
 
 

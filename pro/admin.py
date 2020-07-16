@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.contrib.contenttypes.fields import ContentType
 
 from .models import *
 from utils.base_admin import BaseAdmin
@@ -13,9 +12,9 @@ class ProPackAdmin(BaseAdmin):
 
 class ProductAdmin(BaseAdmin):
     list_display = ['name', 'description', 'price', 'disc_price', 'estimated_delivery', 'user', 'cod_available',
-                    'opt_for_reselling']
+                    'opt_for_reselling', 'slug', 'sizes_available', 'online_available']
     search_fields = ['user']
-    list_filter = ['cod_available']
+    list_filter = ['cod_available', 'sizes_available', 'online_available']
 
     def delete_queryset(self, request, queryset):
         content_type = ContentType.objects.get_for_model(DeletedButUsedProduct)
@@ -30,12 +29,17 @@ class ProModeFeatureAdmin(BaseAdmin):
 
 class ResellProductAdmin(BaseAdmin):
     def seller_count(self, obj):
-        return obj.sellers.count()
+        return obj.product.resell_products.count()
 
-    list_display = ['product', 'seller_count']
+    list_display = ['product', 'seller_count', 'resell_margin']
+
+
+class ProductSizeAdmin(BaseAdmin):
+    list_display = ['size', 'price', 'disc_price', 'stock', 'product']
 
 
 admin.site.register(ProModeFeature, ProModeFeatureAdmin)
 admin.site.register(ProPack, ProPackAdmin)
 admin.site.register([Product, DeletedButUsedProduct], ProductAdmin)
 admin.site.register(ResellProduct, ResellProductAdmin)
+admin.site.register(ProductSize, ProductSizeAdmin)

@@ -34,7 +34,7 @@ class OrderAdmin(BaseAdmin):
 	def item_count(self, obj):
 		return obj.items.count()
 
-	list_display = ['user', 'amount', 'paid', 'item_count', 'status']
+	list_display = ['user', 'amount', 'paid', 'item_count', 'status', 'seller']
 	search_fields = ['user']
 	list_filter = ['paid', 'status']
 
@@ -74,7 +74,7 @@ class SellerAdmin(BaseAdmin):
 
 	pay_outstanding.short_description = "Pay outstanding debt"
 
-	list_display = ['user', 'amount']
+	list_display = ['user', 'amount', 'has_free_delivery_above_amount', 'free_delivery_above_amount']
 	actions = ['pay_outstanding']
 
 

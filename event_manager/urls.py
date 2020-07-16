@@ -21,15 +21,22 @@ import analytics.urls
 import payments.urls
 import pro.urls
 import notifications.urls
+import shipping.urls
+import logger.urls
+
 from event_app.views import *
 
 urlpatterns = [
     path("admin-dashboard/", admin.site.urls),
+
     path("api/", include(event_app.urls)),
     path("pro/", include(pro.urls)),
     path("analytics/", include(analytics.urls)),
     path("payment/", include(payments.urls)),
     path("notifications/", include(notifications.urls)),
+    path("shipping/", include(shipping.urls)),
+    path("log/", include(logger.urls)),
+
     re_path(
         r"^forgot-password/?$",
         ForgotPwdView.as_view(),

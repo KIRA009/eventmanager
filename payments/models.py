@@ -5,9 +5,11 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.postgres.fields import JSONField
 from django.utils.timezone import localdate, now
 import json
+import secrets
 
 from utils.base_model_mixin import AutoCreatedUpdatedMixin
 from payments.managers import OrderManager
+from notifications.utils import create_notification
 
 
 User = get_user_model()
@@ -70,6 +72,7 @@ class Order(AutoCreatedUpdatedMixin):
     DELIVERED = 'Delivered'
     REFUND_INITIATED = 'Refund initiated'
     REFUNDED = 'Refunded'
+    CANCELLED = 'Cancelled'
     STATUS_CHOICES = (
         (INITIATED, "Order Initiated"),
         (PROCESSED, 'Order Processed'),
@@ -77,7 +80,8 @@ class Order(AutoCreatedUpdatedMixin):
         (SHIPPED, 'Shipped'),
         (DELIVERED, 'Delivered'),
         (REFUND_INITIATED, 'Refund initiated'),
-        (REFUNDED, 'Refunded')
+        (REFUNDED, 'Refunded'),
+        (CANCELLED, 'Cancelled')
     )
     order_id = models.TextField(default="")
     amount = models.BigIntegerField(default=0)
@@ -87,6 +91,7 @@ class Order(AutoCreatedUpdatedMixin):
     status = models.TextField(default=INITIATED, choices=STATUS_CHOICES)
     shipping_charges = models.IntegerField(default=0)
     resell_margin = models.IntegerField(default=0)
+    cancel_reason = models.TextField(default='', blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders", null=True, blank=True)
     seller = models.ForeignKey('payments.Seller', on_delete=models.CASCADE, related_name="orders", null=True)
     reseller = models.ForeignKey('payments.Seller', on_delete=models.CASCADE, related_name="resold_orders", null=True)
@@ -104,7 +109,8 @@ class Order(AutoCreatedUpdatedMixin):
     process_fields = AutoCreatedUpdatedMixin.process_fields.copy()
     process_fields.update(**dict(
         meta_data=lambda x: Order.process_meta(x),
-        items=lambda x: x.items.all().detail()
+        items=lambda x: x.items.all().detail(),
+        tracking_number=lambda x: x.shipment.awb_code if hasattr(x, 'shipment') else None
     ))
 
     objects = OrderManager()
@@ -126,6 +132,9 @@ class Order(AutoCreatedUpdatedMixin):
         if send_update:
             send_text_update(self)
 
+    class Meta:
+        ordering = ['-created_at']
+
 
 def create_base_commission():
     return dict(online=dict(percent=3, extra=5), cod=dict(percent=3, extra=5))
@@ -138,8 +147,21 @@ class Seller(AutoCreatedUpdatedMixin):
     account_number = models.TextField(default='', blank=True)
     ifsc_code = models.TextField(default='', blank=True)
     shipping_area = models.TextField(default='World Wide shipping')
+    shop_address = models.TextField(blank=True, default='')
+    city = models.TextField(default='', blank=True)
+    state = models.TextField(default='', blank=True)
+    country = models.TextField(default='', blank=True)
+    pincode = models.TextField(default='', blank=True)
     is_category_view_enabled = models.BooleanField(default=False)
+    has_free_delivery_above_amount = models.BooleanField(default=False)
+    free_delivery_above_amount = models.IntegerField(default=0)
+    pickup_location = models.TextField(max_length=8, default='')
     commission = JSONField(default=create_base_commission)
+
+    def save(self, *args, **kwargs):
+        if not self.pickup_location:
+            self.pickup_location = secrets.token_hex(4)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.user} -> {self.amount}'

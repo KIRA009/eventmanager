@@ -78,7 +78,7 @@ CELERY_BEAT_SCHEDULE = {
 
 MSG91AUTHKEY = os.getenv("MSG91AUTHKEY")
 
-ELASTICSEARCH_DSL={
+ELASTICSEARCH_DSL = {
     'default': {
         'hosts': 'localhost:9200'
     },
