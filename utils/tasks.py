@@ -4,6 +4,7 @@ import event_app.utils as event_app_utils
 import payments.utils as payment_utils
 from event_manager.settings import DEBUG
 from .periodic_tasks import *
+import utils.notifications as notifications
 
 
 def send_email(emails, subject, message):
@@ -46,3 +47,10 @@ def refund_order(order_id, seller_id):
         payment_utils.refund_order(order_id, seller_id)
     else:
         payment_utils.refund_order.delay(order_id, seller_id)
+
+
+def send_push_message(notifs):
+    if DEBUG:
+        utils.notifications.send_push_message(notifs)
+    else:
+        utils.notifications.send_push_message.delay(notifs)
