@@ -9,7 +9,6 @@ import secrets
 
 from utils.base_model_mixin import AutoCreatedUpdatedMixin
 from payments.managers import OrderManager
-from notifications.utils import create_notification
 
 
 User = get_user_model()

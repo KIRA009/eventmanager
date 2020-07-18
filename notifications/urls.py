@@ -9,7 +9,8 @@ auth_urls = list(
         lambda x: path(x[0], login_required(x[1].as_view())),
         [
             ("get/", GetNotificationsView),
-            ("read/", ReadNotificationView)
+            ("read/", ReadNotificationView),
+            ("update/", UpdateNotificationTokenView)
         ],
     )
 )

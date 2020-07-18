@@ -19,3 +19,12 @@ class ReadNotificationView(View):
 		data = request.json
 		Notification.objects.get(id=data['notif_id'], user=request.User).read()
 		return dict(unread_notifs=Notification.objects.filter(user=request.User).filter(read_at=None).count())
+
+
+class UpdateNotificationTokenView(View):
+	@update_token_schema
+	def post(self, request):
+		data = request.json
+		request.User.notif_token = data['token']
+		request.User.save()
+		return dict()
