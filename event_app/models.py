@@ -25,6 +25,7 @@ class User(AbstractBaseUser, PermissionsMixin, AutoCreatedUpdatedMixin):
         to_field="name",
         null=True,
     )
+    notif_token = models.TextField(default=None, null=True)
     USERNAME_FIELD = "email"
 
     objects = UserManager()
