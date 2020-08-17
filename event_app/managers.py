@@ -30,7 +30,7 @@ class UserManager(BaseUserManager):
         try:
             user.save(using=self._db)
             ProModeFeature.objects.create(user=user)
-            Seller.objects.create(user=user)
+            Seller.objects.create(user=user, shop_info=[])
             return user
         except Exception as e:
             raise NotFound(str(e))

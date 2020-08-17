@@ -25,7 +25,8 @@ create_product_schema = validate(
         **make_number_object("stock"),
         **make_number_object("disc_price"),
         **make_number_object("price"),
-    ))
+    )),
+    make_boolean_object("feature_product")
 )
 
 add_image_schema = validate(
@@ -57,7 +58,8 @@ update_product_schema = validate(
         **make_number_object("stock"),
         **make_number_object("disc_price"),
         **make_number_object("price"),
-    ))
+    )),
+    make_boolean_object("feature_product")
 )
 
 delete_product_schema = validate(
@@ -108,4 +110,26 @@ search_products_schema = validate(
 add_resell_product_schema = validate(
     make_number_object("product_id"),
     make_number_object("resell_margin")
+)
+
+get_shop_info_schema = validate(
+    make_string_object("seller")
+)
+
+update_shop_info_schema = validate(
+    make_array_object("shop_info", _type="object", properties=dict(
+        **make_dict_object("heading", properties=dict(
+            **make_string_object("text"),
+            **make_dict_object("style")
+        )),
+        **make_dict_object("description", properties=dict(
+            **make_string_object("text"),
+            **make_dict_object("style")
+        ))
+    ))
+)
+
+
+update_shop_cover_schema = validate(
+    make_uri_object("photo")
 )

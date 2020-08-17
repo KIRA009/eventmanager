@@ -8,7 +8,7 @@ class ProductManager(BaseManager):
 	def get_products(self, user, **kwargs):
 		return self.select_related('category').filter(
 			Q(user__username=user) | Q(resell_products__seller__user__username=user)
-		).filter(**kwargs)
+		).filter(**kwargs).distinct()
 
 	def get_resell_products(self, user):
-		return self.select_related('category').filter(resell_products__seller__user__username=user)
+		return self.select_related('category').filter(resell_products__seller__user__username=user).distinct()

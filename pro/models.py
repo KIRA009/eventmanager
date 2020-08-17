@@ -70,6 +70,7 @@ class Product(AutoCreatedUpdatedMixin):
     cod_available = models.BooleanField(default=False)
     online_available = models.BooleanField(default=False)
     sizes_available = models.BooleanField(default=False)
+    feature_product = models.BooleanField(default=False)
     stock = models.IntegerField(default=1000)
     shipping_charges = models.IntegerField(default=0)
     opt_for_reselling = models.BooleanField(default=False)
@@ -127,6 +128,7 @@ class Product(AutoCreatedUpdatedMixin):
                                                         sizes_available=self.sizes_available, stock=self.stock,
                                                         shipping_charges=self.shipping_charges,
                                                         opt_for_reselling=self.opt_for_reselling,
+                                                        feature_product=self.feature_product,
                                                         slug=self.slug, user=self.user, category=self.category)
             self.order.all().update(content_type=content_type, object_id=_del.id)
             if self.sizes_available:
@@ -153,6 +155,7 @@ class DeletedButUsedProduct(AutoCreatedUpdatedMixin):
     cod_available = models.BooleanField(default=False)
     online_available = models.BooleanField(default=False)
     sizes_available = models.BooleanField(default=False)
+    feature_product = models.BooleanField(default=False)
     stock = models.IntegerField(default=1000)
     shipping_charges = models.IntegerField(default=0)
     opt_for_reselling = models.BooleanField(default=False)

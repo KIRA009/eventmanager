@@ -1,10 +1,11 @@
 from django.views import View
+from django.db.models import Q
 
 from pro.models import ProModeFeature, Product, ResellProduct
 from event_app.models import User
 from pro.validators import *
 from payments.models import Seller
-from pro.documents import ProductDocument
+# from pro.documents import ProductDocument
 
 
 class GetBgView(View):
@@ -95,7 +96,9 @@ class SearchProductView(View):
     @search_products_schema
     def post(self, request):
         data = request.json
-        query = f"*{data['query']}*"
+        # query = f"*{data['query']}*"
+        query = data['query']
+        '''
         products = ProductDocument.search().filter({
             "bool": {
                 "should": [
@@ -123,11 +126,35 @@ class SearchProductView(View):
                 ]
             }
         }).to_queryset()
+        '''
+        products = Product.objects.filter(
+            Q(name__icontains=query) | Q(description__icontains=query) | Q(category__name__icontains=query)
+        )
         page_no = int(request.GET.get('pageNo', 1))
-        num_pages, products = products.filter(user__username=data['seller']).paginate(page_no)
+        # num_pages, products = products.filter(user__username=data['seller']).paginate(page_no)
+        num_pages, products = products.filter(
+            Q(user__username=data['seller']) | Q(resell_products__seller__user__username=data['seller'])
+        ).paginate(page_no)
         return dict(products=products.detail(), num_pages=num_pages)
 
 
 class GetProductView(View):
     def get(self, request, slug):
         return dict(product=Product.objects.get(slug=slug).detail())
+
+
+class GetShopHomePageView(View):
+    @get_shop_info_schema
+    def post(self, request):
+        data = request.json
+        seller = Seller.objects.get(user__username=data['seller'])
+        return dict(info=seller.shop_info, cover_photos=seller.cover_photos)
+
+
+class GetFeaturedProductsView(View):
+    @get_shop_info_schema
+    def post(self, request):
+        data = request.json
+        page_no = int(request.GET.dict().get('pageNo', 1))
+        num_pages, page = Product.objects.filter(feature_product=True, user__username=data['seller']).paginate(page_no)
+        return dict(products=page.detail(), num_pages=num_pages)

@@ -9,7 +9,7 @@ class BaseManager(Manager.from_queryset(BaseQuerySet)):
         try:
             return super().get_or_create(defaults, **kwargs)
         except NotFound:
-            return super().create(**kwargs)
+            return super().create(**kwargs), True
 
     def get(self, **kwargs):
         try:

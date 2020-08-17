@@ -3,7 +3,7 @@ from django.db.transaction import atomic
 
 from pro.models import ProModeFeature, Product, ProductCategory, ResellProduct, ProductSize
 from utils.tasks import delete_file
-from event_manager.settings import ICONCONTAINER, PROFILECONTAINER, PRODUCTCONTAINER, CATEGORYCONTAINER
+from event_manager.settings import ICONCONTAINER, PROFILECONTAINER, PRODUCTCONTAINER, CATEGORYCONTAINER, SHOPCONTAINER
 from pro.validators import *
 from event_app.utils import upload_file, copy_file
 from pro.utils import convert_to_base64
@@ -304,3 +304,39 @@ class UpdateCategoryView(View):
         category.name = data['name']
         category.save()
         return dict(category=category.detail())
+
+
+class UpdateShopInfoView(View):
+    @update_shop_info_schema
+    def post(self, request):
+        data = request.json
+        seller = request.User.seller
+        seller.shop_info = data['shop_info']
+        seller.save()
+        return data
+
+
+class UpdateShopCoverView(View):
+    def post(self, request):
+        seller = request.User.seller
+        file = request.FILES.dict()['photo']
+        url = upload_file(request, file, SHOPCONTAINER)
+        seller.cover_photos.append(url)
+        seller.save()
+        return dict(new_photo=url)
+
+
+class DeleteShopCoverView(View):
+    @update_shop_cover_schema
+    def post(self, request):
+        data = request.json
+        url = data['photo']
+        seller = request.User.seller
+        delete_file(url)
+        image_ind = seller.cover_photos.index(url)
+        try:
+            del seller.cover_photos[image_ind]
+            seller.save()
+        except IndexError:
+            pass
+        return dict(message="Deleted")

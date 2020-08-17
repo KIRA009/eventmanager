@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     "corsheaders",
-    "django_elasticsearch_dsl",
+    # "django_elasticsearch_dsl",
 
     "event_app",
     'pro',

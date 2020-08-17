@@ -26,11 +26,13 @@ if DEBUG:
     ICONCONTAINER = "eventmanagericondebug"
     PRODUCTCONTAINER = "eventmanagerproductdebug"
     CATEGORYCONTAINER = "eventmanagercategorydebug"
+    SHOPCONTAINER = 'eventmanagershopdebug'
 else:
     PROFILECONTAINER = "eventmanagerprofile"
     ICONCONTAINER = "eventmanagericon"
     PRODUCTCONTAINER = "eventmanagerproduct"
     CATEGORYCONTAINER = "eventmanagercategory"
+    SHOPCONTAINER = 'eventmanagershop'
 
 STORAGE_CLIENT = BlobServiceClient.from_connection_string(
     os.getenv("CONNECTION_STRING")
@@ -78,8 +80,8 @@ CELERY_BEAT_SCHEDULE = {
 
 MSG91AUTHKEY = os.getenv("MSG91AUTHKEY")
 
-ELASTICSEARCH_DSL = {
-    'default': {
-        'hosts': 'localhost:9200'
-    },
-}
+# ELASTICSEARCH_DSL = {
+#     'default': {
+#         'hosts': 'localhost:9200'
+#     },
+# }

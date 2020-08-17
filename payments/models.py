@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
-from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields import JSONField, ArrayField
 from django.utils.timezone import localdate, now
 import json
 import secrets
@@ -156,6 +156,8 @@ class Seller(AutoCreatedUpdatedMixin):
     free_delivery_above_amount = models.IntegerField(default=0)
     pickup_location = models.TextField(max_length=8, default='')
     commission = JSONField(default=create_base_commission)
+    cover_photos = ArrayField(models.URLField(default=''))
+    shop_info = ArrayField(JSONField())
 
     def save(self, *args, **kwargs):
         if not self.pickup_location:
