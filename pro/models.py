@@ -217,3 +217,12 @@ class DeletedProductSize(AutoCreatedUpdatedMixin):
 
     exclude_fields = AutoCreatedUpdatedMixin.get_exclude_fields_copy()
     exclude_fields += ['product']
+
+
+class Testimonial(AutoCreatedUpdatedMixin):
+    seller = models.ForeignKey('payments.Seller', on_delete=models.CASCADE, related_name='testimonials')
+    name = models.TextField(default='')
+    description = models.TextField(default='')
+
+    exclude_fields = AutoCreatedUpdatedMixin.get_exclude_fields_copy()
+    exclude_fields += ['id', 'seller']

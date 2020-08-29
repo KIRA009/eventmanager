@@ -1,7 +1,7 @@
 from django.views import View
 from django.db.transaction import atomic
 
-from pro.models import ProModeFeature, Product, ProductCategory, ResellProduct, ProductSize
+from pro.models import ProModeFeature, Product, ProductCategory, ResellProduct, ProductSize, Testimonial
 from utils.tasks import delete_file
 from event_manager.settings import ICONCONTAINER, PROFILECONTAINER, PRODUCTCONTAINER, CATEGORYCONTAINER, SHOPCONTAINER
 from pro.validators import *
@@ -116,11 +116,11 @@ class UpdateProductView(View):
     def post(self, request):
         data = request.json
         product = Product.objects.select_related('category').get(id=data['id'], user=request.User)
-        changed_vals = dict()
+        changed_values = dict()
         for k, v in data.items():
             if v != getattr(product, k):
-                changed_vals[k] = v
-        data = changed_vals
+                changed_values[k] = v
+        data = changed_values
         for i in ['slug', 'user']:
             if i in data:
                 del data[i]
@@ -231,7 +231,7 @@ class DeleteProductCategoryView(View):
     @delete_category_schema
     def post(self, request):
         ProductCategory.objects.get(id=request.json['category_id'], seller__user=request.User).delete()
-        return dict(message='Deleted succesfully')
+        return dict(message='Deleted successfully')
 
 
 class GetResellProductsView(View):
@@ -340,3 +340,11 @@ class DeleteShopCoverView(View):
         except IndexError:
             pass
         return dict(message="Deleted")
+
+
+class AddTestimonialView(View):
+    @add_testimonial_schema
+    def post(self, request):
+        data = request.json
+        testimonial = Testimonial.objects.create(seller_id=request.User.seller.id, **data)
+        return dict(testimonial=testimonial.detail())

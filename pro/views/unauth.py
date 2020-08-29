@@ -1,7 +1,7 @@
 from django.views import View
 from django.db.models import Q
 
-from pro.models import ProModeFeature, Product, ResellProduct
+from pro.models import ProModeFeature, Product, ResellProduct, Testimonial
 from event_app.models import User
 from pro.validators import *
 from payments.models import Seller
@@ -158,3 +158,12 @@ class GetFeaturedProductsView(View):
         page_no = int(request.GET.dict().get('pageNo', 1))
         num_pages, page = Product.objects.filter(feature_product=True, user__username=data['seller']).paginate(page_no)
         return dict(products=page.detail(), num_pages=num_pages)
+
+
+class GetTestimonialsView(View):
+    @get_shop_info_schema
+    def post(self, request):
+        data = request.json
+        page_no = int(request.GET.dict().get('pageNo', 1))
+        num_pages, page = Testimonial.objects.filter(seller__user__username=data['seller']).paginate(page_no)
+        return dict(testimonials=page.detail(), num_pages=num_pages)

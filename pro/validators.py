@@ -133,3 +133,9 @@ update_shop_info_schema = validate(
 update_shop_cover_schema = validate(
     make_uri_object("photo")
 )
+
+
+add_testimonial_schema = validate(
+    make_string_object("name"),
+    make_string_object("description")
+)
